@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector>
+    <item xmlns:android="http://schemas.android.com/apk/res/android" android:color="?android:textColorTertiary" android:state_enabled="false" />
+    <item xmlns:android="http://schemas.android.com/apk/res/android" android:color="#aa0000" />
+    <!--android:color="?textColorError"-->
+</selector>

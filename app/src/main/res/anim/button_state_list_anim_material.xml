@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector>
+    <item n1:state_enabled="true" n1:state_pressed="true"
+      xmlns:n1="http://schemas.android.com/apk/res/android">
+        <set>
+            <objectAnimator n1:duration="@integer/button_pressed_animation_duration" n1:valueTo="@dimen/button_pressed_z_material" n1:valueType="floatType" n1:propertyName="translationZ" />
+            <objectAnimator n1:duration="0" n1:valueTo="@dimen/button_elevation_material" n1:valueType="floatType" n1:propertyName="elevation" />
+        </set>
+    </item>
+    <item n2:state_enabled="true"
+      xmlns:n2="http://schemas.android.com/apk/res/android">
+        <set>
+            <objectAnimator n2:duration="@integer/button_pressed_animation_duration" n2:valueTo="0" n2:valueType="floatType" n2:propertyName="translationZ" n2:startDelay="@integer/button_pressed_animation_delay" />
+            <objectAnimator n2:duration="0" n2:valueTo="@dimen/button_elevation_material" n2:valueType="floatType" n2:propertyName="elevation" />
+        </set>
+    </item>
+    <item>
+        <set>
+            <objectAnimator n3:duration="0" n3:valueTo="0" n3:valueType="floatType" n3:propertyName="translationZ"
+              xmlns:n3="http://schemas.android.com/apk/res/android" />
+            <objectAnimator n4:duration="0" n4:valueTo="0" n4:valueType="floatType" n4:propertyName="elevation"
+              xmlns:n4="http://schemas.android.com/apk/res/android" />
+        </set>
+    </item>
+</selector>

@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-selector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:constantSize="true">
+    <item
+        android:id="@+id/off"
+        android:state_enabled="false">
+        <nine-patch
+            android:gravity="center"
+            android:src="@drawable/op_switch_001"
+            android:tint="@color/op_switch_thumb_material_light_selector"
+            android:tintMode="multiply" />
+    </item>
+    <item
+        android:id="@+id/on"
+        android:state_checked="true">
+        <nine-patch
+            android:gravity="center"
+            android:src="@drawable/op_switch_023"
+            android:tint="@color/setting_switch_on"
+            android:tintMode="multiply" />
+    </item>
+    <item android:id="@id/off">
+        <nine-patch
+            android:gravity="center"
+            android:src="@drawable/op_switch_001"
+            android:tint="@color/op_switch_thumb_material_light_selector"
+            android:tintMode="multiply" />
+    </item>
+    <transition
+        android:fromId="@id/off"
+        android:toId="@id/on">
+        <animation-list>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_001"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_002"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_003"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_004"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_005"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_006"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_007"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_008"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_009"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_010"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_011"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_012"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_013"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_014"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_015"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_016"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_017"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_018"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_019"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_020"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_021"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_022"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_023"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+        </animation-list>
+    </transition>
+    <transition
+        android:fromId="@id/on"
+        android:toId="@id/off">
+        <animation-list>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_001"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_002"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_003"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_004"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_005"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_006"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_007"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_008"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_009"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_010"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_011"
+                    android:tint="@color/setting_switch_on"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_012"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_013"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_014"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_015"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_016"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_017"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_018"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_019"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_020"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_021"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_022"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+            <item android:duration="10">
+                <nine-patch
+                    android:gravity="center"
+                    android:src="@drawable/op_switch_023"
+                    android:tint="@color/op_switch_thumb_material_light_selector"
+                    android:tintMode="multiply" />
+            </item>
+        </animation-list>
+    </transition>
+</animated-selector>

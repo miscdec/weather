@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="AqiView">
+        <attr name="aqiLayout" format="reference" />
+        <attr name="aqiType" format="string" />
+        <attr name="aqiValue" format="integer" min="0" />
+        <attr name="aqiViewStyle" format="reference" />
+    </declare-styleable>
+
+    <declare-styleable name="WeatherSingleInfoView">
+        <attr name="weatherIcon" format="reference" />
+        <attr name="weatherLevel" format="string" />
+        <attr name="weatherType" format="string" />
+    </declare-styleable>
+</resources>

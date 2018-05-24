@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@id/main_background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/weather_sun">
+
+    <FrameLayout
+        android:id="@id/current_opweather_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:transitionName="share_weather_view" />
+
+    <android.support.v4.view.ViewPager
+        android:id="@id/pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent" />
+
+    <android.support.v7.widget.Toolbar
+        android:id="@id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:fitsSystemWindows="true">
+
+        <ImageView
+            android:id="@id/toolbar_gps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/oneplus_contorl_layout_margin_left2"
+            android:src="@drawable/icon_gps" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/oneplus_contorl_layout_margin_left2"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@id/toolbar_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/current_location"
+                android:textColor="@color/transparent" />
+
+            <TextView
+                android:id="@id/toolbar_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/updated_fail"
+                android:textColor="@color/transparent" />
+        </LinearLayout>
+    </android.support.v7.widget.Toolbar>
+</FrameLayout>

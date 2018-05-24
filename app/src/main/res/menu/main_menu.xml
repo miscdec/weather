@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_warning"
+        android:icon="@drawable/ic_warn"
+        android:title="@string/menu_warning"
+        android:visible="false"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_cities"
+        android:icon="@drawable/ic_city"
+        android:title="@string/menu_city_list"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/popup_menu_share"
+        android:title="@string/share"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/popup_menu_settings"
+        android:title="@string/title_settings"
+        app:showAsAction="never" />
+</menu>

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.opweather.widget.RefreshWeatherUnitView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="80dp"
+        android:background="@android:color/transparent"
+        android:orientation="vertical">
+
+        <com.opweather.widget.WeatherScrollView
+            android:id="@+id/weather_scrollview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <com.opweather.widget.WeatherInfoFirstLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <FrameLayout
+                    android:id="@+id/current_opweather_overlay"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <LinearLayout
+                    android:id="@+id/opweather_info"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/current_opweather_overlay"
+                    android:onClick="clikUrl"
+                    android:orientation="vertical"
+                    android:paddingBottom="@dimen/oneplus_contorl_layout_margin_bottom2">
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/oneplus_contorl_layout_margin_left2">
+
+                        <TextView
+                            android:id="@+id/realfeel_temperature"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/nothing"
+                            android:textColor="@color/oneplus_contorl_text_color_primary_dark"
+                            android:textSize="@dimen/sp_76"
+                            android:textStyle="bold"
+                            android:transitionName="share_realfeel_temperature" />
+
+                        <ImageView
+                            android:id="@+id/current_weather_icon"
+                            android:layout_width="37dp"
+                            android:layout_height="37dp"
+                            android:layout_alignBottom="@id/realfeel_temperature"
+                            android:layout_marginBottom="@dimen/dimen_20"
+                            android:layout_marginLeft="@dimen/oneplus_contorl_layout_margin_left2"
+                            android:layout_toRightOf="@id/realfeel_temperature"
+                            android:contentDescription="@null" />
+                    </RelativeLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/oneplus_contorl_layout_margin_bottom2"
+                        android:layout_marginLeft="@dimen/dimen_16"
+                        android:background="@android:color/transparent"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <com.opweather.widget.AlwaysMarqueeTextView
+                            android:id="@+id/current_weather_type"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="marquee"
+                            android:marqueeRepeatLimit="marquee_forever"
+                            android:maxWidth="150.0dip"
+                            android:scrollHorizontally="true"
+                            android:singleLine="true"
+                            android:text="@string/nothing"
+                            android:textColor="@color/oneplus_contorl_text_color_primary_dark"
+                            android:textSize="@dimen/oneplus_contorl_text_size_title"
+                            android:transitionName="share_current_weather_type" />
+
+                        <TextView
+                            android:id="@+id/current_hight_temperature"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/oneplus_contorl_layout_margin_left1"
+                            android:text="@string/nothing"
+                            android:textColor="@color/oneplus_contorl_text_color_primary_dark"
+                            android:transitionName="share_current_hight_temperature" />
+
+                        <TextView
+                            android:id="@+id/cut_line"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/dimen_3"
+                            android:text="@string/gan"
+                            android:textColor="@color/oneplus_contorl_text_color_primary_dark" />
+
+                        <TextView
+                            android:id="@+id/current_low_temperature"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/dimen_3"
+                            android:text="@string/nothing"
+                            android:textColor="@color/oneplus_contorl_text_color_primary_dark"
+                            android:transitionName="share_current_low_temperature" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/accu_logo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/oneplus_contorl_layout_margin_left2"
+                        android:scaleType="fitXY"
+                        android:src="@mipmap/accu_logo"
+                        android:visibility="invisible" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/opweather_detail"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dimen_45"
+                    android:onClick="clikUrl"
+                    android:orientation="vertical"
+                    android:paddingBottom="@dimen/dimen_25"
+                    android:paddingLeft="@dimen/dimen_10"
+                    android:paddingRight="@dimen/dimen_16"
+                    android:visibility="gone">
+
+                    <com.opweather.widget.AqiView
+                        android:id="@+id/aqiView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/dimen_40"
+                        android:layout_marginTop="@dimen/dimen_40"
+                        android:onClick="clikUrl"
+                        app:aqiType="@string/aqi_level_na"
+                        app:aqiValue="51"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <com.opweather.widget.WeatherSingleInfoView
+                            android:id="@+id/single_wind_view"
+                            android:layout_width="0.0dip"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1.0"
+                            app:weatherIcon="@mipmap/ic_wind_level" />
+
+                        <com.opweather.widget.WeatherSingleInfoView
+                            android:id="@+id/single_bodytemp_view"
+                            android:layout_width="0.0dip"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="16.0dip"
+                            android:layout_weight="1.0"
+                            app:weatherIcon="@mipmap/ic_bodytemp_level"
+                            app:weatherType="@string/body_temp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/dimen_40"
+                        android:orientation="horizontal">
+
+                        <com.opweather.widget.WeatherSingleInfoView
+                            android:id="@+id/single_humidity_view"
+                            android:layout_width="0.0dip"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1.0"
+                            app:weatherIcon="@mipmap/ic_humidity_level" />
+
+                        <com.opweather.widget.WeatherSingleInfoView
+                            android:id="@+id/single_visibility_view"
+                            android:layout_width="0.0dip"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="16.0dip"
+                            android:layout_weight="1.0"
+                            app:weatherIcon="@mipmap/ic_visibility_level"
+                            app:weatherType="@string/body_temp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/dimen_40"
+                        android:orientation="horizontal">
+
+                        <com.opweather.widget.WeatherSingleInfoView
+                            android:id="@+id/single_uv_view"
+                            android:layout_width="0.0dip"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1.0"
+                            app:weatherIcon="@mipmap/ic_uv_levle" />
+
+                        <com.opweather.widget.WeatherSingleInfoView
+                            android:id="@+id/single_pressure_view"
+                            android:layout_width="0.0dip"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="16.0dip"
+                            android:layout_weight="1.0"
+                            app:weatherIcon="@mipmap/ic_pressure_level"
+                            app:weatherType="@string/body_temp" />
+                    </LinearLayout>
+
+                    <View
+                        android:id="@+id/hourForecastViewline1"
+                        android:layout_width="fill_parent"
+                        android:layout_height="1.0dip"
+                        android:layout_marginTop="@dimen/dimen_24"
+                        android:background="@mipmap/forcast_weather_line" />
+
+
+                </LinearLayout>
+
+            </com.opweather.widget.WeatherInfoFirstLayout>
+        </com.opweather.widget.WeatherScrollView>
+
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+</com.opweather.widget.RefreshWeatherUnitView>
