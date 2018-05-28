@@ -12,4 +12,9 @@
         <attr name="weatherLevel" format="string" />
         <attr name="weatherType" format="string" />
     </declare-styleable>
+
+    <declare-styleable name="UnderlinedTextView">
+        <attr name="tv_color" format="color" />
+        <attr name="strokeWidth" format="dimension" />
+    </declare-styleable>
 </resources>

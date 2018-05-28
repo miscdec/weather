@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="87.0dip"
+    android:height="87.0dip"
+    android:viewportHeight="87.0"
+    android:viewportWidth="87.0">
+    <group
+        android:translateX="-756.0"
+        android:translateY="-416.0">
+        <group
+            android:translateX="246.0"
+            android:translateY="260.0">
+            <group
+                android:translateX="510.0"
+                android:translateY="156.0">
+                <path
+                    android:fillColor="#ffeaeaea"
+                    android:pathData="M65.715516,37.5699267 C63.6317761,27.1512268 54.4814396,19.3296521 43.4889562,19.3296521 C34.7614076,19.3296521 27.1814259,24.2823094 23.4065346,31.5301007 C14.3165965,32.4964728 7.25,40.197251 7.25,49.5287823 C7.25,59.5246943 15.373566,67.6482604 25.3694781,67.6482604 L64.6283473,67.6482604 C72.9633073,67.6482604 79.7279124,60.8836552 79.7279124,52.5486953 C79.7279124,44.5761249 73.5370908,38.113511 65.715516,37.5699267 L65.715516,37.5699267 Z"
+                    android:strokeWidth="1.0" />
+                <path
+                    android:fillColor="#fff9f9f9"
+                    android:pathData="M70.9784475,53.3874542 C69.67611,46.8757667 63.9571498,41.9872825 57.0868476,41.9872825 C51.6321297,41.9872825 46.8946412,45.0826934 44.5353342,49.6125629 C38.8541228,50.2165455 34.4375,55.0295319 34.4375,60.8617389 C34.4375,67.109184 39.5147288,72.1864127 45.7621738,72.1864127 L70.2989671,72.1864127 C75.508317,72.1864127 79.7361953,67.9585345 79.7361953,62.7491845 C79.7361953,57.7663281 75.8669317,53.7271944 70.9784475,53.3874542 L70.9784475,53.3874542 Z"
+                    android:strokeWidth="1.0" />
+                <path
+                    android:pathData="M 0 0 H 87 V 87 H 0 V 0 Z"
+                    android:strokeWidth="1.0" />
+                <path
+                    android:pathData="M 0 0 H 87 V 87 H 0 V 0 Z"
+                    android:strokeWidth="1.0" />
+            </group>
+        </group>
+    </group>
+</vector>
