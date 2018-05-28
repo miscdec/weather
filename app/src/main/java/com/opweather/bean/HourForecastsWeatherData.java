@@ -6,7 +6,7 @@ public class HourForecastsWeatherData {
     private int weatherIconId;
     private int weatherId;
 
-    public HourForecastsWeatherData(String hourText, String temperature, int weatherIconId, int weatherId) {
+    public HourForecastsWeatherData(String hourText, int weatherId, int weatherIconId, String temperature) {
         this.hourText = hourText;
         this.temperature = temperature;
         this.weatherIconId = weatherIconId;
