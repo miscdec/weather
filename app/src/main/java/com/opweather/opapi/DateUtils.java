@@ -3,8 +3,7 @@ package com.opweather.opapi;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.opweather.widget.openglbase.RainSurfaceView;
-
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -94,4 +93,49 @@ public class DateUtils {
             return null;
         }
     }
+
+    public static boolean isTimeMillisDayTime(long time, String timeZoneOffset) {
+        boolean isDay = true;
+        try {
+            int hourTime = longTimeToHour(time, timeZoneOffset);
+            if (hourTime >= 18 || hourTime < 6) {
+                isDay = false;
+            }
+            return isDay;
+        } catch (NumberFormatException e) {
+            return true;
+        }
+    }
+
+    public static int longTimeToHour(long time, String timeZoneOffset) throws NumberFormatException {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH");
+        sdf.setTimeZone(getTimeZone(timeZoneOffset));
+        return Integer.valueOf(sdf.format(new Date(time))).intValue();
+    }
+
+    public static long stringToLong(String strTime) {
+        return stringToLong(strTime, "HH:mm:ss");
+    }
+
+    public static long stringToLong(String strTime, String format) {
+        Date date = stringToDate(strTime, format);
+        return date == null ? 0 : dateToLong(date);
+    }
+
+    public static Date stringToDate(String strTime, String formatType) {
+        if (TextUtils.isEmpty(formatType)) {
+            return null;
+        }
+        try {
+            return new SimpleDateFormat(formatType).parse(strTime);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static long dateToLong(Date date) {
+        return date.getTime();
+    }
+
 }

@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.opweather.R;
+import com.opweather.adapter.MainPagerAdapter;
 import com.opweather.db.CityWeatherDB;
 import com.opweather.util.ItemTouchHelper;
 
@@ -29,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView mToolbar_subtitle;
     private TextView mToolbar_title;
     private CityWeatherDB mCityWeatherDB;
+    private MainPagerAdapter mMainPagerAdapter;
 
     private final Handler mHandler = new Handler() {
         @Override
@@ -73,17 +75,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initViewPager() {
-        //String locationId = String.valueOf(PreferenceUtils.getInt(this, WidgetHelper.WIDGET_ID_PREFIX + widgetId,
-        // -1));
     }
 
     private void setupActionBar() {
-        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        mToolbar = findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
-        mToolbar_gps = (ImageView) findViewById(R.id.toolbar_gps);
+        mToolbar_gps = findViewById(R.id.toolbar_gps);
         mToolbar_gps.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
               /*  if (MainActivity.this.mMockButtonClickCount > MainActivity.this.MOCK_BUTTON_ENALBE_CONDITION) {
@@ -93,8 +93,8 @@ public class MainActivity extends AppCompatActivity {
                 }*/
             }
         });
-        mToolbar_title = (TextView) findViewById(R.id.toolbar_title);
-        mToolbar_subtitle = (TextView) findViewById(R.id.toolbar_subtitle);
+        mToolbar_title = findViewById(R.id.toolbar_title);
+        mToolbar_subtitle = findViewById(R.id.toolbar_subtitle);
     }
 
 

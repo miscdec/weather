@@ -1,6 +1,14 @@
 package com.opweather.bean;
 
+import com.opweather.opapi.DailyForecastsWeather;
+import com.opweather.opapi.DateUtils;
+import com.opweather.opapi.RootWeather;
+import com.opweather.opapi.Sun;
 import com.opweather.util.StringUtils;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class CityData {
     private String administrativeName;
@@ -16,6 +24,7 @@ public class CityData {
     private double longitude;
     private String name;
     private int provider;
+    private RootWeather mWeathers;
 
     public CityData() {
         this.name = StringUtils.EMPTY_STRING;
@@ -151,5 +160,40 @@ public class CityData {
 
     public void setProvider(int provider) {
         this.provider = provider;
+    }
+
+    public RootWeather getWeathers() {
+        return this.mWeathers;
+    }
+
+    public void setWeathers(RootWeather weathers) {
+        mWeathers = weathers;
+    }
+
+    public boolean isDay(RootWeather weather) throws IllegalAccessException {
+        if (weather == null || weather.getCurrentWeather() == null) {
+            return false;
+        }
+        String timeZone = weather.getCurrentWeather().getLocalTimeZone();
+        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss", Locale.US);
+        DailyForecastsWeather today = weather.getTodayForecast();
+        if (today == null) {
+            return DateUtils.isTimeMillisDayTime(System.currentTimeMillis(), timeZone);
+        }
+        Sun extra = today.getSun();
+        if (extra == null) {
+            return DateUtils.isTimeMillisDayTime(System.currentTimeMillis(), timeZone);
+        }
+        if (DateUtils.CHINA_OFFSET.equals(timeZone)) {
+            formatter.setTimeZone(DateUtils.getTimeZone(DateUtils.CHINA_OFFSET));
+        }
+        long sun = DateUtils.stringToLong(formatter.format(extra.getRise()));
+        long night = DateUtils.stringToLong(formatter.format(extra.getSet()));
+        long current = DateUtils.stringToLong(formatter.format(new Date()));
+        if (current < sun || current >= night || night <= sun) {
+            return ((current >= sun && current > night) || (current <= sun && current < night)) && night < sun;
+        } else {
+            return true;
+        }
     }
 }
