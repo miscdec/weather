@@ -19,6 +19,8 @@ import com.opweather.opapi.DateUtils;
 import com.opweather.opapi.Sun;
 import com.opweather.opapi.Temperature;
 import com.opweather.util.StringUtils;
+import com.opweather.util.SystemSetting;
+import com.opweather.util.WeatherResHelper;
 import com.opweather.widget.openglbase.RainSurfaceView;
 
 import java.util.ArrayList;
@@ -68,8 +70,7 @@ public class HourForecastView extends FrameLayout {
                     iconId = R.drawable.ic_sunset;
                     tempText = mContext.getString(R.string.sunset);
                 } else if (mSun == null || !checkSunTime(mSun.getRise(), time)) {
-                    iconId = WeatherResHelper.getWeatherIconResID(WeatherResHelper.weatherToResID(HourForecastView
-                            .this.mContext, weather.getWeatherId()));
+                    iconId = WeatherResHelper.getWeatherIconResID(WeatherResHelper.weatherToResID(mContext, weather.getWeatherId()));
                     Temperature temperature = weather.getTemperature();
                     if (temperature == null || temperature.getCentigradeValue() == Double.NaN) {
                         tempText = StringUtils.EMPTY_STRING;
@@ -81,8 +82,8 @@ public class HourForecastView extends FrameLayout {
                         } else {
                             temp = (int) Math.floor(temperature.getCentigradeValue());
                         }
-                        boolean cOrf = SystemSetting.getTemperature(HourForecastView.this.mContext);
-                        String tempUnit = cOrf ? "\u00b0" : "\u00b0";
+                        boolean cOrf = SystemSetting.getTemperature(mContext);
+                        String tempUnit = cOrf ? "¡ã" : "¡ã";
                         if (cOrf) {
                             f = (float) temp;
                         } else {
