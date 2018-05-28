@@ -83,7 +83,7 @@ public class HourForecastView extends FrameLayout {
                             temp = (int) Math.floor(temperature.getCentigradeValue());
                         }
                         boolean cOrf = SystemSetting.getTemperature(mContext);
-                        String tempUnit = cOrf ? "¡ã" : "¡ã";
+                        String tempUnit = cOrf ? "°" : "°";
                         if (cOrf) {
                             f = (float) temp;
                         } else {
