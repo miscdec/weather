@@ -3,6 +3,7 @@ package com.opweather.ui;
 import android.content.Context;
 import android.os.Handler;
 import android.support.v4.widget.AutoScrollHelper;
+import android.text.TextUtils;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -13,6 +14,7 @@ import com.opweather.R;
 import com.opweather.bean.CityData;
 import com.opweather.opapi.RootWeather;
 import com.opweather.ui.MainActivity.OnViewPagerScrollListener;
+import com.opweather.util.WeatherClientProxy;
 import com.opweather.util.WeatherResHelper;
 import com.opweather.widget.RefreshWeatherUnitView;
 import com.opweather.widget.RefreshWeatherUnitView.OnRefreshUnitListener;
@@ -30,6 +32,7 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
     private boolean mLoading;
     private boolean mMoved;
     private boolean mUp;
+    private boolean mSuccess;
     private TextView mToolbar_subTitle;
     private GestureDetector mGestureDetector;
     private OnUIChangedListener mUIListener;
@@ -50,6 +53,14 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
 
     public void setOnUIChangedListener(OnUIChangedListener onUIChangedListener) {
         mUIListener = onUIChangedListener;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    public int getIndex() {
+        return this.index;
     }
 
     class ScrollViewGestureListener extends GestureDetector.SimpleOnGestureListener {
@@ -87,6 +98,60 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
     public View getChild(int id) {
         return content.findViewById(id);
     }
+
+    public CityData getCityData() {
+        return mCityData;
+    }
+
+    public RootWeather getCurrentWeather() {
+        return mCityData.getWeathers();
+    }
+
+    public void setCurrentWeather(RootWeather currentWeather) {
+        mCityData.setWeathers(currentWeather);
+    }
+
+    public boolean isSuccess() {
+        return mSuccess;
+    }
+
+    public void setSuccess(boolean success) {
+        mSuccess = success;
+    }
+
+    public boolean isLoading() {
+        return mCityData != null ? mCityData.isLocated() : false;
+    }
+
+    public RootWeather getCityWeather() {
+        return mCityData != null ? mCityData.getWeathers() : null;
+    }
+
+    public void requestWeather(CityData city, CacheMode mode) {
+        if (city == null || TextUtils.isEmpty(city.getLocationId()) || city.getLocationId().equals("0")) {
+            if (this.mSwipeRefreshLayout != null && this.mSwipeRefreshLayout.isRefreshing()) {
+                this.mSwipeRefreshLayout.setRefreshing(false);
+            }
+            if (this.mUIListener != null) {
+                this.mUIListener.onError();
+                return;
+            }
+            return;
+        }
+        this.mLoading = true;
+        new WeatherClientProxy(this.mContext).setCacheMode(mode).requestWeatherInfo(city, new AnonymousClass_1(city));
+    }
+
+    public void updateWeatherInfo(CacheMode mode) {
+        refreshLocatindLayout(false);
+        initWeatherScrollView();
+        if (this.mCityData.isLocatedCity()) {
+            loadCurrentPositionWeatherInfo(mode);
+        } else {
+            requestWeather(this.mCityData, mode);
+        }
+    }
+
 
     @Override
     public void onScrolled(float a, int position) {
@@ -134,7 +199,8 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                 mUIListener.onScrollViewChange(alpha);
             }
         }
-        int marginMove = (int) ((((float) secondView.getHeight()) * mOffset) / ((float) moveToOffset));
+        int marginMove = (int) ((((float) secondView.getHeight()) * mOffset) / ((float)
+                moveToOffset));
         if (marginMove > secondView.getHeight()) {
             margin = secondView.getHeight();
         } else {
@@ -149,7 +215,8 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
             changePathMenuResource(false, mLoading);
             return;
         }
-        int weatherId = WeatherResHelper.weatherToResID(mContext, mCityData.getWeathers().getCurrentWeatherId());
+        int weatherId = WeatherResHelper.weatherToResID(mContext, mCityData.getWeathers()
+                .getCurrentWeatherId());
         if (weatherId == 9999) {
             weatherId = WeatherResHelper.weatherToResID(mContext, cacheWeatherID);
         }
@@ -183,7 +250,8 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
 
     public void resetTopViewTextColor() {
         if (this.mCityData.getWeathers() != null) {
-            int weatherId = WeatherResHelper.weatherToResID(this.mContext, this.mCityData.getWeathers().getCurrentWeatherId());
+            int weatherId = WeatherResHelper.weatherToResID(this.mContext, this.mCityData
+                    .getWeathers().getCurrentWeatherId());
             if (weatherId == 9999) {
                 weatherId = WeatherResHelper.weatherToResID(this.mContext, this.cacheWeatherID);
             }
@@ -193,7 +261,8 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
             if (data != null) {
                 isChinaCity = data.isFromChina();
             }
-            if (this.mOffset >= ((float) (isChinaCity ? (int) secondView.getY() : AMapException.CODE_AMAP_SUCCESS))) {
+            if (this.mOffset >= ((float) (isChinaCity ? (int) secondView.getY() : AMapException
+                    .CODE_AMAP_SUCCESS))) {
                 return;
             }
             if (needGrayColor(weatherId)) {
