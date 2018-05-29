@@ -1,6 +1,9 @@
 package com.opweather.opapi;
 
+import android.util.Log;
+
 import com.opweather.bean.HourForecastsWeather;
+import com.opweather.util.WeatherLog;
 
 import java.util.Date;
 import java.util.List;
@@ -37,7 +40,11 @@ public class RootWeather extends AbstractWeather {
     }
 
     public Date getDate() {
-        return this.mDate;
+        return mDate;
+    }
+
+    public void setDate(Date date) {
+        mDate = date;
     }
 
     public AqiWeather getAqiWeather() {
@@ -100,12 +107,75 @@ public class RootWeather extends AbstractWeather {
         return isFromOppoChina() || isFromSwa();
     }
 
+    public String getFutureLink() {
+        return mFutureLink;
+    }
+
+    public void setFutureLink(String futureLink) {
+        mFutureLink = futureLink;
+    }
+
+    public void setWeatherAlarms(List<Alarm> weatherAlarms) {
+        mWeatherAlarms = WeatherUtils.getAlarmsRes(weatherAlarms);
+    }
+
     public boolean getRequestIsSuccess() {
         return this.mSuccess;
     }
 
     public boolean setRequestIsSuccess(boolean isSuccess) {
-        this.mSuccess = isSuccess;
+        mSuccess = isSuccess;
         return isSuccess;
+    }
+
+    public void writeMemoryCache(WeatherRequest request, Cache cache) {
+        String key = getKeyForMemory(request);
+        RootWeather weather = cache.getFromMemCache(key);
+        if (weather == null) {
+            Log.d(TAG, "Write weather entity to memory, key = " + key);
+            cache.putToMemory(key, this);
+            return;
+        }
+        boolean z = false;
+        if (mAqiWeather != null) {
+            weather.setAqiWeather(mAqiWeather);
+            z = true;
+        }
+        if (mLifeIndexWeather != null) {
+            weather.setLifeIndexWeather(mLifeIndexWeather);
+            z = true;
+        }
+        if (mCurrentWeather != null) {
+            weather.setCurrentWeather(mCurrentWeather);
+            z = true;
+        }
+        if (mHourForecastsWeather != null) {
+            weather.setHourForecastsWeather(mHourForecastsWeather);
+            z = true;
+        }
+        if (this.mDailyForecastsWeather != null) {
+            weather.setDailyForecastsWeather(mDailyForecastsWeather);
+            z = true;
+        }
+        if (mFutureLink != null) {
+            weather.setFutureLink(mFutureLink);
+            z = true;
+        }
+        if (mWeatherAlarms != null) {
+            weather.setWeatherAlarms(mWeatherAlarms);
+            z = true;
+        }
+        if (mDate != null) {
+            weather.setDate(mDate);
+            z = true;
+        }
+        if (z) {
+            LogUtils.d(TAG, "Modify weather entity in memory, key = " + key, new Object[0]);
+            cache.putToMemory(key, weather);
+        }
+    }
+
+    private String getKeyForMemory(WeatherRequest request) {
+        return request.getMemCacheKey();
     }
 }
