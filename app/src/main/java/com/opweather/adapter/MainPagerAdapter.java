@@ -60,7 +60,7 @@ public class MainPagerAdapter extends PagerAdapter {
             wrapper = new ContentWrapper(mContext, city, mTextView);
             wrapper.setOnUIChangedListener(mOnUIChangedListener);
             mContentWrapper.put(position, new WeakReference(wrapper));
-            wrapper.updateWeatherInfo(CacheMode.LOAD_DEFAULT);
+            //wrapper.updateWeatherInfo(CacheMode.LOAD_DEFAULT);
         }
         return super.instantiateItem(container, position);
     }

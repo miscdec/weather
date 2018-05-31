@@ -127,30 +127,9 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
         return mCityData != null ? mCityData.getWeathers() : null;
     }
 
-    public void requestWeather(CityData city, CacheMode mode) {
-        if (city == null || TextUtils.isEmpty(city.getLocationId()) || city.getLocationId().equals("0")) {
-            if (this.mSwipeRefreshLayout != null && this.mSwipeRefreshLayout.isRefreshing()) {
-                this.mSwipeRefreshLayout.setRefreshing(false);
-            }
-            if (this.mUIListener != null) {
-                this.mUIListener.onError();
-                return;
-            }
-            return;
-        }
-        this.mLoading = true;
-        new WeatherClientProxy(this.mContext).setCacheMode(mode).requestWeatherInfo(city, new AnonymousClass_1(city));
-    }
 
-    public void updateWeatherInfo(CacheMode mode) {
-        refreshLocatindLayout(false);
-        initWeatherScrollView();
-        if (this.mCityData.isLocatedCity()) {
-            loadCurrentPositionWeatherInfo(mode);
-        } else {
-            requestWeather(this.mCityData, mode);
-        }
-    }
+
+
 
 
     @Override
