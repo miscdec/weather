@@ -1,9 +1,11 @@
 package com.opweather.opapi;
 
+import android.content.Context;
 import android.util.Log;
 
+import com.opweather.api.WeatherRequest;
+import com.opweather.api.helper.DateUtils;
 import com.opweather.bean.HourForecastsWeather;
-import com.opweather.util.WeatherLog;
 
 import java.util.Date;
 import java.util.List;
@@ -29,6 +31,45 @@ public class RootWeather extends AbstractWeather {
         super(areaCode, areaName, dataSource);
         mSuccess = true;
         mDate = new Date();
+    }
+
+    public String getCurrentWeatherText(Context context) {
+        return getCurrentWeather() != null ? getCurrentWeather().getWeatherText(context) : null;
+    }
+
+    public int getTodayCurrentTemp(RootWeather weather) {
+        return (weather.getCurrentWeather() == null || weather.getCurrentWeather().getTemperature() == null) ?
+                Integer.MIN_VALUE : (int) Math.floor(weather.getCurrentWeather()
+                .getTemperature().getCentigradeValue());
+    }
+
+    public DailyForecastsWeather getTodayForecast(RootWeather weather) {
+        return DailyForecastsWeather.getTodayForecast(weather.getDailyForecastsWeather(), DateUtils.getTimeZone
+                (weather.getCurrentWeather().getLocalTimeZone()));
+    }
+
+    public int getTodayLowTemperature(RootWeather weather) {
+        DailyForecastsWeather today = getTodayForecast(weather);
+        return (today == null || today.getMinTemperature() == null) ? Integer.MIN_VALUE :
+                (int) Math.floor(today.getMinTemperature().getCentigradeValue());
+    }
+
+    public int getTodayHighTemperature(RootWeather weather) {
+        DailyForecastsWeather today = getTodayForecast(weather);
+        return (today == null || today.getMaxTemperature() == null) ? Integer.MIN_VALUE : (int) Math.floor(today
+                .getMaxTemperature().getCentigradeValue());
+    }
+
+    public int getTodayCurrentTemp() {
+        return getTodayCurrentTemp(this);
+    }
+
+    public int getTodayHighTemperature() {
+        return getTodayHighTemperature(this);
+    }
+
+    public int getTodayLowTemperature() {
+        return getTodayLowTemperature(this);
     }
 
     public DailyForecastsWeather getTodayForecast() {

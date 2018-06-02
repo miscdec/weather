@@ -15,13 +15,11 @@ import com.opweather.adapter.HourForecastAdapter;
 import com.opweather.bean.HourForecastsWeather;
 import com.opweather.bean.HourForecastsWeatherData;
 import com.opweather.opapi.DailyForecastsWeather;
-import com.opweather.opapi.DateUtils;
 import com.opweather.opapi.Sun;
 import com.opweather.opapi.Temperature;
 import com.opweather.util.StringUtils;
 import com.opweather.util.SystemSetting;
 import com.opweather.util.WeatherResHelper;
-import com.opweather.widget.openglbase.RainSurfaceView;
 
 import java.util.ArrayList;
 import java.util.Calendar;

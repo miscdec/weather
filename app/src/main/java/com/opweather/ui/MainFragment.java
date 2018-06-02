@@ -27,7 +27,7 @@ public class MainFragment extends Fragment implements MainContract.View {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mPresenter = new MainPresenter(this);
-        mPresenter.getCityWeatherData();
+        mPresenter.getCityWeatherData(getContext());
     }
 
     @Nullable

@@ -1,5 +1,7 @@
 package com.opweather.opapi;
 
+import com.opweather.api.parser.ParseException;
+
 public interface ResponseParser {
 
     interface WeatherBuilder {

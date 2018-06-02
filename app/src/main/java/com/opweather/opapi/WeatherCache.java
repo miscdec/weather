@@ -6,16 +6,11 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
-import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v4.util.LruCache;
 import android.util.Log;
 
-import com.opweather.util.StringUtils;
-
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 

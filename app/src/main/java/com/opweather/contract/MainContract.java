@@ -1,5 +1,6 @@
 package com.opweather.contract;
 
+import android.content.Context;
 import com.opweather.base.IBasePresenter;
 import com.opweather.base.IBaseView;
 import com.opweather.bean.CityWeather;
@@ -23,7 +24,7 @@ public interface MainContract {
 
     interface Presenter extends IBasePresenter<View>{
 
-        void getCityWeatherData();
+        void getCityWeatherData(Context context);
 
     }
 }

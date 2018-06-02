@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import okhttp3.OkHttpClient;
+import okhttp3.internal.http.BridgeInterceptor;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
@@ -15,7 +16,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
 
-    public static final String HOST = "https://free-api.heweather.com/s6/weather/";
+    //public static final String HOST = "https://free-api.heweather.com/s6/weather/";
+    public static final String HOST = "http://i1.weather.oppomobile.com/chinaWeather/";
     private static ApiService apiService;
     protected static final Object monitor = new Object();
     private static Retrofit retrofit;
@@ -29,9 +31,8 @@ public class RetrofitClient {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
-
+        httpClient.addInterceptor(new GzipRequestInterceptor());
         httpClient.addInterceptor(logging);
-
         Gson gson = new GsonBuilder()
                 .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
                 .create();

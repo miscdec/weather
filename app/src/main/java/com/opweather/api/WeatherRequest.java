@@ -1,7 +1,10 @@
-package com.opweather.opapi;
+package com.opweather.api;
 
 import android.support.v7.widget.helper.ItemTouchHelper;
 
+import com.opweather.opapi.ResponseParser;
+import com.opweather.opapi.RootWeather;
+import com.opweather.opapi.WeatherException;
 import com.opweather.opapi.WeatherResponse.CacheListener;
 import com.opweather.opapi.WeatherResponse.NetworkListener;
 import com.opweather.util.Validate;

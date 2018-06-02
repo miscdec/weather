@@ -1,11 +1,15 @@
 package com.opweather.presenter;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.opweather.api.RetrofitClient;
+import com.opweather.api.helper.NetworkHelper;
+import com.opweather.api.impl.WeatherRequestExecuter;
 import com.opweather.base.BasePresenter;
 import com.opweather.bean.CityWeather;
 import com.opweather.contract.MainContract;
+import com.opweather.util.WeatherClientProxy;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
@@ -27,8 +31,8 @@ public class MainPresenter extends BasePresenter<MainContract.View> implements M
     }
 
     @Override
-    public void getCityWeatherData() {
-        RetrofitClient.getRetrofitClientInstance().getCityWeatherData()
+    public void getCityWeatherData(Context context) {
+        /*RetrofitClient.getRetrofitClientInstance().getCityWeatherData()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<CityWeather>() {
@@ -42,7 +46,9 @@ public class MainPresenter extends BasePresenter<MainContract.View> implements M
                     public void accept(Throwable throwable) throws Exception {
                         Log.d("1111", "accept: " + throwable.getMessage());
                     }
-                });
+                });*/
+        new WeatherClientProxy(context).setCacheMode(C).requestWeatherInfo(ConnectionResult.INTERRUPTED, city, new
+                AnonymousClass_2(context, city, isCheckAlarm));
     }
 
     @Override

@@ -5,9 +5,6 @@ import android.os.Parcelable;
 
 import java.util.Date;
 
-/**
- * Created by leeyh on 5/14.
- */
 public abstract class Alarm extends AbstractWeather implements Parcelable {
 
     public Alarm(String areaCode, String areaName, String dataSource) {

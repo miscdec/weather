@@ -3,6 +3,7 @@ package com.opweather.opapi;
 import android.content.Context;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
+import com.opweather.api.WeatherRequest;
 import com.opweather.widget.openglbase.RainSurfaceView;
 
 public class WeatherResponse {
