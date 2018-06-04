@@ -1,5 +1,6 @@
 package com.opweather.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -10,6 +11,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -127,4 +129,24 @@ public class MainActivity extends AppCompatActivity {
             mViewPager.getChildAt(i).invalidate();
         }
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.action_cities:
+                gotoCityList();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void gotoCityList() {
+        startActivityForResult(new Intent(this, CityListActivity.class), 1);
+        overridePendingTransition(R.anim.citylist_translate_up, R.anim.alpha_out);
+    }
+
+    public void clikUrl(View view){
+
+    }
+
 }

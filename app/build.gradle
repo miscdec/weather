@@ -38,4 +38,6 @@ dependencies {
     implementation 'com.amap.api:search:6.1.0'
     implementation 'com.mcxiaoke.volley:library:1.0.19'
     implementation 'com.google.android.gms:play-services:12.0.1'
+    implementation 'com.facebook.rebound:rebound:0.3.8'
+    implementation 'com.nineoldandroids:library:2.4.0'
 }
