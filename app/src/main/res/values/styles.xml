@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <style name="AppTheme.ActionBar" parent="@style/DeviceDefault">
+        <item name="android:windowBackground">@color/settings_bkg</item>
+        <item name="android:colorPrimary">@color/weather_sun</item>
+        <item name="android:colorPrimaryDark">@color/weather_sun</item>
+    </style>
+
+    <style name="DeviceDefault" pparent="@android:style/Theme.Material.Light">
+
+    </style>
+
     <style name="AppTheme.NoActionBar" parent="@style/Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowBackground">@color/weather_sun</item>
         <item name="android:windowContentTransitions">true</item>
@@ -11,6 +21,8 @@
         <item name="android:windowLightStatusBar">true</item>
         <item name="actionOverflowButtonStyle">@style/OverflowButtonStyle</item>
     </style>
+
+
 
     <style name="OverflowButtonStyle" parent="@style/Widget.AppCompat.ActionButton.Overflow">
         <item name="android:src">@drawable/more_setting</item>

@@ -2,10 +2,6 @@ package com.opweather.bean;
 
 import java.util.List;
 
-/**
- * Created by lyh on 3/12.
- */
-
 public class CityWeather {
 
 

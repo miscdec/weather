@@ -26,6 +26,7 @@ import android.widget.Toast;
 import com.opweather.R;
 import com.opweather.adapter.CityListSearchAdapter;
 import com.opweather.bean.CommonCandidateCity;
+import com.opweather.constants.WeatherDescription;
 import com.opweather.db.CityWeatherDB;
 import com.opweather.provider.CitySearchProvider;
 import com.opweather.starwar.StarWarUtils;
@@ -48,9 +49,8 @@ public class CitySearchActivity extends BaseActivity {
     private static final int SEARCH_PROVIDER_CHINA = 4096;
     private static final int SEARCH_PROVIDER_FOREIGN = 2048;
     private static final String TAG = CityListSearchAdapter.class.getSimpleName();
-    ;
     private CityListSearchAdapter adapter;
-    private List<CommonCandidateCity> citySearchResult;
+    private List<CommonCandidateCity> citySearchResult = new ArrayList<>();
     private CitySearchProvider mChinaCitySearProvider;
     private int mCityCount;
     private ClearableEditText mCityKeyword;
@@ -58,39 +58,35 @@ public class CitySearchActivity extends BaseActivity {
     private CitySearchProvider mForeignCitySearProvider;
     private Handler mHandler;
     private TextView mNoSearchView;
-    private BroadcastReceiver mReceiver;
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals("android.net.conn.CONNECTIVITY_CHANGE")) {
+                NetworkInfo info = ((ConnectivityManager) getApplicationContext()
+                        .getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
+                if (info == null || !info.isAvailable()) {
+                    mNoSearchView.setText(R.string.no_network_statu);
+                    mNoSearchView.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable
+                            .no_network), null, null);
+                    return;
+                }
+                if (noConnectionDialog != null && noConnectionDialog.isShowing()) {
+                    try {
+                        noConnectionDialog.dismiss();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                mNoSearchView.setText(R.string.no_search_data);
+                mNoSearchView.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable
+                        .no_search_icon), null, null);
+            }
+        }
+    };
     private ListView mSearchListView;
     private Dialog noConnectionDialog;
 
-    public CitySearchActivity() {
-        citySearchResult = new ArrayList<>();
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals("android.net.conn.CONNECTIVITY_CHANGE")) {
-                    NetworkInfo info = ((ConnectivityManager) getApplicationContext()
-                            .getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
-                    if (info == null || !info.isAvailable()) {
-                        mNoSearchView.setText(R.string.no_network_statu);
-                        mNoSearchView.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable
-                                .no_network), null, null);
-                        return;
-                    }
-                    if (noConnectionDialog != null && noConnectionDialog.isShowing()) {
-                        try {
-                            noConnectionDialog.dismiss();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    mNoSearchView.setText(R.string.no_search_data);
-                    mNoSearchView.setCompoundDrawablesWithIntrinsicBounds(null, context.getDrawable(R.drawable
-                            .no_search_icon), null, null);
-                }
-            }
-        };
-    }
-
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.search_citylist_activity);
@@ -190,21 +186,26 @@ public class CitySearchActivity extends BaseActivity {
             bar.setDisplayHomeAsUpEnabled(true);
             bar.setCustomView(actionbarLayout);
             mCityKeyword = (ClearableEditText) actionbarLayout.findViewById(R.id.search_bar_input_field);
+            mCityKeyword.setFocusable(true);
+            mCityKeyword.setFocusableInTouchMode(true);
+            mCityKeyword.requestFocus();
         }
-        mNoSearchView = (TextView) findViewById(R.id.no_search_view);
         mCityKeyword.addTextChangedListener(new TextWatcher() {
+            @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
 
+            @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
 
+            @Override
             public void afterTextChanged(Editable s) {
                 String searchText = s.toString();
-                if (searchText.equals("\u4e00\u52a0\u96fe")) {
-                    /*Intent intent = new Intent(CitySearchActivity.this, ShowWeatherActivity.class);
+                if (searchText.equals("一加雾")) {
+                    Intent intent = new Intent(CitySearchActivity.this, ShowWeatherActivity.class);
                     intent.putExtra("type", WeatherDescription.WEATHER_DESCRIPTION_FOG);
-                    startActivity(intent);*/
+                    startActivity(intent);
                 } else if (searchText.length() < 1) {
                 } else {
                     if (isNetworkConnected()) {
@@ -222,6 +223,7 @@ public class CitySearchActivity extends BaseActivity {
                 }
             }
         });
+        mNoSearchView = (TextView) findViewById(R.id.no_search_view);
         mSearchListView = (ListView) findViewById(R.id.search_list);
         mSearchListView.setOnItemClickListener(new OnItemClickListener() {
             @Override
@@ -252,7 +254,7 @@ public class CitySearchActivity extends BaseActivity {
         });
         mCityKeyword.setText(StringUtils.EMPTY_STRING);
         if (mCityKeyword.requestFocus()) {
-            ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(this.mCityKeyword, 1);
+            ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(mCityKeyword, InputMethodManager.SHOW_FORCED);
         }
     }
 
@@ -260,7 +262,7 @@ public class CitySearchActivity extends BaseActivity {
         if (item.getItemId() != android.R.id.home) {
             return super.onOptionsItemSelected(item);
         }
-        hideSoftKeyboard(this.mCityKeyword);
+        hideSoftKeyboard(mCityKeyword);
         finish();
         overridePendingTransition(R.anim.alpha_in, R.anim.citylist_translate_down);
         return true;
@@ -271,20 +273,24 @@ public class CitySearchActivity extends BaseActivity {
                 .getWindowToken(), 0);
     }
 
+    @Override
     public void onBackPressed() {
         finish();
         overridePendingTransition(R.anim.alpha_in, R.anim.citylist_translate_down);
         super.onBackPressed();
     }
 
+    @Override
     protected void onResume() {
         super.onResume();
     }
 
+    @Override
     public void onStop() {
         super.onStop();
     }
 
+    @Override
     public void onDestroy() {
         super.onDestroy();
         unRegisterReceiver();

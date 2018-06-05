@@ -30,7 +30,8 @@ public class OppoForeignRequest extends WeatherRequest {
     }
 
     public ResponseParser getResponseParser() {
-        return new OppoForeignResponseParser(this);
+        //return new OppoForeignResponseParser(this);
+        return null;
     }
 
     public String getMemCacheKey() {

@@ -19,7 +19,7 @@ import com.opweather.util.StringUtils;
 import com.opweather.widget.openglbase.RainSurfaceView;
 
 
-public class ClearableEditText extends AppCompatEditText {
+public class ClearableEditText extends EditText {
     private static final float DEFAULT_CLEAR_BUTTON_PADDING = 5.0f;
     private static final int DEFAULT_CLEAR_BUTTON_POSITION = 2;
     private static final float DEFAULT_CLEAR_BUTTON_SIZE = 16.0f;
@@ -54,7 +54,8 @@ public class ClearableEditText extends AppCompatEditText {
                 int top = (((getHeight() + getPaddingTop()) - getPaddingBottom()) - rectHeight) / 2;
                 int right = left + rectWidth;
                 int bottom = top + rectHeight;
-                if (e.getX() > ((float) left) && e.getX() < ((float) right) && e.getY() > ((float) top) && e.getY() < ((float) bottom)) {
+                if (e.getX() > ((float) left) && e.getX() < ((float) right) && e.getY() > (
+                        (float) top) && e.getY() < ((float) bottom)) {
                     clearContent();
                 }
             }
@@ -81,7 +82,7 @@ public class ClearableEditText extends AppCompatEditText {
         }
     }
 
-    public static interface OnContentClearListener {
+    public interface OnContentClearListener {
         void onContentClear(ClearableEditText clearableEditText);
     }
 
@@ -90,32 +91,39 @@ public class ClearableEditText extends AppCompatEditText {
     }
 
     public ClearableEditText(Context context, AttributeSet attrs) {
-        this(context, attrs, 2130968682);
+        this(context, attrs, 0);
     }
 
     public ClearableEditText(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs);
+        super(context, attrs, defStyleAttr);
         mClearButtonAlwaysVisible = false;
         float density = context.getResources().getDisplayMetrics().density;
-        TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.ClearableEditText, defStyleAttr, R.style.ClearableEditText);
-        mClearButtonPosition = a.getInt(R.styleable.ClearableEditText_clearButtonPosition, POSITION_END);
+        TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable
+                .ClearableEditText, defStyleAttr, R.style.ClearableEditText);
+        mClearButtonPosition = a.getInt(R.styleable.ClearableEditText_clearButtonPosition,
+                POSITION_END);
         if (!(mClearButtonPosition == 0 || mClearButtonPosition == 2)) {
             mClearButtonPosition = 2;
         }
-        mClearButtonAlwaysVisible = a.getBoolean(R.styleable.ClearableEditText_clearButtonAlwaysVisible, false);
-        mClearButtonPadding = a.getDimensionPixelSize(R.styleable.ClearableEditText_clearButtonPadding, (int) (5.0f * density));
+        mClearButtonAlwaysVisible = a.getBoolean(R.styleable
+                .ClearableEditText_clearButtonAlwaysVisible, false);
+        mClearButtonPadding = a.getDimensionPixelSize(R.styleable
+                .ClearableEditText_clearButtonPadding, (int) (5.0f * density));
         mClearButtonDrawable = a.getDrawable(R.styleable.ClearableEditText_clearButtonDrawable);
         if (mClearButtonDrawable == null) {
             mClearButtonDrawable = getResources().getDrawable(DEFAULT_CLEAR_DRAWABLE_ID);
         }
-        mClearButtonWidth = a.getDimensionPixelSize(R.styleable.ClearableEditText_clearButtonWidth, -1);
-        mClearButtonHeight = a.getDimensionPixelSize(R.styleable.ClearableEditText_clearButtonHeight, -1);
+        mClearButtonWidth = a.getDimensionPixelSize(R.styleable
+                .ClearableEditText_clearButtonWidth, -1);
+        mClearButtonHeight = a.getDimensionPixelSize(R.styleable
+                .ClearableEditText_clearButtonHeight, -1);
         if (mClearButtonWidth == -1 || mClearButtonHeight == -1) {
             int i = (int) (16.0f * density);
             mClearButtonHeight = i;
             mClearButtonWidth = i;
         }
-        mClearButtonDrawable.setBounds(POSITION_START, POSITION_START, mClearButtonWidth, mClearButtonHeight);
+        mClearButtonDrawable.setBounds(POSITION_START, POSITION_START, mClearButtonWidth,
+                mClearButtonHeight);
         a.recycle();
         mGestureDetector = new GestureDetector(context, new ClearButtonGestureListener());
         addTextChangedListener(new ClearableTextWatcher());
@@ -133,14 +141,14 @@ public class ClearableEditText extends AppCompatEditText {
 
     private void clearContent() {
         setText(StringUtils.EMPTY_STRING);
-        setClearButtonVisible(Boolean.valueOf(false));
+        setClearButtonVisible(false);
         if (mOnContentClearListener != null) {
             mOnContentClearListener.onContentClear(this);
         }
     }
 
     private void setClearButtonVisible(Boolean visible) {
-        if (visible.booleanValue() || mClearButtonAlwaysVisible) {
+        if (visible || mClearButtonAlwaysVisible) {
             setCompoundDrawablePadding(mClearButtonPadding);
             setClearButton(mClearButtonPosition, mClearButtonDrawable);
             return;
@@ -172,7 +180,7 @@ public class ClearableEditText extends AppCompatEditText {
 
     public void setClearButtonAlwaysVisible(boolean visible) {
         mClearButtonAlwaysVisible = visible;
-        setClearButtonVisible(Boolean.valueOf(true));
+        setClearButtonVisible(true);
     }
 
     public void setOnContentClearListener(OnContentClearListener l) {
@@ -182,9 +190,9 @@ public class ClearableEditText extends AppCompatEditText {
     protected void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
         super.onFocusChanged(focused, direction, previouslyFocusedRect);
         if (!focused || getText().toString().length() == 0) {
-            setClearButtonVisible(Boolean.valueOf(false));
+            setClearButtonVisible(false);
         } else {
-            setClearButtonVisible(Boolean.valueOf(true));
+            setClearButtonVisible(true);
         }
     }
 

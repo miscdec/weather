@@ -74,7 +74,7 @@ public class OppoForeignResponseParser extends OppoResponseParser {
                 for (DailyForecastsHolder holder : this.itemList) {
                     if (holder.date != null) {
                         List<DailyForecastsWeather> list = dailyForecastsWeather;
-                        list.add(new OppoForeignDailyForecastsWeather(this.areaCode, this.areaName, OppoForeignRequest.DATA_SOURCE_NAME, holder.dayWeatherId, holder.nightWeatherId, holder.date, new Temperature(this.areaCode, this.areaName, OppoForeignRequest.DATA_SOURCE_NAME, holder.minTemperature, WeatherUtils.centigradeToFahrenheit(holder.minTemperature)), new Temperature(this.areaCode, this.areaName, OppoForeignRequest.DATA_SOURCE_NAME, holder.maxTemperature, WeatherUtils.centigradeToFahrenheit(holder.maxTemperature)), null));
+                        //list.add(new OppoForeignDailyForecastsWeather(this.areaCode, this.areaName, OppoForeignRequest.DATA_SOURCE_NAME, holder.dayWeatherId, holder.nightWeatherId, holder.date, new Temperature(this.areaCode, this.areaName, OppoForeignRequest.DATA_SOURCE_NAME, holder.minTemperature, WeatherUtils.centigradeToFahrenheit(holder.minTemperature)), new Temperature(this.areaCode, this.areaName, OppoForeignRequest.DATA_SOURCE_NAME, holder.maxTemperature, WeatherUtils.centigradeToFahrenheit(holder.maxTemperature)), null));
                     }
                 }
             }
@@ -95,7 +95,7 @@ public class OppoForeignResponseParser extends OppoResponseParser {
                 if (DateUtils.isSameDay(System.currentTimeMillis(), holder.date.getTime(), TimeZone.getTimeZone("GMT+08:00"))) {
                     double ct = (holder.maxTemperature + holder.minTemperature) / 2.0d;
                     String str = this.areaCode;
-                    return new OppoForeignCurrentWeather(str, this.areaName, OppoForeignRequest.DATA_SOURCE_NAME, holder.currentWeatherId, holder.date, new Temperature(this.areaCode, this.areaName, OppoForeignRequest.DATA_SOURCE_NAME, ct, WeatherUtils.centigradeToFahrenheit(ct)), Integer.MIN_VALUE, null, holder.currentUVIndex, holder.currentUVIndexText);
+                    //return new OppoForeignCurrentWeather(str, this.areaName, OppoForeignRequest.DATA_SOURCE_NAME, holder.currentWeatherId, holder.date, new Temperature(this.areaCode, this.areaName, OppoForeignRequest.DATA_SOURCE_NAME, ct, WeatherUtils.centigradeToFahrenheit(ct)), Integer.MIN_VALUE, null, holder.currentUVIndex, holder.currentUVIndexText);
                 }
             }
             return null;
@@ -151,9 +151,9 @@ public class OppoForeignResponseParser extends OppoResponseParser {
                         }
                         if (eventType == 2 && parser.getName().equalsIgnoreCase("city_id")) {
                             builder.areaCode = parser.nextText();
-                        } else if (eventType == 2 && parser.getName().equalsIgnoreCase(WeatherWarningActivity.INTENT_PARA_CITY)) {
+                        } /*else if (eventType == 2 && parser.getName().equalsIgnoreCase(WeatherWarningActivity.INTENT_PARA_CITY)) {
                             builder.areaName = parser.nextText();
-                        } else if (eventType != 2) {
+                        }*/ else if (eventType != 2) {
                             continue;
                         } else if (parser.getName().equalsIgnoreCase("items")) {
                             eventType = parser.next();
@@ -168,7 +168,7 @@ public class OppoForeignResponseParser extends OppoResponseParser {
                                         if (eventType == 3 && parser.getName().equalsIgnoreCase("item")) {
                                             break;
                                         }
-                                        if (eventType == 2 && parser.getName().equalsIgnoreCase("date")) {
+                                        /*if (eventType == 2 && parser.getName().equalsIgnoreCase("date")) {
                                             holder.date = DateUtils.parseOppoforcastDate(parser.nextText());
                                         } else if (eventType == 2 && parser.getName().equalsIgnoreCase("descr")) {
                                             holder.currentWeatherId = WeatherUtils.oppoForeignWeatherTextToWeatherId(parser.nextText());
@@ -184,7 +184,7 @@ public class OppoForeignResponseParser extends OppoResponseParser {
                                             holder.nightWeatherId = WeatherUtils.oppoForeignWeatherTextToWeatherId(parser.nextText());
                                         } else if (eventType == 2 && parser.getName().equalsIgnoreCase("temp_low")) {
                                             holder.minTemperature = NumberUtils.valueToDouble(parser.nextText());
-                                        }
+                                        }*/
                                         eventType = parser.next();
                                     }
                                     builder.add(holder);
@@ -215,5 +215,6 @@ public class OppoForeignResponseParser extends OppoResponseParser {
                 }
             }
         }
+        return null;
     }
 }

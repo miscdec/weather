@@ -123,7 +123,8 @@ public class WeatherClientProxy {
         if (city.getProvider() == 4096) {
             return new OppoChinaRequest(47, city.getLocationId(), null, null);
         }
-        return city.getProvider() == 8192 ? new OppoForeignRequest(47, city.getLocationId(), null, null) : new
-                AccuRequest(47, city.getLocationId(), null, null);
+        /*return city.getProvider() == 8192 ? new OppoForeignRequest(47, city.getLocationId(), null, null) : new
+                AccuRequest(47, city.getLocationId(), null, null);*/
+        return null;
     }
 }

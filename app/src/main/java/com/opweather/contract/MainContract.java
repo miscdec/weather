@@ -4,6 +4,7 @@ import android.content.Context;
 import com.opweather.base.IBasePresenter;
 import com.opweather.base.IBaseView;
 import com.opweather.bean.CityWeather;
+import com.opweather.bean.WeatherData1;
 
 import io.reactivex.Observable;
 
@@ -18,7 +19,7 @@ public interface MainContract {
 
     interface View extends IBaseView {
 
-       void showCityWeatherData(CityWeather cityWeather);
+       void showCityWeatherData(WeatherData1 cityWeather);
 
     }
 

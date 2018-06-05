@@ -3,15 +3,22 @@ package com.opweather.ui;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.android.gms.location.DetectedActivity;
 import com.opweather.R;
 import com.opweather.bean.CityWeather;
+import com.opweather.bean.WeatherData;
+import com.opweather.bean.WeatherData1;
 import com.opweather.contract.MainContract;
+import com.opweather.opapi.RootWeather;
 import com.opweather.presenter.MainPresenter;
+import com.opweather.widget.HourForecastView;
+import com.opweather.widget.RefreshWeatherUnitView;
 
 /**
  * Created by leeyh on 3/14.
@@ -22,6 +29,9 @@ public class MainFragment extends Fragment implements MainContract.View {
     private MainPresenter mPresenter;
     private TextView mTemperatureTv;
     private CityWeather mCityWeather;
+    private TextView mRealfeelTemperature;
+    private RefreshWeatherUnitView content;
+    private RefreshWeatherUnitView mContent;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -34,13 +44,14 @@ public class MainFragment extends Fragment implements MainContract.View {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle
             savedInstanceState) {
-        View view = inflater.inflate(R.layout.weather_info_layout, container, false);
-        return view;
+        mContent = (RefreshWeatherUnitView) inflater.inflate(R.layout.weather_info_layout, container, false);
+        return mContent;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         mTemperatureTv = view.findViewById(R.id.temperature_tv);
+        mRealfeelTemperature = view.findViewById(R.id.realfeel_temperature);
     }
 
     @Override
@@ -54,8 +65,26 @@ public class MainFragment extends Fragment implements MainContract.View {
     }
 
     @Override
-    public void showCityWeatherData(CityWeather cityWeather) {
-        mTemperatureTv.setText(cityWeather.getHeWeather6().get(0).getDaily_forecast().get(0).getTmp_max());
-        mTemperatureTv.setCompoundDrawables(null, null, getResources().getDrawable(R.mipmap.ic_200), null);
+    public void showCityWeatherData(WeatherData1 weatherData) {
+        mRealfeelTemperature.setText(weatherData.getInfo().getCurrent().getTemp());
+        Log.d("1111", "showCityWeatherData: " + weatherData.getInfo().getCurrent().getTemp());
     }
+
+    public void updateHourForecastView(RootWeather data, String timeZone) {
+        if (data == null || data.getHourForecastsWeather() == null || data.getHourForecastsWeather().size() <= 0) {
+            getChild(R.id.hourForecastView).setVisibility(View.GONE);
+            getChild(R.id.hourForecastViewline1).setVisibility(View.GONE);
+            getChild(R.id.hourForecastViewline2).setVisibility(View.GONE);
+            return;
+        }
+        getChild(R.id.hourForecastView).setVisibility(View.VISIBLE);
+        getChild(R.id.hourForecastViewline1).setVisibility(View.VISIBLE);
+        getChild(R.id.hourForecastViewline2).setVisibility(View.VISIBLE);
+        ((HourForecastView) getChild(R.id.hourForecastView)).updateForecastData(data.getHourForecastsWeather(), data.getDailyForecastsWeather(), 1, timeZone);
+    }
+
+    public View getChild(int id) {
+        return mContent.findViewById(id);
+    }
+
 }
