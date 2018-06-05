@@ -3,6 +3,11 @@ package com.opweather.presenter;
 import android.content.Context;
 import android.util.Log;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.Volley;
+import com.opweather.api.GZipRequest;
 import com.opweather.api.RetrofitClient;
 import com.opweather.api.helper.NetworkHelper;
 import com.opweather.api.impl.WeatherRequestExecuter;
@@ -47,8 +52,26 @@ public class MainPresenter extends BasePresenter<MainContract.View> implements M
                         Log.d("1111", "accept: " + throwable.getMessage());
                     }
                 });*/
-        new WeatherClientProxy(context).setCacheMode(C).requestWeatherInfo(ConnectionResult.INTERRUPTED, city, new
-                AnonymousClass_2(context, city, isCheckAlarm));
+       /* new WeatherClientProxy(context).setCacheMode(C).requestWeatherInfo(ConnectionResult.INTERRUPTED, city, new
+                AnonymousClass_2(context, city, isCheckAlarm));*/
+       String url = "http://i1.weather.oppomobile" +
+               ".com/chinaWeather/smChinaWeathersGz/2018060321/101281701-2018060321.json.gz";
+        RequestQueue mRequestQueue;
+        mRequestQueue = Volley.newRequestQueue(context.getApplicationContext());
+        GZipRequest request = new GZipRequest(url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.d("1111","response: " + response);
+                //mView.showCityWeatherData(cityWeather);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("1111","error: " + error.toString());
+            }
+        });
+        mRequestQueue.add(request);
+
     }
 
     @Override

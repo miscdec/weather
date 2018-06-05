@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView mToolbar_title;
     private CityWeatherDB mCityWeatherDB;
     private MainPagerAdapter mMainPagerAdapter;
+    public static boolean MOCK_TEST_FLAG = false;
 
     private final Handler mHandler = new Handler() {
         @Override

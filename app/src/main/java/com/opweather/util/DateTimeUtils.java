@@ -210,7 +210,7 @@ public class DateTimeUtils {
         return new long[]{sunrise, sunset};
     }
 
-    public static String getDayString(Context context, int day) {s
+    public static String getDayString(Context context, int day) {
         Resources r = context.getResources();
         switch (day) {
             case RainSurfaceView.RAIN_LEVEL_NORMAL_RAIN:

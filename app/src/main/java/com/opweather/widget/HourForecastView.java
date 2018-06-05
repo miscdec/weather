@@ -12,11 +12,13 @@ import android.widget.FrameLayout;
 
 import com.opweather.R;
 import com.opweather.adapter.HourForecastAdapter;
+import com.opweather.api.helper.DateUtils;
 import com.opweather.bean.HourForecastsWeather;
 import com.opweather.bean.HourForecastsWeatherData;
 import com.opweather.opapi.DailyForecastsWeather;
 import com.opweather.opapi.Sun;
 import com.opweather.opapi.Temperature;
+import com.opweather.util.DateTimeUtils;
 import com.opweather.util.StringUtils;
 import com.opweather.util.SystemSetting;
 import com.opweather.util.WeatherResHelper;
@@ -143,10 +145,10 @@ public class HourForecastView extends FrameLayout {
             return StringUtils.EMPTY_STRING;
         }
         if (mSun == null || !checkSunTime(mSun.getRise(), time)) {
-            return (mSun == null || !checkSunTime(mSun.getSet(), time)) ? DateUtils.DateTimeToHourMinute(time,
-                    null) : DateUtils.DateTimeToHourMinute(mSun.getSet(), null);
+            return (mSun == null || !checkSunTime(mSun.getSet(), time)) ? DateTimeUtils.DateTimeToHourMinute(time,
+                    null) : DateTimeUtils.DateTimeToHourMinute(mSun.getSet(), null);
         } else {
-            return DateUtils.DateTimeToHourMinute(mSun.getRise(), null);
+            return DateTimeUtils.DateTimeToHourMinute(mSun.getRise(), null);
         }
     }
 
@@ -176,6 +178,6 @@ public class HourForecastView extends FrameLayout {
     }
 
     private boolean checkNow(Date time) {
-        return DateUtils.distanceOfHour(time) == 1;
+        return DateTimeUtils.distanceOfHour(time) == 1;
     }
 }

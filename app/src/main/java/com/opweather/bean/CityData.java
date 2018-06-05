@@ -1,8 +1,10 @@
 package com.opweather.bean;
 
+import com.opweather.api.helper.DateUtils;
 import com.opweather.opapi.DailyForecastsWeather;
 import com.opweather.opapi.RootWeather;
 import com.opweather.opapi.Sun;
+import com.opweather.util.DateTimeUtils;
 import com.opweather.util.StringUtils;
 
 import java.text.SimpleDateFormat;
@@ -177,18 +179,18 @@ public class CityData {
         SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss", Locale.US);
         DailyForecastsWeather today = weather.getTodayForecast();
         if (today == null) {
-            return DateUtils.isTimeMillisDayTime(System.currentTimeMillis(), timeZone);
+            return DateTimeUtils.isTimeMillisDayTime(System.currentTimeMillis(), timeZone);
         }
         Sun extra = today.getSun();
         if (extra == null) {
-            return DateUtils.isTimeMillisDayTime(System.currentTimeMillis(), timeZone);
+            return DateTimeUtils.isTimeMillisDayTime(System.currentTimeMillis(), timeZone);
         }
-        if (DateUtils.CHINA_OFFSET.equals(timeZone)) {
-            formatter.setTimeZone(DateUtils.getTimeZone(DateUtils.CHINA_OFFSET));
+        if (DateTimeUtils.CHINA_OFFSET.equals(timeZone)) {
+            formatter.setTimeZone(DateUtils.getTimeZone(DateTimeUtils.CHINA_OFFSET));
         }
-        long sun = DateUtils.stringToLong(formatter.format(extra.getRise()));
-        long night = DateUtils.stringToLong(formatter.format(extra.getSet()));
-        long current = DateUtils.stringToLong(formatter.format(new Date()));
+        long sun = DateTimeUtils.stringToLong(formatter.format(extra.getRise()));
+        long night = DateTimeUtils.stringToLong(formatter.format(extra.getSet()));
+        long current = DateTimeUtils.stringToLong(formatter.format(new Date()));
         if (current < sun || current >= night || night <= sun) {
             return ((current >= sun && current > night) || (current <= sun && current < night)) && night < sun;
         } else {

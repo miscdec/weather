@@ -17,4 +17,44 @@
         <attr name="tv_color" format="color" />
         <attr name="strokeWidth" format="dimension" />
     </declare-styleable>
+
+    <declare-styleable name="SwipeListView">
+        <attr name="swipeMode">
+            <enum name="both" value="1" />
+            <enum name="left" value="3" />
+            <enum name="none" value="0" />
+            <enum name="right" value="2" />
+        </attr>
+        <attr name="swipeActionLeft">
+            <enum name="choice" value="2" />
+            <enum name="dismiss" value="1" />
+            <enum name="reveal" value="0" />
+        </attr>
+        <attr name="swipeActionRight">
+            <enum name="choice" value="2" />
+            <enum name="dismiss" value="1" />
+            <enum name="reveal" value="0" />
+        </attr>
+        <attr name="swipeOffsetLeft" format="dimension" />
+        <attr name="swipeOffsetRight" format="dimension" />
+        <attr name="swipeOpenOnLongPress" format="boolean" />
+        <attr name="swipeAnimationTime" format="integer" />
+        <attr name="swipeCloseAllItemsWhenMoveList" format="boolean" />
+        <attr name="swipeDrawableChecked" format="reference" />
+        <attr name="swipeDrawableUnchecked" format="reference" />
+        <attr name="swipeFrontView" format="reference" />
+        <attr name="swipeBackView" format="reference" />
+    </declare-styleable>
+
+    <declare-styleable name="ClearableEditText">
+        <attr name="clearButtonPosition">
+            <enum name="end" value="2" />
+            <enum name="start" value="0" />
+        </attr>
+        <attr name="clearButtonAlwaysVisible" format="boolean" />
+        <attr name="clearButtonDrawable" format="reference|color" />
+        <attr name="clearButtonHeight" format="dimension" />
+        <attr name="clearButtonPadding" format="dimension" />
+        <attr name="clearButtonWidth" format="dimension" />
+    </declare-styleable>
 </resources>

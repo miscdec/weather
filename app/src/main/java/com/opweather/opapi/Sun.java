@@ -1,5 +1,7 @@
 package com.opweather.opapi;
 
+import com.opweather.api.helper.DateUtils;
+
 import java.util.Date;
 
 public class Sun extends AbstractWeather {

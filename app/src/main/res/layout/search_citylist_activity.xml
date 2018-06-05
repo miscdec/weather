@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@android:color/white">
+
+    <ListView
+        android:id="@+id/search_list"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:divider="@color/divider_color"
+        android:dividerHeight="@dimen/oneplus_contorl_divider_height_standard" />
+
+    <TextView
+        android:id="@+id/no_search_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="188.0dip"
+        android:drawablePadding="8.0dip"
+        android:drawableTop="@drawable/no_search_icon"
+        android:gravity="center"
+        android:text="@string/no_search_data"
+        android:textAppearance="@dimen/oneplus_contorl_text_size_subheading"
+        android:textColor="@color/no_match_color"
+        android:textSize="16.0sp"
+        android:visibility="visible" />
+</merge>

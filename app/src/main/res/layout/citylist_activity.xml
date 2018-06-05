@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/citylist_first_container"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/settings_bkg">
+
+    <com.opweather.widget.swipelistview.SwipeListView
+        android:id="@+id/cityListView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:cacheColorHint="#00f0f000"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="@dimen/oneplus_contorl_layout_margin_top1"
+        android:paddingLeft="@dimen/oneplus_contorl_layout_margin_left1"
+        android:paddingRight="@dimen/oneplus_contorl_layout_margin_left1"
+        android:paddingTop="@dimen/oneplus_contorl_layout_margin_top1"
+        app:swipeActionLeft="dismiss"
+        app:swipeActionRight="dismiss"
+        app:swipeBackView="@+id/bottom_wrapper"
+        app:swipeFrontView="@+id/front"
+        app:swipeOpenOnLongPress="false" />
+
+    <ImageButton
+        android:id="@+id/btn_add"
+        android:layout_width="56.0dip"
+        android:layout_height="56.0dip"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="@dimen/dimen_20"
+        android:layout_marginRight="@dimen/dimen_20"
+        android:background="@drawable/floating_action_button"
+        android:contentDescription="@null"
+        android:elevation="5.0dip"
+        android:scaleType="center"
+        android:src="@drawable/ic_add" />
+
+    <TextView
+        android:id="@+id/no_city_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="188.0dip"
+        android:drawablePadding="8.0dip"
+        android:drawableTop="@drawable/ic_empty_city"
+        android:gravity="center"
+        android:text="@string/no_citys"
+        android:textAppearance="@dimen/oneplus_contorl_text_size_subheading"
+        android:textColor="@color/ic_display_color"
+        android:textSize="16.0sp"
+        android:visibility="gone" />
+</RelativeLayout>

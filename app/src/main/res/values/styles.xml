@@ -16,4 +16,40 @@
         <item name="android:src">@drawable/more_setting</item>
     </style>
 
+    <style name="RefreshTimeStyle">
+        <item name="android:textSize">32.0px</item>
+        <item name="android:textColor">@color/oneplus_contorl_text_color_secondary_dark</item>
+        <item name="android:fontFamily">Slate-book</item>
+    </style>
+
+    <style name="DaildyDateStyle">
+        <item name="android:textSize">26.0px</item>
+        <item name="android:textColor">@color/oneplus_contorl_text_color_secondary_dark</item>
+        <item name="android:fontFamily">Slate-book</item>
+    </style>
+
+    <style name="DaildyTemperatureStyle">
+        <item name="android:textSize">26.0px</item>
+        <item name="android:textColor">@color/oneplus_contorl_text_color_secondary_dark</item>
+        <item name="android:fontFamily">Slate-book</item>
+    </style>
+
+    <style name="oneplus_contorl_text_style_base">
+        <item name="android:breakStrategy">simple</item>
+    </style>
+
+    <style name="oneplus_contorl_text_style_subheading" parent="@style/oneplus_contorl_text_style_base">
+        <item name="android:textSize">@dimen/oneplus_contorl_text_size_subheading</item>
+        <item name="android:fontFamily">Slate-book</item>
+    </style>
+
+    <style name="ClearableEditText">
+        <item name="clearButtonAlwaysVisible">false</item>
+        <item name="clearButtonDrawable">@drawable/ic_clear</item>
+        <item name="clearButtonHeight">16.0dip</item>
+        <item name="clearButtonPadding">5.0dip</item>
+        <item name="clearButtonPosition">end</item>
+        <item name="clearButtonWidth">16.0dip</item>
+    </style>
+
 </resources>

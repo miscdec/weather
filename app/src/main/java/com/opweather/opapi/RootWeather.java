@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.opweather.api.WeatherRequest;
 import com.opweather.api.helper.DateUtils;
+import com.opweather.api.nodes.Alarm;
 import com.opweather.bean.HourForecastsWeather;
 
 import java.util.Date;

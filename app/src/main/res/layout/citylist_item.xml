@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:clickable="true"
+    android:elevation="0.0dip"
+    android:focusable="true"
+    app:cardCornerRadius="@dimen/oneplus_contorl_radius_r2">
+
+    <View
+        android:id="@id/bottom_wrapper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <RelativeLayout
+        android:id="@id/front"
+        android:layout_width="fill_parent"
+        android:layout_height="150.0dip"
+        android:background="@android:color/transparent">
+
+        <ImageView
+            android:id="@+id/cityTheme"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:background="@android:color/transparent"
+            android:scaleType="centerCrop"
+            android:transitionName="share_weather_view" />
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:paddingBottom="@dimen/oneplus_contorl_layout_margin_top1"
+            android:paddingEnd="@dimen/oneplus_contorl_layout_margin_right2"
+            android:paddingLeft="@dimen/oneplus_contorl_layout_margin_left2"
+            android:paddingRight="@dimen/oneplus_contorl_layout_margin_right2"
+            android:paddingStart="@dimen/oneplus_contorl_layout_margin_left2"
+            android:paddingTop="@dimen/oneplus_contorl_layout_margin_top1">
+
+            <ImageView
+                android:id="@+id/current_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:paddingRight="@dimen/oneplus_contorl_layout_margin_left2"
+                android:src="@drawable/icon_gps"
+                android:transitionName="share_current_location" />
+
+            <TextView
+                android:id="@+id/cityName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@id/current_location"
+                android:layout_toEndOf="@id/current_location"
+                android:layout_toRightOf="@id/current_location"
+                android:singleLine="true"
+                android:textColor="@color/oneplus_contorl_text_color_primary_dark"
+                android:transitionName="share_city_name" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/cityTemp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textColor="@color/oneplus_contorl_text_color_primary_dark"
+                    android:transitionName="share_realfeel_temperature" />
+
+                <TextView
+                    android:id="@+id/weather_type"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textColor="@color/oneplus_contorl_text_color_primary_dark"
+                    android:transitionName="share_current_weather_type" />
+            </LinearLayout>
+        </RelativeLayout>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/btn_city_home"
+        android:layout_width="52.0dip"
+        android:layout_height="48.0dip"
+        android:layout_gravity="end|center|top"
+        android:background="@drawable/ripple_home_btn"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/img_city_home"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:elevation="5.0dip"
+            android:src="@mipmap/btn_home_disable" />
+    </RelativeLayout>
+</android.support.v7.widget.CardView>

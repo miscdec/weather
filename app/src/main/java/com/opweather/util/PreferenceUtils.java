@@ -65,4 +65,8 @@ public class PreferenceUtils {
     public static int getInt(Context context, String key, int defaultValue) {
         return PreferenceManager.getDefaultSharedPreferences(context).getInt(key, defaultValue);
     }
+
+    public static boolean getBoolean(Context context, String key) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(key, false);
+    }
 }
