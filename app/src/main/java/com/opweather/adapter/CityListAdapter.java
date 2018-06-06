@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.opweather.R;
 import com.opweather.bean.CityData;
+import com.opweather.db.ChinaCityDB;
 import com.opweather.db.CityWeatherDB;
 import com.opweather.db.CityWeatherDBHelper;
 import com.opweather.db.CityWeatherDBHelper.CityListEntry;
@@ -141,12 +142,12 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
     }
 
     private void setNewHolder(View view, ItemHolder holder) {
-        holder.cityNameView = (TextView) view.findViewById(R.id.cityName);
-        holder.cityTempView = (TextView) view.findViewById(R.id.cityTemp);
-        holder.cityTempType = (TextView) view.findViewById(R.id.weather_type);
-        holder.cityThemeView = (ImageView) view.findViewById(R.id.cityTheme);
-        holder.currentLocationView = (ImageView) view.findViewById(R.id.current_location);
-        holder.homeView = (ImageView) view.findViewById(R.id.img_city_home);
+        holder.cityNameView = view.findViewById(R.id.cityName);
+        holder.cityTempView = view.findViewById(R.id.cityTemp);
+        holder.cityTempType = view.findViewById(R.id.weather_type);
+        holder.cityThemeView = view.findViewById(R.id.cityTheme);
+        holder.currentLocationView = view.findViewById(R.id.current_location);
+        holder.homeView = view.findViewById(R.id.img_city_home);
         holder.homeBtnView = view.findViewById(R.id.btn_city_home);
     }
 
@@ -162,7 +163,8 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
         int provider = cursor.getInt(cursor.getColumnIndex(CityListEntry.COLUMN_1_PROVIDER));
         String cityName = cursor.getString(cursor.getColumnIndex(CityListEntry.COLUMN_2_NAME));
         String cityDisplayName = cursor.getString(cursor.getColumnIndex(CityListEntry.COLUMN_3_DISPLAY_NAME));
-        String cityLocationId = cursor.getString(cursor.getColumnIndex(CityWeatherDBHelper.WeatherEntry.COLUMN_1_LOCATION_ID));
+        String cityLocationId = cursor.getString(cursor.getColumnIndex(CityWeatherDBHelper.WeatherEntry
+                .COLUMN_1_LOCATION_ID));
         CityData city = new CityData();
         city.setProvider(provider);
         city.setName(cityName);
@@ -173,7 +175,7 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
 
     public void bindView(View view, Context context, Cursor cursor) {
         if (view != null && cursor != null) {
-            view.setTag(Integer.valueOf(cursor.getPosition()));
+            view.setTag(cursor.getPosition());
             final ItemHolder itemHolder = new ItemHolder();
             setNewHolder(view, itemHolder);
             long cityId = cursor.getLong(0);
@@ -190,10 +192,10 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
             } else {
                 itemHolder.currentLocationView.setVisibility(View.GONE);
             }
-            RootWeather weather = (RootWeather) mWeatherMap.get(cityLocationId);
+            RootWeather weather = mWeatherMap.get(cityLocationId);
             updateView(itemHolder, weather, cityData);
             if (weather == null && mLoadItems.get(cityLocationId) == null) {
-                mLoadItems.put(cityLocationId, Boolean.valueOf(true));
+                mLoadItems.put(cityLocationId, true);
                 WeatherWorkerClient client = new WeatherWorkerClient(itemHolder, cityData);
                 itemHolder.setWorkerClient(client);
                 client.loadWeather();
@@ -221,9 +223,8 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
                     if (view.getTag() != null) {
                         position = (int) view.getTag();
                     }
-                    if (position != -1 && CityListAdapter.this.mOnDefaulatChangeListener != null && !CityListAdapter
-                            .this.isDefaultCity(position)) {
-                        CityListAdapter.this.mOnDefaulatChangeListener.onChanged(position);
+                    if (position != -1 && mOnDefaulatChangeListener != null && !isDefaultCity(position)) {
+                        mOnDefaulatChangeListener.onChanged(position);
                         itemHolder.homeView.setImageResource(R.mipmap.btn_home_enable);
                     }
                 }
@@ -269,7 +270,7 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
         if (data != null) {
             float f;
             boolean cOrf = SystemSetting.getTemperature(mContext);
-            String tempUnit = cOrf ? "\u00b0" : "\u00b0";
+            String tempUnit = "°";
             int currentTemp = data.getTodayCurrentTemp();
             if (cOrf) {
                 f = (float) currentTemp;
@@ -286,7 +287,7 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
             cityTempView.setText(str);
             cityTempType.setText(data.getCurrentWeatherText(mContext));
             if (cityData != null) {
-                //ChinaCityDB.openCityDB(mContext).getCityTimeZone(cityData.getLocationId());
+                ChinaCityDB.openCityDB(mContext).getCityTimeZone(cityData.getLocationId());
             }
             boolean isDay = isDay(data, cityData);
             int descriptionId = WeatherResHelper.weatherToResID(mContext, data.getCurrentWeatherId());
@@ -343,7 +344,7 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
             cursor.moveToPosition(position);
             orderId = cursor.getString(9);
         }
-        return "-1" .equals(orderId);
+        return "-1".equals(orderId);
     }
 
     public boolean isocationCity(int position) {
@@ -353,6 +354,6 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
             cursor.moveToPosition(position);
             orderId = cursor.getString(0);
         }
-        return "0" .equals(orderId);
+        return "0".equals(orderId);
     }
 }

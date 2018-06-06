@@ -1,6 +1,7 @@
 package com.opweather.api.helper;
 
 public final class StringUtils {
+    public static final String EMPTY_STRING = "";
     public static final String WEATHER_PARTNER_SUFFIX = "&partner=1000001029";
     private static final String WEATHER_URL = "http://m.weathercn.com/";
 

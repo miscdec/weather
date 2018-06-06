@@ -29,7 +29,7 @@ public abstract class AbstractWeather {
         mAreaName = areaName;
     }
 
-    public String getDataSource() {
+    public String getDataSourceName() {
         return mDataSource;
     }
 

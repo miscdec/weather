@@ -2,6 +2,7 @@ package com.opweather.api;
 
 import com.opweather.api.helper.DateUtils;
 import com.opweather.api.helper.StringUtils;
+import com.opweather.api.helper.WeatherUtils;
 
 import java.util.Date;
 
@@ -154,95 +155,95 @@ public final class CommonConfig {
         throw new AssertionError();
     }
 
-//    public static String getSwaAqiUrl(String key) {
-//        if ($assertionsDisabled || key != null) {
-//            return getSwaAqiUrl(key, new Date());
-//        }
-//        throw new AssertionError();
-//    }
+    public static String getSwaAqiUrl(String key) {
+        if ($assertionsDisabled || key != null) {
+            return getSwaAqiUrl(key, new Date());
+        }
+        throw new AssertionError();
+    }
 
-  /*  public static String getSwaAqiUrl(String key, Date date) {
+    public static String getSwaAqiUrl(String key, Date date) {
         if ($assertionsDisabled || key != null) {
             return getSwaUrl(key, SWA_TYPE_AIR, date);
         }
         throw new AssertionError();
-    }*/
+    }
 
-   /* public static String getSwaIndexUrl(String key) {
+    public static String getSwaIndexUrl(String key) {
         if ($assertionsDisabled || key != null) {
             return getSwaIndexUrl(key, new Date());
         }
         throw new AssertionError();
-    }*/
+    }
 
-//    public static String getSwaIndexUrl(String key, Date date) {
-//        if ($assertionsDisabled || key != null) {
-//            return getSwaUrl(key, SWA_TYPE_INDEX, date);
-//        }
-//        throw new AssertionError();
-//    }
+    public static String getSwaIndexUrl(String key, Date date) {
+        if ($assertionsDisabled || key != null) {
+            return getSwaUrl(key, SWA_TYPE_INDEX, date);
+        }
+        throw new AssertionError();
+    }
 
-//    public static String getSwaCurrentUrl(String key) {
-//        if ($assertionsDisabled || key != null) {
-//            return getSwaCurrentUrl(key, new Date());
-//        }
-//        throw new AssertionError();
-//    }
+    public static String getSwaCurrentUrl(String key) {
+        if ($assertionsDisabled || key != null) {
+            return getSwaCurrentUrl(key, new Date());
+        }
+        throw new AssertionError();
+    }
 
-//    public static String getSwaCurrentUrl(String key, Date date) {
-//        if ($assertionsDisabled || key != null) {
-//            return getSwaUrl(key, SWA_TYPE_CURRENT, date);
-//        }
-//        throw new AssertionError();
-//    }
+    public static String getSwaCurrentUrl(String key, Date date) {
+        if ($assertionsDisabled || key != null) {
+            return getSwaUrl(key, SWA_TYPE_CURRENT, date);
+        }
+        throw new AssertionError();
+    }
 
-//    public static String getSwaHourForecastsUrl(String key) {
-//        if ($assertionsDisabled || key != null) {
-//            return getSwaHourForecastsUrl(key, new Date());
-//        }
-//        throw new AssertionError();
-//    }
+    public static String getSwaHourForecastsUrl(String key) {
+        if ($assertionsDisabled || key != null) {
+            return getSwaHourForecastsUrl(key, new Date());
+        }
+        throw new AssertionError();
+    }
 
-//    public static String getSwaHourForecastsUrl(String key, Date date) {
-//        if ($assertionsDisabled || key != null) {
-//            return getSwaUrl(key, SWA_TYPE_HOUR_FORECASTS, date);
-//        }
-//        throw new AssertionError();
-//    }
+    public static String getSwaHourForecastsUrl(String key, Date date) {
+        if ($assertionsDisabled || key != null) {
+            return getSwaUrl(key, SWA_TYPE_HOUR_FORECASTS, date);
+        }
+        throw new AssertionError();
+    }
 
-    /*public static String getSwaDailyForecastsUrl(String key) {
+    public static String getSwaDailyForecastsUrl(String key) {
         if ($assertionsDisabled || key != null) {
             return getSwaDailyForecastsUrl(key, new Date());
         }
         throw new AssertionError();
-    }*/
+    }
 
-   /* public static String getSwaDailyForecastsUrl(String key, Date date) {
+    public static String getSwaDailyForecastsUrl(String key, Date date) {
         if ($assertionsDisabled || key != null) {
             return getSwaUrl(key, SWA_TYPE_DAILY_FORECASTS, date);
         }
         throw new AssertionError();
-    }*/
+    }
 
-   /* public static String getSwaAlertsUrl(String key) {
+    public static String getSwaAlertsUrl(String key) {
         if ($assertionsDisabled || key != null) {
             return getSwaAlertsUrl(key, new Date());
         }
         throw new AssertionError();
-    }*/
+    }
 
-   /* public static String getSwaAlertsUrl(String key, Date date) {
+    public static String getSwaAlertsUrl(String key, Date date) {
         if ($assertionsDisabled || key != null) {
             return getSwaUrl(key, SWA_TYPE_ALARM, date);
         }
         throw new AssertionError();
-    }*/
+    }
 
-    /*private static String getSwaUrl(String id, String type, Date date) {
+    private static String getSwaUrl(String id, String type, Date date) {
         String strDate = DateUtils.formatSwaRequestDateText(date);
         String key = WeatherUtils.swaStandardURLEncoder(String.format(SWA_HOST_NAME_WITHOUT_KEY, new Object[]{id,
                 type, strDate, SWA_OPPO_APPID}), SWA_OPPO_SECKEY);
         return String.format(SWA_HOST_NAME_WITH_KEY, new Object[]{id, type, strDate, SWA_OPPO_APPID.substring(0,
                 6), key});
-    }*/
+    }
 }

@@ -71,10 +71,10 @@ public abstract class DailyForecastsWeather extends AbstractWeather {
                     rise = dailyWeather.getSun().getRise();
                     set = dailyWeather.getSun().getSet();
                 }
-                return new Sun(getAreaCode(), getAreaName(), getDataSource(), rise, set);
+                return new Sun(getAreaCode(), getAreaName(), getDataSourceName(), rise, set);
             }
             rise = dailyWeather.getSun().getRise();
-            return new Sun(getAreaCode(), getAreaName(), getDataSource(), rise, set);
+            return new Sun(getAreaCode(), getAreaName(), getDataSourceName(), rise, set);
         } catch (Exception e) {
             rise = getSun().getRise();
             set = getSun().getSet();
