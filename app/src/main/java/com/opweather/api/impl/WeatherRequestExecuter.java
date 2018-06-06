@@ -9,12 +9,11 @@ import com.opweather.api.WeatherRequest;
 import com.opweather.api.WeatherRequest.CacheMode;
 import com.opweather.api.helper.NetworkHelper;
 import com.opweather.api.parser.ParseException;
-import com.opweather.opapi.LogUtils;
-import com.opweather.opapi.RootWeather;
-import com.opweather.opapi.WeatherCache;
-import com.opweather.opapi.WeatherException;
-import com.opweather.opapi.WeatherResponse;
-import com.opweather.widget.openglbase.RainSurfaceView;
+import com.opweather.api.cache.WeatherCache;
+import com.opweather.api.helper.LogUtils;
+import com.opweather.api.nodes.RootWeather;
+import com.opweather.api.WeatherException;
+import com.opweather.api.WeatherResponse;
 
 public class WeatherRequestExecuter extends AbstractExecuter {
     private static final String TAG = "WeatherRequestExecuter";
@@ -119,6 +118,7 @@ public class WeatherRequestExecuter extends AbstractExecuter {
         }
 
         protected Void doInBackground(String... key) {
+            Log.d(TAG, "doInBackground: " + key.length);
             byte[] data = WeatherCache.getInstance(mContext).getFromDiskCache(key[0]);
             try {
                 RootWeather rootWeather;
@@ -381,9 +381,9 @@ public class WeatherRequestExecuter extends AbstractExecuter {
             if (result != null) {
                 result.writeMemoryCache(request, WeatherCache.getInstance(mContext));
                 LogUtils.d(TAG, "命中磁盘缓存，区域id：" + (result.getAreaCode() != null ? result.getAreaCode() : "null") +
-                        "，区域名称：" + (result.getAreaName() != null ? result.getAreaName() : "null"), new Object[0]);
+                        "，区域名称：" + (result.getAreaName() != null ? result.getAreaName() : "null"));
             } else {
-                LogUtils.d(TAG, "缓存中不存在，地区id：" + request.getRequestKey(), new Object[0]);
+                LogUtils.d(TAG, "缓存中不存在，地区id：" + request.getRequestKey());
                 if (request.getCacheMode() == CacheMode.LOAD_CACHE_ELSE_NETWORK) {
                     fetchNetwork(request);
                 }
@@ -395,7 +395,8 @@ public class WeatherRequestExecuter extends AbstractExecuter {
     }
 
     private void requestCacheData(int type, WeatherRequest request, CacheBox box) {
-        LogUtils.d(TAG, "Cache key: " + request.getDiskCacheKey(type), new Object[0]);
-        new CacheParserWorkerTask(type, request, box).execute();
+        LogUtils.d(TAG, "Cache key: " + request.getDiskCacheKey(type));
+        Log.d(TAG, "requestCacheData: type = " + type + " request = " + request.getLocale());
+        new CacheParserWorkerTask(type, request, box).execute(request.getDiskCacheKey(type));
     }
 }

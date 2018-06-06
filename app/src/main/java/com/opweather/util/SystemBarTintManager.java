@@ -17,8 +17,6 @@ import android.view.Window;
 import android.view.WindowManager.LayoutParams;
 import android.widget.FrameLayout;
 
-import com.google.android.gms.location.DetectedActivity;
-
 import java.lang.reflect.Method;
 
 public class SystemBarTintManager {

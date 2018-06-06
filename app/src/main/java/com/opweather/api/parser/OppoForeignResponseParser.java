@@ -3,15 +3,12 @@ package com.opweather.api.parser;
 import com.opweather.api.WeatherRequest;
 import com.opweather.api.helper.DateUtils;
 import com.opweather.api.helper.IOUtils;
-import com.opweather.api.helper.NumberUtils;
-import com.opweather.api.helper.WeatherUtils;
 import com.opweather.api.impl.OppoForeignRequest;
-import com.opweather.opapi.BuilderException;
-import com.opweather.opapi.CurrentWeather;
-import com.opweather.opapi.DailyForecastsWeather;
-import com.opweather.opapi.RootWeather;
-import com.opweather.opapi.StringUtils;
-import com.opweather.opapi.Temperature;
+import com.opweather.api.nodes.CurrentWeather;
+import com.opweather.api.nodes.DailyForecastsWeather;
+import com.opweather.api.nodes.RootWeather;
+import com.opweather.api.helper.StringUtils;
+
 import org.xmlpull.v1.XmlPullParser;
 
 import java.io.IOException;

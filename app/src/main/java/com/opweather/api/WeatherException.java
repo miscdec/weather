@@ -1,4 +1,4 @@
-package com.opweather.opapi;
+package com.opweather.api;
 
 public class WeatherException extends Exception {
     private static final long serialVersionUID = -6316970406795805454L;

@@ -1,4 +1,4 @@
-package com.opweather.opapi;
+package com.opweather.api.helper;
 
 public final class StringUtils {
     public static final String WEATHER_PARTNER_SUFFIX = "&partner=1000001029";

@@ -1,6 +1,6 @@
 package com.opweather.api.parser;
 
-import com.opweather.opapi.WeatherException;
+import com.opweather.api.WeatherException;
 
 public class ParseException extends WeatherException {
     private static final long serialVersionUID = 7693674526831230463L;

@@ -64,4 +64,18 @@
         <item name="clearButtonWidth">16.0dip</item>
     </style>
 
+    <style name="StarWarTheme" parent="@style/Oneplus.Theme.Material.Light.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@color/black</item>
+    </style>
+
+    <style name="Oneplus.Theme.Material.Light.NoActionBar.Fullscreen" parent="@style/Oneplus.Theme.Material.Light.NoActionBar">
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <style name="Oneplus.Theme.Material.Light.NoActionBar" parent="@android:style/Theme.Material.Light">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+    </style>
+
 </resources>

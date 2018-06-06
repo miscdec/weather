@@ -1,7 +1,7 @@
 package com.opweather.api;
 
 import com.opweather.api.helper.DateUtils;
-import com.opweather.opapi.StringUtils;
+import com.opweather.api.helper.StringUtils;
 
 import java.util.Date;
 

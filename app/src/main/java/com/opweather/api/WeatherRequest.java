@@ -2,11 +2,10 @@ package com.opweather.api;
 
 import android.support.v7.widget.helper.ItemTouchHelper;
 
-import com.opweather.opapi.ResponseParser;
-import com.opweather.opapi.RootWeather;
-import com.opweather.opapi.WeatherException;
-import com.opweather.opapi.WeatherResponse.CacheListener;
-import com.opweather.opapi.WeatherResponse.NetworkListener;
+import com.opweather.api.parser.ResponseParser;
+import com.opweather.api.nodes.RootWeather;
+import com.opweather.api.WeatherResponse.CacheListener;
+import com.opweather.api.WeatherResponse.NetworkListener;
 import com.opweather.util.Validate;
 import com.opweather.widget.openglbase.RainSurfaceView;
 

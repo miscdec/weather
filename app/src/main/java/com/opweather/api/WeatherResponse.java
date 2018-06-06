@@ -1,9 +1,10 @@
-package com.opweather.opapi;
+package com.opweather.api;
 
 import android.content.Context;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
-import com.opweather.api.WeatherRequest;
+import com.opweather.api.cache.WeatherCache;
+import com.opweather.api.nodes.RootWeather;
 import com.opweather.widget.openglbase.RainSurfaceView;
 
 public class WeatherResponse {

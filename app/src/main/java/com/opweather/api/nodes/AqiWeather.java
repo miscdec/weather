@@ -1,4 +1,4 @@
-package com.opweather.opapi;
+package com.opweather.api.nodes;
 
 public abstract class AqiWeather extends AbstractWeather {
     public abstract int getAqiValue();

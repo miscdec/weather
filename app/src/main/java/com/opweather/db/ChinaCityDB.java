@@ -8,7 +8,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.opweather.bean.OpCity;
-import com.opweather.opapi.LogUtils;
+import com.opweather.api.helper.LogUtils;
 import com.opweather.util.StringUtils;
 import com.opweather.util.WeatherLog;
 import com.opweather.widget.openglbase.RainSurfaceView;

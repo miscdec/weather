@@ -5,12 +5,13 @@ import android.text.TextUtils;
 
 import com.opweather.api.WeatherClient;
 import com.opweather.api.WeatherRequest;
-import com.opweather.api.helper.DateUtils;
+import com.opweather.api.impl.AccuRequest;
 import com.opweather.api.impl.OppoChinaRequest;
+import com.opweather.api.impl.OppoForeignRequest;
 import com.opweather.bean.CityData;
-import com.opweather.opapi.RootWeather;
-import com.opweather.opapi.WeatherException;
-import com.opweather.opapi.WeatherResponse;
+import com.opweather.api.nodes.RootWeather;
+import com.opweather.api.WeatherException;
+import com.opweather.api.WeatherResponse;
 import com.opweather.widget.openglbase.RainSurfaceView;
 
 
@@ -123,8 +124,7 @@ public class WeatherClientProxy {
         if (city.getProvider() == 4096) {
             return new OppoChinaRequest(47, city.getLocationId(), null, null);
         }
-        /*return city.getProvider() == 8192 ? new OppoForeignRequest(47, city.getLocationId(), null, null) : new
-                AccuRequest(47, city.getLocationId(), null, null);*/
-        return null;
+        return city.getProvider() == 8192 ? new OppoForeignRequest(47, city.getLocationId(), null, null) : new
+                AccuRequest(47, city.getLocationId(), null, null);
     }
 }

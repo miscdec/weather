@@ -1,10 +1,8 @@
 package com.opweather.util;
 
-import com.google.android.gms.common.ConnectionResult;
-
 public class NumberUtils {
     public static int parseInt(String intString, int defaultValue) {
-        return parseInt(intString, ConnectionResult.DEVELOPER_ERROR, defaultValue);
+        return parseInt(intString, 10, defaultValue);
     }
 
     public static int parseInt(String intString, int radix, int defaultValue) {

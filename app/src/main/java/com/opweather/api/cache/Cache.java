@@ -1,4 +1,6 @@
-package com.opweather.opapi;
+package com.opweather.api.cache;
+
+import com.opweather.api.nodes.RootWeather;
 
 public interface Cache {
     void clear();

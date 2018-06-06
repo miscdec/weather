@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -58,6 +59,8 @@ public class CitySearchActivity extends BaseActivity {
     private CitySearchProvider mForeignCitySearProvider;
     private Handler mHandler;
     private TextView mNoSearchView;
+    private ListView mSearchListView;
+    private Dialog noConnectionDialog;
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -83,8 +86,6 @@ public class CitySearchActivity extends BaseActivity {
             }
         }
     };
-    private ListView mSearchListView;
-    private Dialog noConnectionDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +95,8 @@ public class CitySearchActivity extends BaseActivity {
         if (!isNetworkConnected()) {
             noConnectionDialog = AlertUtils.showNoConnectionDialog(this);
         }
-        init();
+        initData();
+        initUIView();
     }
 
     private void registerReceiver() {
@@ -114,11 +116,6 @@ public class CitySearchActivity extends BaseActivity {
         return NetUtil.isNetworkAvailable(this);
     }
 
-    private void init() {
-        initData();
-        initUIView();
-    }
-
     private void initData() {
         mCityCount = getIntent().getIntExtra(CityListActivity.INTENT_SEARCH_CITY, 0);
         mCityWeatherDB = CityWeatherDB.getInstance(getApplicationContext());
@@ -126,7 +123,7 @@ public class CitySearchActivity extends BaseActivity {
             @Override
             public void handleMessage(Message msg) {
                 String country;
-                if (GpsUtils.isH2OS() && msg.what == 4096) {
+                if (msg.what == 4096) {
                     List<CommonCandidateCity> chinaCitySearchResult = mChinaCitySearProvider.getCandidateCityList();
                     if (chinaCitySearchResult != null) {
                         Iterator<CommonCandidateCity> chinaCityIterator = chinaCitySearchResult.iterator();
@@ -134,6 +131,9 @@ public class CitySearchActivity extends BaseActivity {
                             CommonCandidateCity city = (CommonCandidateCity) chinaCityIterator.next();
                             country = city.getCityCountryID();
                             String provinceEn = city.getCityProvinceEn();
+                            Log.d(TAG, "4096 city: " + city);
+                            Log.d(TAG, "4096 country: " + country);
+                            Log.d(TAG, "4096 provinceEn: " + provinceEn);
                             if (!country.equals("China") || provinceEn.equals("Taiwan Province")) {
                                 chinaCityIterator.remove();
                             }
@@ -148,8 +148,9 @@ public class CitySearchActivity extends BaseActivity {
                     List<CommonCandidateCity> foreignCitySearchResult = mForeignCitySearProvider.getCandidateCityList();
                     if (foreignCitySearchResult != null) {
                         Iterator<CommonCandidateCity> foreignIterator = foreignCitySearchResult.iterator();
-                        while (GpsUtils.isH2OS() && foreignIterator.hasNext()) {
+                        while (foreignIterator.hasNext()) {
                             country = ((CommonCandidateCity) foreignIterator.next()).getCityCountryID();
+                            Log.d(TAG, "2048 country: " + country);
                             if (country.equals("CN") || country.equals("HK") || country.equals("MO")) {
                                 foreignIterator.remove();
                             }
@@ -185,7 +186,7 @@ public class CitySearchActivity extends BaseActivity {
             bar.setDisplayShowCustomEnabled(true);
             bar.setDisplayHomeAsUpEnabled(true);
             bar.setCustomView(actionbarLayout);
-            mCityKeyword = (ClearableEditText) actionbarLayout.findViewById(R.id.search_bar_input_field);
+            mCityKeyword = actionbarLayout.findViewById(R.id.search_bar_input_field);
             mCityKeyword.setFocusable(true);
             mCityKeyword.setFocusableInTouchMode(true);
             mCityKeyword.requestFocus();
@@ -223,8 +224,8 @@ public class CitySearchActivity extends BaseActivity {
                 }
             }
         });
-        mNoSearchView = (TextView) findViewById(R.id.no_search_view);
-        mSearchListView = (ListView) findViewById(R.id.search_list);
+        mNoSearchView = findViewById(R.id.no_search_view);
+        mSearchListView = findViewById(R.id.search_list);
         mSearchListView.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -248,13 +249,12 @@ public class CitySearchActivity extends BaseActivity {
                     finish();
                     return;
                 }
-                //startActivity(new Intent(CitySearchActivity.this, VidePlayActivity.class));
-                finish();
             }
         });
         mCityKeyword.setText(StringUtils.EMPTY_STRING);
         if (mCityKeyword.requestFocus()) {
-            ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(mCityKeyword, InputMethodManager.SHOW_FORCED);
+            ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(mCityKeyword,
+                    InputMethodManager.SHOW_FORCED);
         }
     }
 

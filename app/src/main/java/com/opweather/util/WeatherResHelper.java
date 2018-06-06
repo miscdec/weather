@@ -17,7 +17,7 @@ import org.json.JSONObject;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.opweather.opapi.Wind.Direction;
+import static com.opweather.api.nodes.Wind.Direction;
 
 public class WeatherResHelper {
     public static Map<String,Integer> WeatherTypes = new ConcurrentHashMap();

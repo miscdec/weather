@@ -7,8 +7,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
-import com.opweather.opapi.StringUtils;
-import com.opweather.opapi.WeatherException;
+import com.opweather.api.WeatherException;
 
 public class NetworkHelper {
     private static final String WEATHER_REQUESTS = "CustomTags:WEATHER_REQUESTS";

@@ -5,8 +5,6 @@ import android.content.res.Resources;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.location.DetectedActivity;
 import com.opweather.R;
 import com.opweather.api.helper.DateUtils;
 import com.opweather.widget.openglbase.RainSurfaceView;
@@ -223,9 +221,9 @@ public class DateTimeUtils {
                 return r.getString(R.string.days_mapping_wed);
             case RainSurfaceView.RAIN_LEVEL_THUNDERSHOWER:
                 return r.getString(R.string.days_mapping_thu);
-            case ConnectionResult.RESOLUTION_REQUIRED:
+            case 6:
                 return r.getString(R.string.days_mapping_fri);
-            case DetectedActivity.WALKING:
+            case 7:
                 return r.getString(R.string.days_mapping_sat);
             default:
                 return null;

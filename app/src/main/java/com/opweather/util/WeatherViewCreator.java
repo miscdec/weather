@@ -2,11 +2,7 @@ package com.opweather.util;
 
 import android.content.Context;
 
-import com.google.android.gms.location.GeofenceStatusCodes;
-import com.opweather.constants.WeatherDescription;
 import com.opweather.widget.AbsWeather;
-import com.opweather.widget.WidgetUpdateJob;
-import com.opweather.widget.openglbase.RainSurfaceView;
 
 public class WeatherViewCreator {
     public static AbsWeather getViewFromDescription(Context context, int description, boolean isDay) {

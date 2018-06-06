@@ -1,6 +1,6 @@
 package com.opweather.api.helper;
 
-import com.opweather.opapi.WeatherException;
+import com.opweather.api.WeatherException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

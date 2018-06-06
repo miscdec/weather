@@ -1,9 +1,9 @@
 package com.opweather.bean;
 
 import com.opweather.api.helper.DateUtils;
-import com.opweather.opapi.DailyForecastsWeather;
-import com.opweather.opapi.RootWeather;
-import com.opweather.opapi.Sun;
+import com.opweather.api.nodes.DailyForecastsWeather;
+import com.opweather.api.nodes.RootWeather;
+import com.opweather.api.nodes.Sun;
 import com.opweather.util.DateTimeUtils;
 import com.opweather.util.StringUtils;
 

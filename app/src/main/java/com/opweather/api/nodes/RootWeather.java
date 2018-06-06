@@ -1,12 +1,14 @@
-package com.opweather.opapi;
+package com.opweather.api.nodes;
 
 import android.content.Context;
 import android.util.Log;
 
 import com.opweather.api.WeatherRequest;
 import com.opweather.api.helper.DateUtils;
-import com.opweather.api.nodes.Alarm;
+import com.opweather.api.helper.LogUtils;
+import com.opweather.api.helper.WeatherUtils;
 import com.opweather.bean.HourForecastsWeather;
+import com.opweather.api.cache.Cache;
 
 import java.util.Date;
 import java.util.List;

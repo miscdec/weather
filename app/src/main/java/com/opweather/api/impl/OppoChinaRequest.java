@@ -2,9 +2,9 @@ package com.opweather.api.impl;
 
 import com.opweather.api.CommonConfig;
 import com.opweather.api.WeatherRequest;
-import com.opweather.opapi.ResponseParser;
-import com.opweather.opapi.WeatherResponse.CacheListener;
-import com.opweather.opapi.WeatherResponse.NetworkListener;
+import com.opweather.api.parser.ResponseParser;
+import com.opweather.api.WeatherResponse.CacheListener;
+import com.opweather.api.WeatherResponse.NetworkListener;
 
 public class OppoChinaRequest extends WeatherRequest {
     public static final String DATA_SOURCE_NAME = "Oppo.China";

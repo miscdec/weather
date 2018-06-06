@@ -1,6 +1,6 @@
-package com.opweather.opapi;
+package com.opweather.api.parser;
 
-import com.opweather.api.parser.ParseException;
+import com.opweather.api.nodes.RootWeather;
 
 public interface ResponseParser {
 

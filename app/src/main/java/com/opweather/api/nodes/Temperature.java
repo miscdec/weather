@@ -1,4 +1,4 @@
-package com.opweather.opapi;
+package com.opweather.api.nodes;
 
 public class Temperature extends AbstractWeather{
     private final double mCentigradeValue;

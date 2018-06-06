@@ -2,8 +2,8 @@ package com.opweather.bean;
 
 import android.content.Context;
 
-import com.opweather.opapi.AbstractWeather;
-import com.opweather.opapi.Temperature;
+import com.opweather.api.nodes.AbstractWeather;
+import com.opweather.api.nodes.Temperature;
 
 import java.util.Date;
 

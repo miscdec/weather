@@ -1,4 +1,4 @@
-package com.opweather.opapi;
+package com.opweather.api.parser;
 
 import com.opweather.api.parser.ParseException;
 

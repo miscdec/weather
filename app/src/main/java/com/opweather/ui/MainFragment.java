@@ -9,13 +9,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.google.android.gms.location.DetectedActivity;
 import com.opweather.R;
 import com.opweather.bean.CityWeather;
-import com.opweather.bean.WeatherData;
 import com.opweather.bean.WeatherData1;
 import com.opweather.contract.MainContract;
-import com.opweather.opapi.RootWeather;
+import com.opweather.api.nodes.RootWeather;
 import com.opweather.presenter.MainPresenter;
 import com.opweather.widget.HourForecastView;
 import com.opweather.widget.RefreshWeatherUnitView;

@@ -1,8 +1,5 @@
 package com.opweather.api.nodes;
 
-/**
- * Created by leeyh on 5/14.
- */
 public abstract class AbstractWeather {
     private String mAreaCode;
     private String mAreaName;

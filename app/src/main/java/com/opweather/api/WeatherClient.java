@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.opweather.api.helper.NetworkHelper;
 import com.opweather.api.impl.WeatherRequestExecuter;
-import com.opweather.opapi.WeatherCache;
+import com.opweather.api.cache.WeatherCache;
 
 public class WeatherClient {
     private static WeatherClient sInstance;

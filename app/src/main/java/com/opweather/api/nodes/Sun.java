@@ -1,4 +1,4 @@
-package com.opweather.opapi;
+package com.opweather.api.nodes;
 
 import com.opweather.api.helper.DateUtils;
 

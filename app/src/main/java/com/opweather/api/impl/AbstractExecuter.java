@@ -3,9 +3,9 @@ package com.opweather.api.impl;
 import android.content.Context;
 import android.os.AsyncTask;
 import com.opweather.api.RequestExecuter;
-import com.opweather.opapi.Cache;
-import com.opweather.opapi.WeatherCache;
 import com.opweather.api.WeatherRequest;
+import com.opweather.api.cache.Cache;
+import com.opweather.api.cache.WeatherCache;
 
 public abstract class AbstractExecuter implements RequestExecuter {
 

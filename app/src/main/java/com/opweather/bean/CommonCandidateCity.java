@@ -28,36 +28,37 @@ public class CommonCandidateCity {
                 mCityCountry, mCityCountry, mCityCountryID, provider);
     }
 
-    public CommonCandidateCity(String mCityCode, String mCitynameChs, String mCitynameCht, String mCitynameEn, String
-            mCityProvinceChs, String mCityProvinceCht, String mCityProvinceEn, String mCityCountryChs, String
-                                       mCityCountryCht, String mCityCountryEn, String mCityCountryID, int provider) {
-        this.mProvider = 1;
-        this.mCityCode = mCityCode;
-        this.mCityNameChs = mCitynameChs;
-        this.mCityNameCht = mCitynameCht;
-        this.mCityNameEn = mCitynameEn;
-        this.mCityProvinceChs = mCityProvinceChs;
-        this.mCityProvinceCht = mCityProvinceCht;
-        this.mCityProvinceEn = mCityProvinceEn;
-        this.mCityCountryChs = mCityCountryChs;
-        this.mCityCountryCht = mCityCountryCht;
-        this.mCityCountryEn = mCityCountryEn;
-        this.mCityCountryID = mCityCountryID;
-        this.mProvider = provider;
+
+    public CommonCandidateCity(String cityCode, String citynameChs, String citynameCht, String citynameEn, String
+            cityProvinceChs, String cityProvinceCht, String cityProvinceEn, String cityCountryChs, String
+                                       cityCountryCht, String cityCountryEn, String cityCountryID, int provider) {
+        mProvider = 1;
+        mCityCode = cityCode;
+        mCityNameChs = citynameChs;
+        mCityNameCht = citynameCht;
+        mCityNameEn = citynameEn;
+        mCityProvinceChs = cityProvinceChs;
+        mCityProvinceCht = cityProvinceCht;
+        mCityProvinceEn = cityProvinceEn;
+        mCityCountryChs = cityCountryChs;
+        mCityCountryCht = cityCountryCht;
+        mCityCountryEn = cityCountryEn;
+        mCityCountryID = cityCountryID;
+        mProvider = provider;
     }
 
     public String getCityCode() {
-        return this.mCityCode;
+        return mCityCode;
     }
 
     public void setCityCode(String cityCode) {
-        this.mCityCode = cityCode;
+        mCityCode = cityCode;
     }
 
     public String getCityName(Context context) {
         Locale locale = context.getResources().getConfiguration().locale;
         if ("zh" .equalsIgnoreCase(locale.getLanguage()) && "cn" .equalsIgnoreCase(locale.getCountry())) {
-            return this.mCityNameChs;
+            return mCityNameChs;
         }
         return ("tw" .equalsIgnoreCase(locale.getCountry()) || "hk" .equalsIgnoreCase(locale.getCountry()) || "mo"
                 .equalsIgnoreCase(locale.getCountry())) ? mCityNameCht : mCityNameEn;
@@ -66,38 +67,38 @@ public class CommonCandidateCity {
     public String getCityProvince(Context context) {
         Locale locale = context.getResources().getConfiguration().locale;
         if ("zh" .equalsIgnoreCase(locale.getLanguage()) && "cn" .equalsIgnoreCase(locale.getCountry())) {
-            return this.mCityProvinceChs;
+            return mCityProvinceChs;
         }
         return ("tw" .equalsIgnoreCase(locale.getCountry()) || "hk" .equalsIgnoreCase(locale.getCountry()) || "mo"
-                .equalsIgnoreCase(locale.getCountry())) ? this.mCityProvinceCht : this.mCityProvinceEn;
+                .equalsIgnoreCase(locale.getCountry())) ? mCityProvinceCht : mCityProvinceEn;
     }
 
     public String getCityCountry(Context context) {
         Locale locale = context.getResources().getConfiguration().locale;
         if ("zh" .equalsIgnoreCase(locale.getLanguage()) && "cn" .equalsIgnoreCase(locale.getCountry())) {
-            return this.mCityCountryChs;
+            return mCityCountryChs;
         }
         return ("tw" .equalsIgnoreCase(locale.getCountry()) || "hk" .equalsIgnoreCase(locale.getCountry()) || "mo"
-                .equalsIgnoreCase(locale.getCountry())) ? this.mCityCountryCht : this.mCityCountryEn;
+                .equalsIgnoreCase(locale.getCountry())) ? mCityCountryCht : mCityCountryEn;
     }
 
     public String getCityCountryID() {
-        return this.mCityCountryID;
+        return mCityCountryID;
     }
 
     public int getCityProvider() {
-        return this.mProvider;
+        return mProvider;
     }
 
     public String getCityProvinceEn() {
-        return this.mCityProvinceEn;
+        return mCityProvinceEn;
     }
 
     public boolean equals(Object obj) {
-        return (obj instanceof CommonCandidateCity) && this.mCityCode.equals(((CommonCandidateCity) obj).mCityCode);
+        return (obj instanceof CommonCandidateCity) && mCityCode.equals(((CommonCandidateCity) obj).mCityCode);
     }
 
     public int hashCode() {
-        return mCityCode.equals(StarWarUtils.STATWAR_NAME) ? -1 :Integer.valueOf(mCityCode);
+        return mCityCode.equals(StarWarUtils.STATWAR_NAME) ? -1 : Integer.valueOf(mCityCode);
     }
 }

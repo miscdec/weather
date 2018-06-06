@@ -1,9 +1,8 @@
-package com.opweather.opapi;
+package com.opweather.api.nodes;
 
 import android.content.Context;
 
 import com.opweather.api.helper.DateUtils;
-import com.opweather.util.DateTimeUtils;
 
 import java.util.Date;
 import java.util.List;

@@ -1,9 +1,8 @@
 package com.opweather.api.parser;
 
 import com.opweather.api.WeatherRequest;
-import com.opweather.opapi.ResponseParser;
-import com.opweather.opapi.RootWeather;
-import com.opweather.opapi.WeatherException;
+import com.opweather.api.nodes.RootWeather;
+import com.opweather.api.WeatherException;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
