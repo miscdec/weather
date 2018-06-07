@@ -11,30 +11,18 @@ import android.support.v4.content.ContextCompat;
 public class PermissionUtil {
     public static final int ALL_PERMISSION_REQUEST = 202;
 
-    static class AnonymousClass_1 implements OnClickListener {
-        final /* synthetic */ Activity val$activity;
-        final /* synthetic */ String val$permission;
-        final /* synthetic */ int val$requestCode;
-
-        AnonymousClass_1(Activity activity, String str, int i) {
-            this.val$activity = activity;
-            this.val$permission = str;
-            this.val$requestCode = i;
-        }
-
-        public void onClick(DialogInterface dialog, int which) {
-            ActivityCompat.requestPermissions(this.val$activity, new String[]{this.val$permission}, this
-                    .val$requestCode);
-        }
-    }
-
     @TargetApi(23)
-    public static boolean check(Activity activity, String permission, String alert, int requestCode) {
+    public static boolean check(final Activity activity, final String permission, String alert, final int requestCode) {
         if (ContextCompat.checkSelfPermission(activity, permission) == 0) {
             return true;
         }
         if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
-            AlertUtils.showPermissionDialog(activity, alert, new AnonymousClass_1(activity, permission, requestCode));
+            AlertUtils.showPermissionDialog(activity, alert, new OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    ActivityCompat.requestPermissions(activity, new String[]{permission}, requestCode);
+                }
+            });
             return false;
         }
         ActivityCompat.requestPermissions(activity, new String[]{permission}, requestCode);

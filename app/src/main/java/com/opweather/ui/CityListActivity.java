@@ -1,5 +1,6 @@
 package com.opweather.ui;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -53,8 +54,8 @@ public class CityListActivity extends BaseBarActivity implements CityListAdapter
     }
 
     private void initData() {
-        PermissionUtil.requestPermission((Activity) this, new String[]{"android.permission.WRITE_EXTERNAL_STORAGE",
-                "android.permission.ACCESS_COARSE_LOCATION"}, (int) PermissionUtil.ALL_PERMISSION_REQUEST);
+        PermissionUtil.check(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.ACCESS_COARSE_LOCATION}, PermissionUtil.ALL_PERMISSION_REQUEST);
         mCityWeatherDB = CityWeatherDB.getInstance(getApplicationContext());
         mCursor = mCityWeatherDB.getAllCities();
         mCityListAdapter = new CityListAdapter(getApplicationContext(), mCursor, false);

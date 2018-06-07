@@ -43,7 +43,7 @@ public final class DiskLruCache implements Closeable {
     static final String MAGIC = "libcore.io.DiskLruCache";
     private static final String READ = "READ";
     private static final String REMOVE = "REMOVE";
-    private static final Charset UTF_8;
+    private static final Charset UTF_8 = Charset.forName("UTF-8");
     static final String VERSION_1 = "1";
     private final int appVersion;
     private final Callable<Void> cleanupCallable;
@@ -68,6 +68,7 @@ public final class DiskLruCache implements Closeable {
                 super(out);
             }
 
+            @Override
             public void write(int oneByte) {
                 try {
                     this.out.write(oneByte);
@@ -76,6 +77,7 @@ public final class DiskLruCache implements Closeable {
                 }
             }
 
+            @Override
             public void write(byte[] buffer, int offset, int length) {
                 try {
                     out.write(buffer, offset, length);
@@ -84,6 +86,7 @@ public final class DiskLruCache implements Closeable {
                 }
             }
 
+            @Override
             public void close() {
                 try {
                     this.out.close();
@@ -92,6 +95,7 @@ public final class DiskLruCache implements Closeable {
                 }
             }
 
+            @Override
             public void flush() {
                 try {
                     this.out.flush();
@@ -245,10 +249,6 @@ public final class DiskLruCache implements Closeable {
         }
     }
 
-    static {
-        UTF_8 = Charset.forName("UTF-8");
-    }
-
     private static <T> T[] copyOfRange(T[] original, int start, int end) {
         int originalLength = original.length;
         if (start > end) {
@@ -281,7 +281,8 @@ public final class DiskLruCache implements Closeable {
     /* JADX WARNING: inconsistent code. */
     /* Code decompiled incorrectly, please refer to instructions dump. */
     public static String readAsciiLine(InputStream r5_in) throws IOException {
-        throw new UnsupportedOperationException("Method not decompiled: net.oneplus.weather.api.cache.DiskLruCache.readAsciiLine(java.io.InputStream):java.lang.String");
+        throw new UnsupportedOperationException("Method not decompiled: weather.api.cache.DiskLruCache.readAsciiLine" +
+                "(java.io.InputStream):java.lang.String");
         /*
         r2 = new java.lang.StringBuilder;
         r3 = 80;
@@ -351,9 +352,9 @@ public final class DiskLruCache implements Closeable {
 
     private DiskLruCache(File directory, int appVersion, int valueCount, long maxSize) {
         size = 0;
-        lruEntries = new LinkedHashMap(0, 0.75f, true);
+        lruEntries = new LinkedHashMap<>(0, 0.75f, true);
         nextSequenceNumber = 0;
-        executorService = new ThreadPoolExecutor(0, 1, 60, TimeUnit.SECONDS, new LinkedBlockingQueue());
+        executorService = new ThreadPoolExecutor(0, 1, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
         cleanupCallable = new Callable<Void>() {
             public Void call() throws Exception {
                 synchronized (DiskLruCache.this) {
@@ -362,7 +363,7 @@ public final class DiskLruCache implements Closeable {
                         trimToSize();
                         if (journalRebuildRequired()) {
                             rebuildJournal();
-                           redundantOpCount = 0;
+                            redundantOpCount = 0;
                         }
                     }
                 }
@@ -408,7 +409,8 @@ public final class DiskLruCache implements Closeable {
         String appVersionString = readAsciiLine(in);
         String valueCountString = readAsciiLine(in);
         String blank = readAsciiLine(in);
-        if (MAGIC.equals(magic) && VERSION_1.equals(version) && Integer.toString(appVersion).equals(appVersionString) && Integer.toString(valueCount).equals(valueCountString) && StringUtils.EMPTY_STRING.equals(blank)) {
+        if (MAGIC.equals(magic) && VERSION_1.equals(version) && Integer.toString(appVersion).equals(appVersionString)
+                && Integer.toString(valueCount).equals(valueCountString) && StringUtils.EMPTY_STRING.equals(blank)) {
             while (true) {
                 try {
                     readJournalLine(readAsciiLine(in));
@@ -417,7 +419,8 @@ public final class DiskLruCache implements Closeable {
                 }
             }
         }
-        throw new IOException("unexpected journal header: [" + magic + ", " + version + ", " + valueCountString + ", " + blank + "]");
+        throw new IOException("unexpected journal header: [" + magic + ", " + version + ", " + valueCountString + ", " +
+                "" + blank + "]");
     }
 
     private void readJournalLine(String line) throws IOException {
@@ -438,7 +441,7 @@ public final class DiskLruCache implements Closeable {
         if (parts[0].equals(CLEAN) && parts.length == valueCount + 2) {
             entry.readable = true;
             entry.currentEditor = null;
-            entry.setLengths((String[]) copyOfRange(parts, RainSurfaceView.RAIN_LEVEL_SHOWER, parts.length));
+            entry.setLengths(copyOfRange(parts, RainSurfaceView.RAIN_LEVEL_SHOWER, parts.length));
         } else if (parts[0].equals(DIRTY) && parts.length == 2) {
             entry.currentEditor = new Editor(entry);
         } else if (!parts[0].equals(READ) || parts.length != 2) {
@@ -450,7 +453,7 @@ public final class DiskLruCache implements Closeable {
         deleteIfExists(journalFileTmp);
         Iterator<Entry> i = lruEntries.values().iterator();
         while (i.hasNext()) {
-            Entry entry = (Entry) i.next();
+            Entry entry = i.next();
             int t;
             if (entry.currentEditor == null) {
                 for (t = 0; t < valueCount; t++) {
@@ -663,12 +666,12 @@ public final class DiskLruCache implements Closeable {
     public synchronized void flush() throws IOException {
         checkNotClosed();
         trimToSize();
-        this.journalWriter.flush();
+        journalWriter.flush();
     }
 
     public synchronized void close() throws IOException {
-        if (this.journalWriter != null) {
-            Iterator it = new ArrayList(this.lruEntries.values()).iterator();
+        if (journalWriter != null) {
+            Iterator it = new ArrayList<>(lruEntries.values()).iterator();
             while (it.hasNext()) {
                 Entry entry = (Entry) it.next();
                 if (entry.currentEditor != null) {
@@ -676,8 +679,8 @@ public final class DiskLruCache implements Closeable {
                 }
             }
             trimToSize();
-            this.journalWriter.close();
-            this.journalWriter = null;
+            journalWriter.close();
+            journalWriter = null;
         }
     }
 

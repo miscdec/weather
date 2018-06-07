@@ -21,13 +21,14 @@ public abstract class IgnorCursorAdapter extends CursorAdapter {
 
     public IgnorCursorAdapter(Context context, Cursor c, boolean autoRequery) {
         super(context, c, autoRequery);
-        mDeleteItemThreadIdList = new HashSet();
+        mDeleteItemThreadIdList = new HashSet<>();
     }
 
     public IgnorCursorAdapter(Context context, Cursor c, int flags) {
         super(context, c, flags);
     }
 
+    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (getItem(position) == null) {
             throw new IllegalStateException("couldn't move cursor to position " + position);
@@ -47,14 +48,14 @@ public abstract class IgnorCursorAdapter extends CursorAdapter {
     }
 
     public void delete(long id) {
-        mDeleteItemThreadIdList.add(Long.valueOf(id));
+        mDeleteItemThreadIdList.add(id);
         setDeleteItemThreadIdList(mDeleteItemThreadIdList);
         notifyDataSetChanged();
     }
 
     public void setDeleteItemThreadIdList(HashSet<Long> deleteItemThreadIdList) {
         if (deleteItemThreadIdList == null) {
-            mDeleteItemThreadIdList = new HashSet();
+            mDeleteItemThreadIdList = new HashSet<>();
             ingioPositionMap = null;
             return;
         }
@@ -68,7 +69,7 @@ public abstract class IgnorCursorAdapter extends CursorAdapter {
             }
             while (preOffsetPositon < getRealCount()) {
                 Cursor cursor = (Cursor) getRealPositionItem(preOffsetPositon);
-                if (!mDeleteItemThreadIdList.contains(Long.valueOf(cursor.getLong(cursor.getColumnIndex("_id"))))) {
+                if (!mDeleteItemThreadIdList.contains(cursor.getLong(cursor.getColumnIndex("_id")))) {
                     break;
                 }
                 preOffsetPositon++;
@@ -77,10 +78,12 @@ public abstract class IgnorCursorAdapter extends CursorAdapter {
         }
     }
 
+    @Override
     public int getCount() {
         return super.getCount() - mDeleteItemThreadIdList.size();
     }
 
+    @Override
     public Object getItem(int position) {
         int offsetPosition = position;
         if (ingioPositionMap != null) {

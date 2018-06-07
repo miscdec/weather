@@ -416,7 +416,7 @@ public class CityWeatherDB {
         city.setLocalName(cityDisplayName);
         city.setLocationId(cityLocationId);
         city.setDefault(true);
-        city.setLocated("0" .equals(index));
+        city.setLocatedCity("0" .equals(index));
         return city;
     }
 
@@ -436,7 +436,7 @@ public class CityWeatherDB {
         city.setLocalName(cityDisplayName);
         city.setLocationId(cityLocationId);
         city.setDefault(true);
-        city.setLocated("0" .equals(index));
+        city.setLocatedCity("0" .equals(index));
         return city;
     }
 

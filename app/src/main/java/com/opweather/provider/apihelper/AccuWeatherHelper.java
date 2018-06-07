@@ -78,7 +78,7 @@ public class AccuWeatherHelper implements IWeatherAPIHelper, ICitySearchAPIHelpe
                     city.setLatitude(ld.getGeoPosition().getLatitude());
                     city.setLongitude(ld.getGeoPosition().getLongitude());
                     city.setLocationId(ld.getKey());
-                    city.setLocated(true);
+                    city.setLocatedCity(true);
                     city.setProvider(CitySearchProvider.PROVIDER_ACCU_WEATHER);
                     if (TextUtils.isEmpty(city.getLocalName())) {
                         city.setLocalName(city.getName());
@@ -182,7 +182,7 @@ public class AccuWeatherHelper implements IWeatherAPIHelper, ICitySearchAPIHelpe
                     city.setLatitude(ld.getGeoPosition().getLatitude());
                     city.setLongitude(ld.getGeoPosition().getLongitude());
                     city.setLocationId(ld.getKey());
-                    city.setLocated(true);
+                    city.setLocatedCity(true);
                     city.setProvider(CitySearchProvider.PROVIDER_ACCU_WEATHER);
                     if (TextUtils.isEmpty(city.getLocalName())) {
                         city.setLocalName(city.getName());

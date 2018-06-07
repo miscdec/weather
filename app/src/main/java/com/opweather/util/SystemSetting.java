@@ -1,7 +1,6 @@
 package com.opweather.util;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 import com.opweather.bean.CityData;
@@ -87,7 +86,7 @@ public class SystemSetting {
             write(context, "city_localname", city.getLocalName());
             write(context, "city_provider", city.getProvider());
             write(context, "city_locationid", city.getLocationId());
-            write(context, "city_locatedcity", city.isLocated());
+            write(context, "city_locatedcity", city.isLocatedCity());
             write(context, "city_defaultcity", city.isDefault());
         }
     }
@@ -98,7 +97,7 @@ public class SystemSetting {
         city.setLocalName(read(context, "city_localname", null));
 //        city.setProvider(read(context, "city_provider", (int) CitySearchProvider.PROVIDER_WEATHER_CHINA));
         city.setLocationId(read(context, "city_locationid", null));
-        city.setLocated(read(context, "city_locatedcity", true));
+        city.setLocatedCity(read(context, "city_locatedcity", true));
         city.setDefault(read(context, "city_defaultcity", false));
         return city;
     }

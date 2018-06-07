@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ListView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/weather_warning_list"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/settings_bkg"
+    android:divider="@color/divider_color"
+    android:dividerHeight="@dimen/oneplus_contorl_divider_height_standard"
+    android:paddingLeft="@dimen/oneplus_contorl_layout_margin_left2"
+    android:paddingRight="@dimen/oneplus_contorl_layout_margin_right2" />

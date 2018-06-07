@@ -66,7 +66,7 @@ public class LocationProvider {
                         city.setLongitude(ld.getGeoPosition().getLongitude());
                         city.setLocationId(ld.getKey());
                         city.setProvider(CitySearchProvider.PROVIDER_ACCU_WEATHER);
-                        city.setLocated(true);
+                        city.setLocatedCity(true);
                         if (TextUtils.isEmpty(city.getLocalName())) {
                             city.setLocalName(city.getName());
                         }
@@ -148,7 +148,7 @@ public class LocationProvider {
                                 city.setLongitude(location.getLongitude());
                                 city.setProvider(CitySearchProvider.PROVIDER_WEATHER_CHINA);
                                 city.setLocationId(cc.getAreaId());
-                                city.setLocated(true);
+                                city.setLocatedCity(true);
                                 if (mListener != null) {
                                     mListener.onLocationChanged(city);
                                 }
@@ -181,7 +181,7 @@ public class LocationProvider {
                 cityData.setLongitude(location.getLongitude());
                 cityData.setProvider(CitySearchProvider.PROVIDER_WEATHER_CHINA);
                 cityData.setLocationId(cc.getAreaId());
-                cityData.setLocated(true);
+                cityData.setLocatedCity(true);
                 if (this.mListener != null) {
                     this.mListener.onLocationChanged(cityData);
                 }

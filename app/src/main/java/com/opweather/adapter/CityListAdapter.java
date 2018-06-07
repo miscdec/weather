@@ -25,6 +25,7 @@ import com.opweather.api.WeatherException;
 import com.opweather.util.StringUtils;
 import com.opweather.util.SystemSetting;
 import com.opweather.util.WeatherClientProxy;
+import com.opweather.util.WeatherLog;
 import com.opweather.util.WeatherResHelper;
 import com.opweather.widget.WeatherTemperatureView;
 
@@ -56,7 +57,7 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
         private WeakReference<WeatherWorkerClient> workerClient;
 
         public void setWorkerClient(WeatherWorkerClient client) {
-            workerClient = new WeakReference(client);
+            workerClient = new WeakReference<>(client);
         }
 
         public WeatherWorkerClient getWorkerClient() {
@@ -73,7 +74,7 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
         private final WeakReference<ItemHolder> mItemHolder;
 
         public WeatherWorkerClient(ItemHolder item, CityData cityData) {
-            mItemHolder = new WeakReference(item);
+            mItemHolder = new WeakReference<>(item);
             mCityData = cityData;
         }
 
@@ -82,14 +83,17 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
                     .requestWeatherInfo(mCityData, new WeatherClientProxy.OnResponseListener() {
                         public void onNetworkResponse(RootWeather response) {
                             onResponse(response);
+                            WeatherLog.d("1111", "onNetworkResponse : " + response.getCurrentWeather());
                         }
 
                         public void onErrorResponse(WeatherException error) {
                             onResponse(null);
+                            WeatherLog.d("1111", "onErrorResponse : " + error.getMessage());
                         }
 
                         public void onCacheResponse(RootWeather response) {
                             onResponse(response);
+                            WeatherLog.d("1111", "onCacheResponse : " + response.getCurrentWeather());
                         }
                     });
         }
@@ -98,7 +102,7 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
             if (response != null) {
                 mWeatherMap.put(response.getAreaCode(), response);
             }
-            ItemHolder holder = (ItemHolder) mItemHolder.get();
+            ItemHolder holder = mItemHolder.get();
             if (holder != null && this == holder.getWorkerClient()) {
                 updateView(holder, response, mCityData);
             }
@@ -124,8 +128,8 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
         };
         mCanScroll = false;
         mContext = context;
-        mLoadItems = new ConcurrentHashMap();
-        mWeatherMap = new WeakHashMap();
+        mLoadItems = new ConcurrentHashMap<>();
+        mWeatherMap = new WeakHashMap<>();
         mCityWeatherDB = CityWeatherDB.getInstance(context);
         mCityWeatherDB.addDataChangeListener(mCityListDBListener);
     }
@@ -137,6 +141,7 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
         }
     }
 
+    @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
         return LayoutInflater.from(mContext).inflate(R.layout.citylist_item, parent, false);
     }
@@ -173,6 +178,7 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
         return city;
     }
 
+    @Override
     public void bindView(View view, Context context, Cursor cursor) {
         if (view != null && cursor != null) {
             view.setTag(cursor.getPosition());
@@ -240,10 +246,12 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
         isWidgeMode = widgeMode;
     }
 
+    @Override
     public int getItemViewType(int position) {
-        return (isocationCity(position) || isDefaultCity(position)) ? -1 : super.getItemViewType(position);
+        return (isLocationCity(position) || isDefaultCity(position)) ? -1 : super.getItemViewType(position);
     }
 
+    @Override
     public int getCount() {
         return super.getCount();
     }
@@ -344,16 +352,16 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
             cursor.moveToPosition(position);
             orderId = cursor.getString(9);
         }
-        return "-1".equals(orderId);
+        return "-1" .equals(orderId);
     }
 
-    public boolean isocationCity(int position) {
+    public boolean isLocationCity(int position) {
         Cursor cursor = getCursor();
         String orderId = StringUtils.EMPTY_STRING;
         if (cursor.getCount() > position) {
             cursor.moveToPosition(position);
             orderId = cursor.getString(0);
         }
-        return "0".equals(orderId);
+        return "0" .equals(orderId);
     }
 }

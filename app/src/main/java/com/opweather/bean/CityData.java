@@ -1,9 +1,13 @@
 package com.opweather.bean;
 
+import android.content.ContentValues;
+
 import com.opweather.api.helper.DateUtils;
 import com.opweather.api.nodes.DailyForecastsWeather;
 import com.opweather.api.nodes.RootWeather;
 import com.opweather.api.nodes.Sun;
+import com.opweather.db.CityWeatherDBHelper;
+import com.opweather.db.CityWeatherDBHelper.CityListEntry;
 import com.opweather.util.DateTimeUtils;
 import com.opweather.util.StringUtils;
 
@@ -91,11 +95,11 @@ public class CityData {
         isDefault = aDefault;
     }
 
-    public boolean isLocated() {
+    public boolean isLocatedCity() {
         return isLocated;
     }
 
-    public void setLocated(boolean located) {
+    public void setLocatedCity(boolean located) {
         isLocated = located;
     }
 
@@ -196,5 +200,42 @@ public class CityData {
         } else {
             return true;
         }
+    }
+
+    public static CityData parse(ContentValues values) {
+        if (values == null) {
+            return null;
+        }
+        CityData city = new CityData();
+        city.setId((long) values.getAsInteger("_id"));
+        if (city.getId() != 0) {
+            city.setLocatedCity(false);
+        } else {
+            city.setLocatedCity(true);
+        }
+        city.setProvider(values.getAsInteger(CityListEntry.COLUMN_1_PROVIDER));
+        city.setName(values.getAsString(CityListEntry.COLUMN_2_NAME));
+        city.setLocalName(values.getAsString(CityListEntry.COLUMN_3_DISPLAY_NAME));
+        city.setLocationId(values.getAsString(CityWeatherDBHelper.WeatherEntry.COLUMN_1_LOCATION_ID));
+        city.setLastRefreshTime(values.getAsString(CityListEntry.COLUMN_10_LAST_REFRESH_TIME));
+        city.setDefault("-1".equals(values.getAsString(CityListEntry.COLUMN_9_DISPLAY_ORDER)));
+        return city;
+    }
+
+    public void copy(CityData city) {
+        setName(city.getName());
+        setLocalName(city.getLocalName());
+        setLongitude(city.getLongitude());
+        setLatitude(city.getLatitude());
+        setLocationId(city.getLocationId());
+        setProvider(city.getProvider());
+        setLastRefreshTime(city.getLastRefreshTime());
+        setCountryName(city.getCountryName());
+        setAdministrativeName(city.getAdministrativeName());
+        setLocationDataRequestedTimestamp(getLocationDataRequestedTimestamp());
+        setWeathers(city.getWeathers());
+        setId(city.getId());
+        setLocatedCity(city.isLocatedCity());
+        setDefault(isDefault());
     }
 }

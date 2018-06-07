@@ -30,7 +30,6 @@ public class WeatherCache implements Cache {
     private static final int VERSION_CODE = 1;
     private static final String WEATHER_CACHE_DIR = "weather";
     private static final Object mDiskCacheLock = new Object();
-    ;
     private static WeatherCache sInstance;
     private Context mContext;
     private boolean mDiskCacheStarting;
@@ -45,6 +44,7 @@ public class WeatherCache implements Cache {
             try {
                 initDiskCache();
             } catch (Exception e) {
+                Log.d(TAG, "doInBackground: " + e.getMessage());
                 Log.d(TAG, "failed to write disk");
             }
             return null;
@@ -75,7 +75,7 @@ public class WeatherCache implements Cache {
     }
 
     private void initDiskCacheBackground() {
-        new CacheAsyncTask().execute(new Void[0]);
+        new CacheAsyncTask().execute();
     }
 
     public void initDiskCache() {
@@ -96,7 +96,7 @@ public class WeatherCache implements Cache {
                 }
 
             }
-            this.mDiskCacheStarting = false;
+            mDiskCacheStarting = false;
             mDiskCacheLock.notifyAll();
         }
     }
