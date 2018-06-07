@@ -24,6 +24,8 @@ import com.opweather.api.nodes.RootWeather;
 import com.opweather.bean.CityData;
 import com.opweather.provider.CitySearchProvider;
 import com.opweather.provider.LocationProvider;
+import com.opweather.ui.WeatherWarningActivity;
+import com.opweather.util.ClockUtils;
 import com.opweather.util.DateTimeUtils;
 import com.opweather.util.NetUtil;
 import com.opweather.util.StringUtils;
@@ -34,7 +36,6 @@ import com.opweather.util.WeatherLog;
 import com.opweather.widget.openglbase.RainSurfaceView;
 import com.opweather.widget.widget.WidgetHelper;
 
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -43,7 +44,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class AlarmReceiver extends BroadcastReceiver {
-    public static final String ACTION_ALARM = "net.oneplus.weather.receiver.BootReceiver.ACTION_ALARM";
+    public static final String ACTION_ALARM = "net.oneplus.weather.receiver.BootReceiver" +
+            ".ACTION_ALARM";
     public static final String PRIMARY_CHANNEL = "weather_default";
     private static final String TAG = "AlarmReceiver";
     private static PendingIntent mAlarmIntent = null;
@@ -122,8 +124,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 
             @Override
             public void onLocationChanged(CityData cityData) {
-                if (SystemSetting.getLocationOrDefaultCity(context).isLocatedCity() || TextUtils.isEmpty
-                        (SystemSetting.getLocationOrDefaultCity(context).getLocationId())) {
+                if (SystemSetting.getLocationOrDefaultCity(context).isLocatedCity() || TextUtils
+                        .isEmpty
+                                (SystemSetting.getLocationOrDefaultCity(context).getLocationId())) {
                     SystemSetting.setLocationOrDefaultCity(context, cityData);
                 }
                 if (TextUtils.isEmpty(locationId)) {
@@ -141,39 +144,45 @@ public class AlarmReceiver extends BroadcastReceiver {
         getLocation(context, mode, null);
     }
 
-    private void requestWeather(final Context context, final CityData city, CacheMode mode, final boolean
+    private void requestWeather(final Context context, final CityData city, CacheMode mode, final
+    boolean
             isCheckAlarm) {
-        if (city != null && !TextUtils.isEmpty(city.getLocationId()) && !city.getLocationId().equals("0")) {
-            new WeatherClientProxy(context).setCacheMode(mode).requestWeatherInfo(15, city, new WeatherClientProxy
-                    .OnResponseListener() {
-                @Override
-                public void onCacheResponse(RootWeather rootWeather) {
-                    sendWarnNotification(context, rootWeather, city, isCheckAlarm);
-                    SystemSetting.notifyWeatherDataChange(context);
-                }
+        if (city != null && !TextUtils.isEmpty(city.getLocationId()) && !city.getLocationId()
+                .equals("0")) {
+            new WeatherClientProxy(context).setCacheMode(mode).requestWeatherInfo(15, city, new
+                    WeatherClientProxy
+                            .OnResponseListener() {
+                        @Override
+                        public void onCacheResponse(RootWeather rootWeather) {
+                            sendWarnNotification(context, rootWeather, city, isCheckAlarm);
+                            SystemSetting.notifyWeatherDataChange(context);
+                        }
 
-                @Override
-                public void onErrorResponse(WeatherException weatherException) {
-                    Log.e(TAG, "requestWeather error");
-                    if (mHandler != null) {
-                        mHandler.sendEmptyMessage(CitySearchProvider.GET_SEARCH_RESULT_FAIL);
-                    }
-                }
+                        @Override
+                        public void onErrorResponse(WeatherException weatherException) {
+                            Log.e(TAG, "requestWeather error");
+                            if (mHandler != null) {
+                                mHandler.sendEmptyMessage(CitySearchProvider
+                                        .GET_SEARCH_RESULT_FAIL);
+                            }
+                        }
 
-                @Override
-                public void onNetworkResponse(RootWeather rootWeather) {
-                    sendWarnNotification(context, rootWeather, city, isCheckAlarm);
-                    SystemSetting.notifyWeatherDataChange(context);
-                    SystemSetting.setLocale(context);
-                    if (mHandler != null) {
-                        mHandler.sendEmptyMessage(CitySearchProvider.GET_SEARCH_RESULT_FAIL);
-                    }
-                }
-            });
+                        @Override
+                        public void onNetworkResponse(RootWeather rootWeather) {
+                            sendWarnNotification(context, rootWeather, city, isCheckAlarm);
+                            SystemSetting.notifyWeatherDataChange(context);
+                            SystemSetting.setLocale(context);
+                            if (mHandler != null) {
+                                mHandler.sendEmptyMessage(CitySearchProvider
+                                        .GET_SEARCH_RESULT_FAIL);
+                            }
+                        }
+                    });
         }
     }
 
-    public void sendWarnNotification(Context context, RootWeather weather, CityData city, boolean isCheckAlarm) {
+    public void sendWarnNotification(Context context, RootWeather weather, CityData city, boolean
+            isCheckAlarm) {
         ReflectiveOperationException e;
         Notification notification;
         if (weather != null && city != null && SystemSetting.isWeatherWarningEnabled(context)) {
@@ -185,7 +194,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                 int count = alarms.size();
                 if (isCheckAlarm) {
                     if (!checkAlarmInfo(context, alarms, city)) {
-                        setAlarmInfo(context,  alarms.get(0), city, count);
+                        setAlarmInfo(context, alarms.get(0), city, count);
                     } else {
                         return;
                     }
@@ -193,14 +202,15 @@ public class AlarmReceiver extends BroadcastReceiver {
                 String tempTitle;
                 String string;
                 if (count == 1) {
-                    tempTitle = ( alarms.get(0)).getTypeName();
-                    if (!TextUtils.isEmpty(tempTitle) && !tempTitle.equalsIgnoreCase("None") && !tempTitle
-                            .equalsIgnoreCase("null")) {
+                    tempTitle = (alarms.get(0)).getTypeName();
+                    if (!TextUtils.isEmpty(tempTitle) && !tempTitle.equalsIgnoreCase("None") &&
+                            !tempTitle
+                                    .equalsIgnoreCase("null")) {
                         string = context.getString(R.string.weather_warning_title);
                         objArr = new Object[1];
                         objArr[0] = tempTitle;
                         title = String.format(string, objArr);
-                        message = ( alarms.get(0)).getContentText();
+                        message = (alarms.get(0)).getContentText();
                     } else {
                         return;
                     }
@@ -209,8 +219,9 @@ public class AlarmReceiver extends BroadcastReceiver {
                 StringBuffer tempMessage = new StringBuffer();
                 for (int i = 0; i < count; i++) {
                     tempTitle = ((Alarm) alarms.get(i)).getTypeName();
-                    if (!TextUtils.isEmpty(tempTitle) && !tempTitle.equalsIgnoreCase("None") && !tempTitle
-                            .equalsIgnoreCase("null")) {
+                    if (!TextUtils.isEmpty(tempTitle) && !tempTitle.equalsIgnoreCase("None") &&
+                            !tempTitle
+                                    .equalsIgnoreCase("null")) {
                         if (realCount == 0) {
                             string = context.getString(R.string.weather_warning_title);
                             objArr = new Object[1];
@@ -221,7 +232,8 @@ public class AlarmReceiver extends BroadcastReceiver {
                             String string2 = context.getString(R.string.weather_warning_title);
                             Object[] objArr2 = new Object[1];
                             objArr2[0] = tempTitle;
-                            tempMessage.append(append.append(String.format(string2, objArr2)).toString());
+                            tempMessage.append(append.append(String.format(string2, objArr2))
+                                    .toString());
                         }
                         realCount++;
                     }
@@ -240,54 +252,67 @@ public class AlarmReceiver extends BroadcastReceiver {
                 }
                 removeWarnNotify();
                 if (mNotificationManager == null) {
-                    mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                    mNotificationManager = (NotificationManager) context.getSystemService(Context
+                            .NOTIFICATION_SERVICE);
                 }
-                Builder mbuilder = new Builder(context).setContentTitle(title).setContentText(message)
-                        .setContentIntent(getContentIntent(context, 134217728, city, alarms)).setSmallIcon(R.drawable
-                                .notification_ic_warn).setAutoCancel(true).setWhen(System.currentTimeMillis())
-                        .setDefaults(RainSurfaceView.RAIN_LEVEL_DOWNPOUR).setPriority(RainSurfaceView
-                                .RAIN_LEVEL_SHOWER).setStyle(new BigTextStyle().bigText(message));
+                Builder mbuilder = new Builder(context).setContentTitle(title).setContentText
+                        (message)
+                        .setContentIntent(getContentIntent(context, 134217728, city, alarms))
+                        .setSmallIcon(R.drawable
+                                .notification_ic_warn).setAutoCancel(true).setWhen(System
+                                .currentTimeMillis())
+                        .setDefaults(RainSurfaceView.RAIN_LEVEL_DOWNPOUR).setPriority
+                                (RainSurfaceView
+                                        .RAIN_LEVEL_SHOWER).setStyle(new BigTextStyle().bigText
+                                (message));
                 if (VERSION.SDK_INT >= 26) {
                     try {
-                        Class notificationChannelClass = Class.forName("android.app.NotificationChannel");
+                        Class notificationChannelClass = Class.forName("android.app" +
+                                ".NotificationChannel");
                         if (notificationChannelClass != null) {
                             Class[] clsArr = new Class[3];
                             clsArr[0] = String.class;
                             clsArr[1] = CharSequence.class;
                             clsArr[2] = Integer.TYPE;
-                            Constructor channelConstructor = notificationChannelClass.getConstructor(clsArr);
+                            Constructor channelConstructor = notificationChannelClass
+                                    .getConstructor(clsArr);
                             channelConstructor.setAccessible(true);
                             Object[] objArr3 = new Object[3];
                             objArr3[0] = PRIMARY_CHANNEL;
-                            objArr3[1] = context.getString(2131689647);
+                            objArr3[1] = context.getString(R.string.app_name);
                             objArr3[2] = Integer.valueOf(RainSurfaceView.RAIN_LEVEL_RAINSTORM);
-                            Object notificationChannelField = channelConstructor.newInstance(objArr3);
+                            Object notificationChannelField = channelConstructor.newInstance
+                                    (objArr3);
                             Class[] clsArr2 = new Class[1];
                             clsArr2[0] = Boolean.TYPE;
-                            Method enableLights = notificationChannelField.getClass().getMethod("enableLights",
-                                    clsArr2);
+                            Method enableLights = notificationChannelField.getClass().getMethod
+                                    ("enableLights",
+                                            clsArr2);
                             enableLights.setAccessible(true);
                             objArr3 = new Object[1];
                             objArr3[0] = Boolean.valueOf(true);
                             enableLights.invoke(notificationChannelField, objArr3);
                             clsArr2 = new Class[1];
                             clsArr2[0] = Boolean.TYPE;
-                            Method enableVibration = notificationChannelField.getClass().getMethod("enableVibration",
-                                    clsArr2);
+                            Method enableVibration = notificationChannelField.getClass()
+                                    .getMethod("enableVibration",
+                                            clsArr2);
                             objArr3 = new Object[1];
                             objArr3[0] = Boolean.valueOf(true);
                             enableVibration.invoke(notificationChannelField, objArr3);
                             clsArr2 = new Class[1];
                             clsArr2[0] = notificationChannelClass;
-                            Method createNotificationChannel = this.mNotificationManager.getClass().getMethod
+                            Method createNotificationChannel = mNotificationManager.getClass
+                                    ().getMethod
                                     ("createNotificationChannel", clsArr2);
-                            NotificationManager notificationManager = this.mNotificationManager;
+                            NotificationManager notificationManager = mNotificationManager;
                             objArr = new Object[1];
                             objArr[0] = notificationChannelField;
                             createNotificationChannel.invoke(notificationManager, objArr);
                             clsArr2 = new Class[1];
                             clsArr2[0] = String.class;
-                            Method setChannelId = mbuilder.getClass().getMethod("setChannelId", clsArr2);
+                            Method setChannelId = mbuilder.getClass().getMethod("setChannelId",
+                                    clsArr2);
                             objArr3 = new Object[1];
                             objArr3[0] = PRIMARY_CHANNEL;
                             setChannelId.invoke(mbuilder, objArr3);
@@ -297,43 +322,43 @@ public class AlarmReceiver extends BroadcastReceiver {
                         e.printStackTrace();
                         notification = mbuilder.build();
                         notification.flags |= 16;
-                        this.mNotificationManager.notify(this.mNotifyID, notification);
+                        mNotificationManager.notify(mNotifyID, notification);
                     } catch (NoSuchMethodException e3) {
                         e = e3;
                         e.printStackTrace();
                         notification = mbuilder.build();
                         notification.flags |= 16;
-                        this.mNotificationManager.notify(this.mNotifyID, notification);
+                        mNotificationManager.notify(mNotifyID, notification);
                     } catch (IllegalAccessException e4) {
                         e = e4;
                         e.printStackTrace();
                         notification = mbuilder.build();
                         notification.flags |= 16;
-                        this.mNotificationManager.notify(this.mNotifyID, notification);
+                        mNotificationManager.notify(mNotifyID, notification);
                     } catch (InstantiationException e5) {
                         e = e5;
                         e.printStackTrace();
                         notification = mbuilder.build();
                         notification.flags |= 16;
-                        this.mNotificationManager.notify(this.mNotifyID, notification);
+                        mNotificationManager.notify(mNotifyID, notification);
                     } catch (InvocationTargetException e6) {
                         e = e6;
                         e.printStackTrace();
                         notification = mbuilder.build();
                         notification.flags |= 16;
-                        this.mNotificationManager.notify(this.mNotifyID, notification);
+                        mNotificationManager.notify(mNotifyID, notification);
                     }
                 }
                 notification = mbuilder.build();
                 notification.flags |= 16;
-                this.mNotificationManager.notify(this.mNotifyID, notification);
+                mNotificationManager.notify(mNotifyID, notification);
             }
         }
     }
 
     private void removeWarnNotify() {
-        if (this.mNotificationManager != null) {
-            this.mNotificationManager.cancel(this.mNotifyID);
+        if (mNotificationManager != null) {
+            mNotificationManager.cancel(mNotifyID);
         }
     }
 
@@ -341,11 +366,11 @@ public class AlarmReceiver extends BroadcastReceiver {
         HashMap<String, Object> alarMap = SystemSetting.getAlarmInfo(context);
         Object alarmCity = alarMap.get("WeatherAlarmCity");
         Object alarmType = alarMap.get("WeatherAlarmType");
-        int alarmCount = ((Integer) alarMap.get("WeatherAlarmCount")).intValue();
+        int alarmCount = (int) alarMap.get("WeatherAlarmCount");
         if (alarmCity == null || !city.getLocalName().equals(alarmCity.toString())) {
             return false;
         }
-        if (alarmType == null || !((Alarm) alarms.get(0)).getTypeName().equals(alarmType.toString())) {
+        if (alarmType == null || !alarms.get(0).getTypeName().equals(alarmType.toString())) {
             return false;
         }
         return alarmCount != 0 && alarmCount == alarms.size();
@@ -355,11 +380,13 @@ public class AlarmReceiver extends BroadcastReceiver {
         SystemSetting.setAlarmInfo(context, city.getLocalName(), alarm.getTypeName(), count);
     }
 
-    private PendingIntent getContentIntent(Context context, int flag, CityData city, ArrayList<Alarm> alarms) {
+    private PendingIntent getContentIntent(Context context, int flag, CityData city,
+                                           ArrayList<Alarm> alarms) {
         Intent contentIntent = new Intent();
         contentIntent.setClass(context, WeatherWarningActivity.class);
         contentIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        contentIntent.putParcelableArrayListExtra(WeatherWarningActivity.INTENT_PARA_WARNING, alarms);
+        contentIntent.putParcelableArrayListExtra(WeatherWarningActivity.INTENT_PARA_WARNING,
+                alarms);
         contentIntent.putExtra(WeatherWarningActivity.INTENT_PARA_CITY, city.getLocalName());
         return PendingIntent.getActivity(context, 0, contentIntent, flag);
     }
@@ -368,7 +395,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         if (alarms == null || alarms.size() == 0) {
             return null;
         }
-        ArrayList<Alarm> resAlarms = new ArrayList();
+        ArrayList<Alarm> resAlarms = new ArrayList<>();
         resAlarms.addAll(alarms);
         return resAlarms;
     }
@@ -377,17 +404,19 @@ public class AlarmReceiver extends BroadcastReceiver {
         long interval = DateTimeUtils.getTimeInterval();
         long refreshTime = 3600000 + DateTimeUtils.getRandomDelayMillis();
         if (interval < 0) {
-            refreshTime = (SystemClock.elapsedRealtime() - interval) + DateTimeUtils.getRandomDelayMillis();
+            refreshTime = (SystemClock.elapsedRealtime() - interval) + DateTimeUtils
+                    .getRandomDelayMillis();
             checkAlarmIntent(context);
             ClockUtils.getInstance(context).setClock(mAlarmIntent, refreshTime);
-            Log.d(TAG, "setAlarmClock , 15 minutes later , next refresh time is :" + DateTimeUtils.getLocalDateTime
-                    (System.currentTimeMillis() - interval));
+            Log.d(TAG, "setAlarmClock , 15 minutes later , next refresh time is :" +
+                    DateTimeUtils.getLocalDateTime(System.currentTimeMillis() - interval));
             return;
         }
-        Log.d(TAG, "setAlarmClock , next refresh time is :" + DateTimeUtils.getLocalDateTime(System.currentTimeMillis
-                () + refreshTime));
+        Log.d(TAG, "setAlarmClock , next refresh time is :" + DateTimeUtils.getLocalDateTime
+                (System.currentTimeMillis() + refreshTime));
         checkAlarmIntent(context);
-        ClockUtils.getInstance(context).setClock(mAlarmIntent, SystemClock.elapsedRealtime() + refreshTime);
+        ClockUtils.getInstance(context).setClock(mAlarmIntent, SystemClock.elapsedRealtime() +
+                refreshTime);
     }
 
     public static void cancleAlarmClock(Context context) {
@@ -400,16 +429,18 @@ public class AlarmReceiver extends BroadcastReceiver {
             Intent alarmIntent = new Intent();
             alarmIntent.setPackage(context.getPackageName());
             alarmIntent.setAction(ACTION_ALARM);
-            mAlarmIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, 134217728);
+            mAlarmIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent
+                    .FLAG_UPDATE_CURRENT);
         }
     }
 
     public static void buildJob(Context context) {
         Log.d(TAG, "update weather from buildJob");
-        JobScheduler mJobScheduler = (JobScheduler) context.getSystemService("jobscheduler");
-        JobInfo.Builder builder = new JobInfo.Builder(1, new ComponentName(context.getPackageName(), AlarmUpdateJob
-                .class.getName()));
-        builder.setRequiredNetworkType(1);
+        JobScheduler mJobScheduler = (JobScheduler) context.getSystemService(Context
+                .JOB_SCHEDULER_SERVICE);
+        JobInfo.Builder builder = new JobInfo.Builder(1, new ComponentName(context
+                .getPackageName(), AlarmUpdateJob.class.getName()));
+        builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
         if (mJobScheduler != null) {
             mJobScheduler.schedule(builder.build());
         }

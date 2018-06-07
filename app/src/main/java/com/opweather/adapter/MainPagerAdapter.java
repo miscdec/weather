@@ -248,7 +248,6 @@ public class MainPagerAdapter extends PagerAdapter {
     }
 
     public RootWeather getWeatherDataAtPosition(int position) {
-        return (this.mCitys.size() <= position || position == -1) ? null : ((CityData) mCitys.get(position))
-                .getWeathers();
+        return (mCitys.size() <= position || position == -1) ? null : mCitys.get(position).getWeathers();
     }
 }

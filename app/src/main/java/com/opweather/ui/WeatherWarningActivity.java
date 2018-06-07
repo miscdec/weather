@@ -1,13 +1,12 @@
 package com.opweather.ui;
 
 import android.app.ActionBar;
+import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,19 +17,15 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.opweather.R;
 import com.opweather.api.nodes.Alarm;
 import com.opweather.util.BitmapUtils;
-import com.opweather.util.MediaUtil;
 import com.opweather.util.PermissionUtil;
 import com.opweather.util.UIUtil;
 import com.opweather.util.Utilities;
 import com.opweather.widget.openglbase.RainSurfaceView;
 
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -121,26 +116,30 @@ public class WeatherWarningActivity extends BaseActivity {
         protected String doInBackground(String... params) {
             if (!TextUtils.isEmpty(params[0])) {
                 BitmapUtils.savePicByLimit(ScreenShot.createBitmap(WeatherWarningActivity.this,
-                WeatherWarningActivity.this.mWarningList, WeatherWarningActivity.this.mCity), params[0]);
+                WeatherWarningActivity.this.mWarningList, WeatherWarningActivity.this.mCity),
+                params[0]);
             }
             return params[0];
         }
 
         protected void onPostExecuteExtend(String path) {
             if (TextUtils.isEmpty(path)) {
-                Toast.makeText(WeatherWarningActivity.this, WeatherWarningActivity.this.getString(R.string
+                Toast.makeText(WeatherWarningActivity.this, WeatherWarningActivity.this.getString
+                (R.string
                 .no_weather_data), 0).show();
                 return;
             }
             File f = new File(path);
             Intent intent = new Intent("android.intent.action.SEND");
             intent.setType("image/*");
-            intent.putExtra("android.intent.extra.SUBJECT", WeatherWarningActivity.this.getString(R.string
+            intent.putExtra("android.intent.extra.SUBJECT", WeatherWarningActivity.this.getString
+            (R.string
             .share_subject));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra("android.intent.extra.STREAM", MediaUtil.getInstace().getImageContentUri
             (WeatherWarningActivity.this, f));
-            WeatherWarningActivity.this.startActivity(Intent.createChooser(intent, WeatherWarningActivity.this
+            WeatherWarningActivity.this.startActivity(Intent.createChooser(intent,
+            WeatherWarningActivity.this
             .getString(R.string.share_title)));
         }
     }*/
@@ -171,13 +170,15 @@ public class WeatherWarningActivity extends BaseActivity {
                 public boolean onPreDraw() {
                     layout.getViewTreeObserver().removeOnPreDrawListener(this);
                     viewWidth = UIUtil.dip2px(layout.getContext(), 50.0f) - shareButton.getWidth();
-                    Utilities.measureTextLengthAndSet(titleText, getString(R.string.weather_warning_title, mCity),
+                    Utilities.measureTextLengthAndSet(titleText, getString(R.string
+                                    .weather_warning_title, mCity),
                             viewWidth, 20);
                     return true;
                 }
             });
         }
-        ArrayList<Parcelable> weather = getIntent().getParcelableArrayListExtra(INTENT_PARA_WARNING);
+        ArrayList<Parcelable> weather = getIntent().getParcelableArrayListExtra
+                (INTENT_PARA_WARNING);
         List<Alarm> alarms = new ArrayList<>();
         if (weather != null) {
             for (int i = 0; i < weather.size(); i++) {
@@ -200,7 +201,8 @@ public class WeatherWarningActivity extends BaseActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[]
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[]
             grantResults) {
         switch (requestCode) {
             case RainSurfaceView.RAIN_LEVEL_NORMAL_RAIN:
@@ -213,12 +215,14 @@ public class WeatherWarningActivity extends BaseActivity {
     }
 
     private void share() {
-        if (mWarningList != null && PermissionUtil.check(this, "android.permission.WRITE_EXTERNAL_STORAGE",
+        if (mWarningList != null && PermissionUtil.check(this, "android.permission" +
+                        ".WRITE_EXTERNAL_STORAGE",
                 getString(R.string.request_permission_storage), 1)) {
             String shareIamgePath = BitmapUtils.getPicFileName(mCity, this);
-            OPProgressDialog dialog = new OPProgressDialog(this);
-            dialog.setMessage(getResources().getString(R.string.generate_image));
-            new SavePic(dialog, null).execute(new String[]{shareIamgePath});
+            AlertDialog alertDialog = new AlertDialog.Builder(this)
+                    .setMessage(getResources().getString(R.string.generate_image))
+                    .create();
+            //new SavePic(alertDialog, null).execute(new String[]{shareIamgePath});
         }
     }
 
@@ -235,7 +239,8 @@ public class WeatherWarningActivity extends BaseActivity {
                 Alarm tempAlarm = (Alarm) weather.get(i);
                 int count = resAlarms.size();
                 int j = 0;
-                while (j < count && !((Alarm) resAlarms.get(j)).getTypeName().equals(tempAlarm.getTypeName())) {
+                while (j < count && !((Alarm) resAlarms.get(j)).getTypeName().equals(tempAlarm
+                        .getTypeName())) {
                     resAlarms.add(tempAlarm);
                     j++;
                 }
