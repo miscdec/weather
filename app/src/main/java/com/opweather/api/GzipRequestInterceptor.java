@@ -2,21 +2,15 @@ package com.opweather.api;
 
 import android.util.Log;
 
+import com.android.volley.Response;
+
 import java.io.IOException;
 
-import okhttp3.Interceptor;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okio.BufferedSink;
-import okio.GzipSink;
-import okio.Okio;
 
-public class GzipRequestInterceptor implements Interceptor {
+public class GzipRequestInterceptor /*implements Interceptor*/ {
 
 
-    private RequestBody gzip(final RequestBody body) {
+   /* private RequestBody gzip(final RequestBody body) {
         return new RequestBody() {
             @Override
             public MediaType contentType() {
@@ -49,7 +43,7 @@ public class GzipRequestInterceptor implements Interceptor {
                 .method(originalRequest.method(), gzip(originalRequest.body()))
                 .build();
         return chain.proceed(compressedRequest);
-    }
+    }*/
 
 
 }

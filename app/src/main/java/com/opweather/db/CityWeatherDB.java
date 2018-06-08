@@ -21,7 +21,6 @@ import com.opweather.util.SystemSetting;
 import com.opweather.util.WeatherLog;
 import com.opweather.widget.openglbase.RainSurfaceView;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,11 +32,11 @@ public class CityWeatherDB {
     private SQLiteDatabase mDb;
     private List<CityListDBListener> mListenerList;
     private SQLiteDatabase mReadableDb;
+    public final int TYPE_CITY_ADDED = 1;
+    public final int TYPE_CITY_DELETED = 2;
+    public final int TYPE_CITY_UPDATED = 4;
 
     public interface CityListDBListener {
-        public final int TYPE_CITY_ADDED = 1;
-        public final int TYPE_CITY_DELETED = 2;
-        public final int TYPE_CITY_UPDATED = 4;
 
         void onCityAdded(long j);
 
@@ -61,7 +60,7 @@ public class CityWeatherDB {
         mContext = context;
         mDBHelper = new CityWeatherDBHelper(context);
         mDb = mDBHelper.getWritableDatabase();
-        mListenerList = new ArrayList();
+        mListenerList = new ArrayList<>();
     }
 
     public void close() {
@@ -111,7 +110,7 @@ public class CityWeatherDB {
         values.put(WeatherEntry.COLUMN_1_LOCATION_ID, locationId);
         values.put(CityListEntry.COLUMN_9_DISPLAY_ORDER, getMaxIDValue() + 1);
         values.put(CityListEntry.COLUMN_10_LAST_REFRESH_TIME, refreshTime);
-        long recordId = getSQLiteDatabase(this.mContext).insert("city", null, values);
+        long recordId = getSQLiteDatabase(mContext).insert("city", null, values);
         if (recordId >= 0) {
             triggerDataChangeListener(recordId, 1);
         }
@@ -153,7 +152,7 @@ public class CityWeatherDB {
         System.out.println("locationId:" + String.valueOf(locationId));
         ContentValues values = new ContentValues();
         values.put(CityListEntry.COLUMN_10_LAST_REFRESH_TIME, refreshTime);
-        long recordId = (long) getSQLiteDatabase(this.mContext).update("city",
+        long recordId = (long) getSQLiteDatabase(mContext).update("city",
                 values, WeatherEntry.COLUMN_1_LOCATION_ID.concat(" = ?"), new String[]{locationId});
         if (recordId >= 0) {
             triggerDataChangeListener(0, RainSurfaceView.RAIN_LEVEL_RAINSTORM);
@@ -163,7 +162,7 @@ public class CityWeatherDB {
 
     public String getLastRefreshTime(String locationId) {
         String refreshTime = StringUtils.EMPTY_STRING;
-        Cursor cursor = getReadableSQLiteDatabase(this.mContext).query("city", null,
+        Cursor cursor = getReadableSQLiteDatabase(mContext).query("city", null,
                 "locationId = ?", new String[]{locationId}, null, null, null, null);
         if (cursor != null) {
             if (cursor.moveToFirst()) {
@@ -232,7 +231,7 @@ public class CityWeatherDB {
         if (!TextUtils.isEmpty(city.getLastRefreshTime())) {
             values.put(CityListEntry.COLUMN_10_LAST_REFRESH_TIME, city.getLastRefreshTime());
         }
-        long recordId = (long) getSQLiteDatabase(this.mContext).update("city",
+        long recordId = (long) getSQLiteDatabase(mContext).update("city",
                 values, CityListEntry.COLUMN_3_DISPLAY_NAME.concat(" = ?"), new String[]{String.valueOf(name)});
         if (recordId < 0) {
             return recordId;
@@ -315,12 +314,12 @@ public class CityWeatherDB {
     }
 
     public Cursor getCity(String cityName) {
-        return getSQLiteDatabase(this.mContext).query("city", null, "name = ?", new
+        return getSQLiteDatabase(mContext).query("city", null, "name = ?", new
                 String[]{cityName}, null, null, "displayOrder ASC", null);
     }
 
     public ContentValues getCity(long id) {
-        Cursor cursor = getSQLiteDatabase(this.mContext).query("city", null, "_id = " +
+        Cursor cursor = getSQLiteDatabase(mContext).query("city", null, "_id = " +
                 "?", new String[]{String.valueOf(id)}, null, null, "displayOrder ASC", null);
         ContentValues city = null;
         if (cursor != null) {
@@ -342,7 +341,7 @@ public class CityWeatherDB {
     }
 
     public WeatherData getWeather(String locationId) {
-        Cursor cursor = getSQLiteDatabase(this.mContext).query(WeatherEntry.TABLE_NAME, null, "locationId = ?", new
+        Cursor cursor = getSQLiteDatabase(mContext).query(WeatherEntry.TABLE_NAME, null, "locationId = ?", new
                 String[]{locationId}, null, null, null, null);
         WeatherData weather = null;
         if (cursor != null) {
@@ -367,7 +366,7 @@ public class CityWeatherDB {
     }
 
     public List<WeatherData> getForecast(String locationId) {
-        Cursor cursor = getSQLiteDatabase(this.mContext).query(ForecastEntry.TABLE_NAME, null, "locationId = ?", new
+        Cursor cursor = getSQLiteDatabase(mContext).query(ForecastEntry.TABLE_NAME, null, "locationId = ?", new
                 String[]{locationId}, null, null, "_id ASC", null);
         List<WeatherData> forecastList = new ArrayList();
         if (cursor != null) {
@@ -390,16 +389,16 @@ public class CityWeatherDB {
     }
 
     public long getSize() {
-        return DatabaseUtils.queryNumEntries(this.mDb, "city");
+        return DatabaseUtils.queryNumEntries(mDb, "city");
     }
 
     public Cursor getAllCities() {
-        return getSQLiteDatabase(this.mContext).rawQuery("SELECT * FROM city where locationid != 0 ORDER BY " +
+        return getSQLiteDatabase(mContext).rawQuery("SELECT * FROM city where locationid != 0 ORDER BY " +
                 "displayOrder ASC LIMIT 0,8", null);
     }
 
     public CityData getLocationCity() {
-        Cursor cursor = getSQLiteDatabase(this.mContext).rawQuery("SELECT * FROM city where _id = 0 ORDER BY " +
+        Cursor cursor = getSQLiteDatabase(mContext).rawQuery("SELECT * FROM city where _id = 0 ORDER BY " +
                 "displayOrder ASC LIMIT 0,8", null);
         if (cursor == null || cursor.getCount() <= 0 || !cursor.moveToFirst()) {
             return null;
@@ -441,7 +440,7 @@ public class CityWeatherDB {
     }
 
     public CityData getCityFromLocationId(int locationid) {
-        Cursor cursor = getSQLiteDatabase(this.mContext).rawQuery("SELECT * FROM city where locationid =" +
+        Cursor cursor = getSQLiteDatabase(mContext).rawQuery("SELECT * FROM city where locationid =" +
                 locationid, null);
         if (cursor == null || !cursor.moveToFirst()) {
             return null;
@@ -463,7 +462,7 @@ public class CityWeatherDB {
         if (TextUtils.isEmpty(locationid)) {
             return -1;
         }
-        Cursor cursor = getSQLiteDatabase(this.mContext).rawQuery("SELECT * FROM city where locationid =" +
+        Cursor cursor = getSQLiteDatabase(mContext).rawQuery("SELECT * FROM city where locationid =" +
                 locationid, null);
         if (cursor.getCount() <= 0 || !cursor.moveToFirst()) {
             return -1;
@@ -474,7 +473,7 @@ public class CityWeatherDB {
     }
 
     public List<ContentValues> getAllCityList() {
-        Cursor cursor = getSQLiteDatabase(this.mContext).rawQuery("SELECT * FROM city ORDER BY displayOrder ASC", null);
+        Cursor cursor = getSQLiteDatabase(mContext).rawQuery("SELECT * FROM city ORDER BY displayOrder ASC", null);
         ArrayList<ContentValues> cityList = new ArrayList();
         if (cursor != null) {
             if (cursor.moveToFirst()) {
@@ -498,7 +497,7 @@ public class CityWeatherDB {
     }
 
     public int deleteCity(long id) {
-        int rowAffected = getSQLiteDatabase(this.mContext).delete("city", "_id = ?",
+        int rowAffected = getSQLiteDatabase(mContext).delete("city", "_id = ?",
                 new String[]{String.valueOf(id)});
         if (rowAffected > 0) {
             triggerDataChangeListener(id, RainSurfaceView.RAIN_LEVEL_SHOWER);
@@ -508,7 +507,7 @@ public class CityWeatherDB {
 
     public long reOrderAllCities(List<ContentValues> orderedCityList) {
         long j = -1;
-        SQLiteDatabase db = getSQLiteDatabase(this.mContext);
+        SQLiteDatabase db = getSQLiteDatabase(mContext);
         try {
             db.beginTransaction();
             for (int i = 0; i < orderedCityList.size(); i++) {
@@ -534,25 +533,25 @@ public class CityWeatherDB {
     }
 
     public void addDataChangeListener(CityListDBListener listener) {
-        this.mListenerList.add(listener);
+        mListenerList.add(listener);
     }
 
     public void removeDataChangeListener(CityListDBListener listener) {
-        this.mListenerList.remove(listener);
+        mListenerList.remove(listener);
     }
 
     private void triggerDataChangeListener(long id, int changeType) {
         switch (changeType) {
-            case RainSurfaceView.RAIN_LEVEL_NORMAL_RAIN:
-                for (CityListDBListener listener : this.mListenerList) {
+            case TYPE_CITY_ADDED:
+                for (CityListDBListener listener : mListenerList) {
                     listener.onCityAdded(id);
                 }
-            case RainSurfaceView.RAIN_LEVEL_SHOWER:
-                for (CityListDBListener listener2 : this.mListenerList) {
+            case TYPE_CITY_DELETED:
+                for (CityListDBListener listener2 : mListenerList) {
                     listener2.onCityDeleted(id);
                 }
-            case RainSurfaceView.RAIN_LEVEL_RAINSTORM:
-                for (CityListDBListener listener22 : this.mListenerList) {
+            case TYPE_CITY_UPDATED:
+                for (CityListDBListener listener22 : mListenerList) {
                     listener22.onCityUpdated(id);
                 }
             default:

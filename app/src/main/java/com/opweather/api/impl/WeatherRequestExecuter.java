@@ -124,6 +124,9 @@ public class WeatherRequestExecuter extends AbstractExecuter {
                 if (mRequestType == 8) {
                     rootWeather = mRequest.getResponseParser().parseAqi(data);
                 } else if (mRequestType == 1) {
+                    if (mRequest == null) {
+                        Log.d(TAG, "doInBackground: mRequest null");
+                    }
                     rootWeather = mRequest.getResponseParser().parseCurrent(data);
                 } else if (mRequestType == 16) {
                     rootWeather = mRequest.getResponseParser().parseLifeIndex(data);
@@ -329,6 +332,7 @@ public class WeatherRequestExecuter extends AbstractExecuter {
 
             @Override
             public void onResponse(byte[] data, String str) {
+                Log.d(TAG, "onResponse: str = " + str);
                 addToDiskCache(mContext, request.getDiskCacheKey(type), data);
                 new NetworkParserWorkerTask(type, request, response).execute();
             }
@@ -395,7 +399,6 @@ public class WeatherRequestExecuter extends AbstractExecuter {
 
     private void requestCacheData(int type, WeatherRequest request, CacheBox box) {
         LogUtils.d(TAG, "Cache key: " + request.getDiskCacheKey(type));
-        Log.d(TAG, "requestCacheData: type = " + type);
         new CacheParserWorkerTask(type, request, box).execute(request.getDiskCacheKey(type));
     }
 }

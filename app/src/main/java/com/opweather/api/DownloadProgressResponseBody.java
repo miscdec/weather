@@ -1,12 +1,9 @@
 package com.opweather.api;
 
-import okhttp3.MediaType;
-import okhttp3.ResponseBody;
-import okio.BufferedSource;
 
-public class DownloadProgressResponseBody extends ResponseBody {
+public class DownloadProgressResponseBody /*extends ResponseBody*/ {
 
-    private ResponseBody responseBody;
+   /* private ResponseBody responseBody;
     private BufferedSource bufferedSource;
 
     public DownloadProgressResponseBody(ResponseBody responseBody) {
@@ -26,5 +23,5 @@ public class DownloadProgressResponseBody extends ResponseBody {
     @Override
     public BufferedSource source() {
         return null;
-    }
+    }*/
 }

@@ -74,9 +74,16 @@ public class NetworkHelper {
     }
 
     public void get(String url, ResponseListener listener, boolean useHttpCache) {
-        ResponseListener innerListener = listener;
+        final ResponseListener innerListener = listener;
         if (!StringUtils.isBlank(url)) {
-            ByteArrayRequest request = new ByteArrayRequest(url, false, innerListener, new AnonymousClass_1(innerListener));
+            ByteArrayRequest request = new ByteArrayRequest(url, false, innerListener, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    if (innerListener != null) {
+                        innerListener.onError(new WeatherException(error.getMessage()));
+                    }
+                }
+            });
             request.setShouldCache(useHttpCache);
             request.setTag(WEATHER_REQUESTS);
             addToRequestQueue(request);

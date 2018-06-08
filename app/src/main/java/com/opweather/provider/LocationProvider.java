@@ -24,7 +24,6 @@ import com.opweather.bean.OpCity;
 import com.opweather.constants.GlobalConfig;
 import com.opweather.db.ChinaCityDB;
 import com.opweather.db.CityWeatherDB;
-import com.opweather.location.GMSLocationHelper;
 import com.opweather.provider.apihelper.AccuWeatherHelper;
 import com.opweather.ui.MainActivity;
 import com.opweather.util.GpsUtils;
@@ -41,7 +40,6 @@ public class LocationProvider {
     private Handler locationHandler;
     private AccuWeatherHelper locationHelper;
     private Context mContext;
-    public GMSLocationHelper mGMSLocationHelper;
     private OnLocationListener mListener;
     public AMapLocationClient mLocationClient;
 
@@ -89,20 +87,15 @@ public class LocationProvider {
 
     public void initLocation() {
         isLocating = true;
-        if (GpsUtils.isH2OS()) {
-            mLocationClient = new AMapLocationClient(this.mContext);
-            mLocationClient.setLocationListener(new LocationProvider$$Lambda$0(this));
-            AMapLocationClientOption option = new AMapLocationClientOption();
-            option.setLocationMode(AMapLocationMode.Hight_Accuracy);
-            option.setMockEnable(true);
-            option.setOnceLocation(true);
-            option.setNeedAddress(true);
-            option.setGpsFirst(PreferenceUtils.getBoolean(mContext, "gps_first"));
-            mLocationClient.setLocationOption(option);
-            return;
-        }
-        mGMSLocationHelper = new GMSLocationHelper(mContext);
-        //mGMSLocationHelper.setOneplusLocationListener(new LocationProvider$$Lambda$1(this));
+        mLocationClient = new AMapLocationClient(mContext);
+        mLocationClient.setLocationListener(new LocationProvider$$Lambda$0(this));
+        AMapLocationClientOption option = new AMapLocationClientOption();
+        option.setLocationMode(AMapLocationMode.Hight_Accuracy);
+        option.setMockEnable(true);
+        option.setOnceLocation(true);
+        option.setNeedAddress(true);
+        option.setGpsFirst(PreferenceUtils.getBoolean(mContext, "gps_first"));
+        mLocationClient.setLocationOption(option);
     }
 
     final void bridge$lambda$0$LocationProvider(Location location) {
@@ -110,11 +103,7 @@ public class LocationProvider {
     }
 
     public void startLocation() {
-        if (GpsUtils.isH2OS()) {
-            mLocationClient.startLocation();
-        } else {
-            //mGMSLocationHelper.startLocation();
-        }
+        mLocationClient.startLocation();
     }
 
     private void notifyLocationChangedForAmap(final AMapLocation location) {
@@ -124,14 +113,14 @@ public class LocationProvider {
         String province = location.getProvince();
         boolean isGMSLocation = false;
         if (location.getExtras() != null) {
-            isGMSLocation = location.getExtras().getBoolean(GMSLocationHelper.KEY_LOCATION);
+            isGMSLocation = location.getExtras().getBoolean("GMSLocationProvider");
         }
         Log.d(TAG, "location.getLatitude(): " + location.getLatitude());
         Log.d(TAG, "location.getLongitude(): " + location.getLongitude());
         Log.d(TAG, "isisGMSLocation : " + isGMSLocation);
         if (!isGMSLocation && TextUtils.isEmpty(city) && TextUtils.isEmpty(code) && TextUtils.isEmpty(country)) {
             Log.d(TAG, "location is null");
-            judgeIsChinaHandler = new Handler(){
+            judgeIsChinaHandler = new Handler() {
                 @Override
                 public void handleMessage(Message msg) {
                     super.handleMessage(msg);
@@ -143,7 +132,7 @@ public class LocationProvider {
                             if (cc != null) {
                                 CityData city = new CityData();
                                 city.setName(location.getCity());
-                                city.setLocalName(LocationProvider.this.getName(cc));
+                                city.setLocalName(getName(cc));
                                 city.setLatitude(location.getLatitude());
                                 city.setLongitude(location.getLongitude());
                                 city.setProvider(CitySearchProvider.PROVIDER_WEATHER_CHINA);
@@ -160,19 +149,20 @@ public class LocationProvider {
                     }
                 }
             };
-            AccuWeatherHelper locationHelper = new AccuWeatherHelper(this.judgeIsChinaHandler);
+            AccuWeatherHelper locationHelper = new AccuWeatherHelper(judgeIsChinaHandler);
             CityData tmpCity = new CityData();
             tmpCity.setLatitude(location.getLatitude());
             tmpCity.setLongitude(location.getLongitude());
             tmpCity.setLocationDataRequestedTimestamp(new Date().getTime());
-            locationHelper.getAccWeatherinfo(this.mContext, tmpCity);
-            locationHelper.setOnLocationListener(this.mListener);
-        } else if (country == null || !country.equals("\u4e2d\u56fd") || province.equals("\u53f0\u6e7e\u7701")) {
+            locationHelper.getAccWeatherinfo(mContext, tmpCity);
+            locationHelper.setOnLocationListener(mListener);
+        } else if (country == null || !country.equals("中国") || province.equals("台湾省")) {
             Log.d(TAG, "fetchAccuLocationData");
             fetchAccuLocationData(location.getLatitude(), location.getLongitude());
         } else {
-            Log.d(TAG, "country is china" + location.getProvince());
-            OpCity cc = ChinaCityDB.openCityDB(this.mContext).getChinaCity(this.mContext, location.getAdCode(), location.getCity());
+            Log.d(TAG, "country is china " + location.getProvince());
+            OpCity cc = ChinaCityDB.openCityDB(mContext).getChinaCity(mContext, location.getAdCode(), location
+                    .getCity());
             if (cc != null) {
                 CityData cityData = new CityData();
                 cityData.setName(location.getCity());
@@ -182,11 +172,11 @@ public class LocationProvider {
                 cityData.setProvider(CitySearchProvider.PROVIDER_WEATHER_CHINA);
                 cityData.setLocationId(cc.getAreaId());
                 cityData.setLocatedCity(true);
-                if (this.mListener != null) {
-                    this.mListener.onLocationChanged(cityData);
+                if (mListener != null) {
+                    mListener.onLocationChanged(cityData);
                 }
-            } else if (this.mListener != null) {
-                this.mListener.onError(RainSurfaceView.RAIN_LEVEL_DOWNPOUR);
+            } else if (mListener != null) {
+                mListener.onError(RainSurfaceView.RAIN_LEVEL_DOWNPOUR);
             }
         }
     }
@@ -196,8 +186,9 @@ public class LocationProvider {
             String provider = location.getProvider();
             switch (provider.hashCode()) {
                 case RainSurfaceView.RAIN_LEVEL_DRIZZLE:
-                    CityData cityData = CityWeatherDB.getInstance(this.mContext).getLocationCity();
-                    if (cityData != null && !TextUtils.isEmpty(cityData.getLocationId()) && !"0".equals(cityData.getLocationId()) && this.mListener != null) {
+                    CityData cityData = CityWeatherDB.getInstance(mContext).getLocationCity();
+                    if (cityData != null && !TextUtils.isEmpty(cityData.getLocationId()) && !"0" .equals(cityData
+                            .getLocationId()) && mListener != null) {
                         mListener.onLocationChanged(cityData);
                         return;
                     }
@@ -205,14 +196,14 @@ public class LocationProvider {
                 default:
                     boolean success = false;
                     if (location.getExtras() != null) {
-                        success = location.getExtras().getBoolean(GMSLocationHelper.KEY_LOCATION_SUCCESS);
+                        success = location.getExtras().getBoolean("GMSLocationProvider");
                     }
                     Log.d(TAG, "fetchAccuLocationData");
                     if (success) {
                         fetchAccuLocationData(location.getLatitude(), location.getLongitude());
                         return;
-                    } else if (this.mListener != null) {
-                        this.mListener.onError(RainSurfaceView.RAIN_LEVEL_DOWNPOUR);
+                    } else if (mListener != null) {
+                        mListener.onError(RainSurfaceView.RAIN_LEVEL_DOWNPOUR);
                         return;
                     } else {
                         return;
@@ -223,21 +214,24 @@ public class LocationProvider {
     }
 
     private String getName(OpCity city) {
-        Locale locale = this.mContext.getResources().getConfiguration().locale;
+        Locale locale = mContext.getResources().getConfiguration().locale;
         Log.d(TAG, "locale: " + locale.toString());
         if (locale.toString().contains("Hans") || locale.toString().equals("zh_CN")) {
             return city.getNameChs();
         }
-        return (locale.toString().contains("Hant") || locale.toString().equals("zh_TW")) ? city.getNameCht() : city.getNameEn();
+        return (locale.toString().contains("Hant") || locale.toString().equals("zh_TW")) ? city.getNameCht() : city
+                .getNameEn();
     }
 
     public void onLocationChanged(final AMapLocation amapLocation) {
         if (amapLocation == null || amapLocation.getErrorCode() != 0) {
             if (amapLocation != null) {
-                Log.e("AmapErr", "Location ERR:" + amapLocation.getErrorCode() + "LocationDetail: " + amapLocation.getLocationDetail() + "errorInfo: " + amapLocation.getErrorInfo());
+                Log.e("AmapErr", "Location ERR:" + amapLocation.getErrorCode() + "LocationDetail: " + amapLocation
+                        .getLocationDetail() + "errorInfo: " + amapLocation.getErrorInfo());
             }
-            if (this.mListener != null) {
-                this.mListener.onError(amapLocation != null ? amapLocation.getErrorCode() : RainSurfaceView.RAIN_LEVEL_DOWNPOUR);
+            if (mListener != null) {
+                mListener.onError(amapLocation != null ? amapLocation.getErrorCode() : RainSurfaceView
+                        .RAIN_LEVEL_DOWNPOUR);
             }
         } else if (MainActivity.MOCK_TEST_FLAG) {
             GeocodeSearch gs = new GeocodeSearch(mContext);
@@ -263,20 +257,18 @@ public class LocationProvider {
                     Log.d(TAG, "onGeocodeSearched");
                 }
             });
-            gs.getFromLocationAsyn(new RegeocodeQuery(new LatLonPoint(amapLocation.getLatitude(), amapLocation.getLongitude()), 15.0f, GeocodeSearch.GPS));
+            gs.getFromLocationAsyn(new RegeocodeQuery(new LatLonPoint(amapLocation.getLatitude(), amapLocation
+                    .getLongitude()), 15.0f, GeocodeSearch.GPS));
         } else {
             Log.d(TAG, "get location start");
             notifyLocationChangedForAmap(amapLocation);
-            this.isLocating = false;
+            isLocating = false;
         }
     }
 
     public void stopLocation() {
         if (mLocationClient != null) {
             mLocationClient.onDestroy();
-        }
-        if (mGMSLocationHelper != null) {
-            //mGMSLocationHelper.stopLocation();
         }
         mLocationClient = null;
         mListener = null;

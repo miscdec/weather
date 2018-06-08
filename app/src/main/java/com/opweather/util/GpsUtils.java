@@ -28,6 +28,6 @@ public class GpsUtils {
     }
 
     public static boolean isH2OS() {
-        return ReflectUtil.isFeatureSupported("OP_FEATURE_SKU_CHINA");
+        return true;/*ReflectUtil.isFeatureSupported("OP_FEATURE_SKU_CHINA");*/
     }
 }

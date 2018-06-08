@@ -104,7 +104,6 @@ public class MainActivity extends AppCompatActivity {
     private CityListDBListener mCityListDBListener;
     private CityWeatherDB mCityWeatherDB;
     private View mDecorView;
-    private Handler mHandler;
     private int mLastHour;
     private int mLastIndex;
     private boolean mLastIsDay;
@@ -123,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
     private AbsWeather nextWeatherView;
     private Dialog noConnectionDialog;
     private boolean sameWeatherView;
+    private Handler mHandler;
 
     public interface OnViewPagerScrollListener {
         void onScrolled(float f, int i);
@@ -197,17 +197,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
-        mHandler = new Handler() {
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                switch (msg.what) {
-                    case UPDATE_UNIT:
-                        refreshViewPagerChild();
-                    default:
-                        break;
-                }
-            }
-        };
         mTimeChangeReceiver = new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getAction();
@@ -250,24 +239,35 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.main_activity);
         setupActionBar();
         mDecorView = getWindow().getDecorView();
-        init();
         ChinaCityDB.openCityDB(this);
         mViewPager = findViewById(R.id.pager);
-        registerReceiver();
+        mHandler = new Handler() {
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what) {
+                    case UPDATE_UNIT:
+                        refreshViewPagerChild();
+                    default:
+                        break;
+                }
+            }
+        };
         getWindow().setBackgroundDrawable(null);
         mHandler.postDelayed(new Runnable() {
             public void run() {
                 mCityWeatherDB = CityWeatherDB.getInstance(MainActivity.this);
                 initViewPager();
                 addOnSettingChangeListener();
-                addCityWeatherDBListener();
                 mViewPager.setOffscreenPageLimit(8);
                 if (!isNetworkConnected()) {
                     noConnectionDialog = AlertUtils.showNoConnectionDialog(MainActivity.this);
                 }
+                init3DView();
+                init();
+                registerReceiver();
+                addCityWeatherDBListener();
             }
-        }, 0);
-        init3DView();
+        }, 70);
         AlarmReceiver.setAlarmClock(getApplicationContext());
     }
 
@@ -384,7 +384,7 @@ public class MainActivity extends AppCompatActivity {
         int position = 0;
         int widgetId = getIntent().getIntExtra(WidgetHelper.WIDGET_ID, -1);
         String locationId = String.valueOf(PreferenceUtils.getInt(this, WidgetHelper.WIDGET_ID_PREFIX + widgetId, -1));
-        if (widgetId != -1 && !"-1".equals(locationId)) {
+        if (widgetId != -1 && !"-1" .equals(locationId)) {
             Cursor cursor = mCityWeatherDB.getAllCities();
             if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
                 while (!cursor.getString(RainSurfaceView.RAIN_LEVEL_RAINSTORM).equals(locationId)) {
@@ -395,7 +395,7 @@ public class MainActivity extends AppCompatActivity {
                 position = cursor.getPosition();
                 cursor.close();
             }
-        } else if (widgetId != -1 && "-1".equals(locationId)) {
+        } else if (widgetId != -1 && "-1" .equals(locationId)) {
             WidgetHelper.getInstance(this).updateWidgetById(widgetId, false);
         }
         mLastIndex = position;
@@ -1216,23 +1216,16 @@ public class MainActivity extends AppCompatActivity {
         if (position == -1) {
             return DateTimeUtils.isTimeMillisDayTime(System.currentTimeMillis());
         }
-        try {
-            if (mMainPagerAdapter == null){
-                Log.d(TAG, "isDay: mMainPagerAdapter is null");
-            }
-            CityData cityData = mMainPagerAdapter.getCityAtPosition(position);
-            if (cityData != null) {
-                RootWeather weatherData = cityData.getWeathers();
-                if (weatherData != null) {
-                    try {
-                        isDay = cityData.isDay(weatherData);
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    }
+        CityData cityData = mMainPagerAdapter.getCityAtPosition(position);
+        if (cityData != null) {
+            RootWeather weatherData = cityData.getWeathers();
+            if (weatherData != null) {
+                try {
+                    isDay = cityData.isDay(weatherData);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return isDay;
     }

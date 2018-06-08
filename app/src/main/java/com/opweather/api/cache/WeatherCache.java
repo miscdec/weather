@@ -87,6 +87,7 @@ public class WeatherCache implements Cache {
                 }
                 if (getUsableSpace(diskCacheDir) > DEFAULT_DISK_CACHE_SIZE) {
                     try {
+                        LogUtils.d(TAG, "Disk cache initialized star");
                         mDiskLruCache = DiskLruCache.open(diskCacheDir, VERSION_CODE, VERSION_CODE,
                                 PlaybackStateCompat.ACTION_SET_CAPTIONING_ENABLED);
                         LogUtils.d(TAG, "Disk cache initialized");

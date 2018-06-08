@@ -110,6 +110,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         locationProvider.setOnLocationListener(new LocationProvider.OnLocationListener() {
             @Override
             public void onError(int error) {
+                Log.d(TAG, "onError: 11");
                 if (mHandler != null) {
                     mHandler.sendEmptyMessage(CitySearchProvider.GET_SEARCH_RESULT_FAIL);
                 }
@@ -124,9 +125,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 
             @Override
             public void onLocationChanged(CityData cityData) {
-                if (SystemSetting.getLocationOrDefaultCity(context).isLocatedCity() || TextUtils
-                        .isEmpty
-                                (SystemSetting.getLocationOrDefaultCity(context).getLocationId())) {
+                Log.d(TAG, "onLocationChanged: 11");
+                if (SystemSetting.getLocationOrDefaultCity(context).isLocatedCity() || TextUtils.isEmpty
+                        (SystemSetting.getLocationOrDefaultCity(context).getLocationId())) {
                     SystemSetting.setLocationOrDefaultCity(context, cityData);
                 }
                 if (TextUtils.isEmpty(locationId)) {
@@ -144,40 +145,35 @@ public class AlarmReceiver extends BroadcastReceiver {
         getLocation(context, mode, null);
     }
 
-    private void requestWeather(final Context context, final CityData city, CacheMode mode, final
-    boolean
+    private void requestWeather(final Context context, final CityData city, CacheMode mode, final boolean
             isCheckAlarm) {
-        if (city != null && !TextUtils.isEmpty(city.getLocationId()) && !city.getLocationId()
-                .equals("0")) {
-            new WeatherClientProxy(context).setCacheMode(mode).requestWeatherInfo(15, city, new
-                    WeatherClientProxy
-                            .OnResponseListener() {
-                        @Override
-                        public void onCacheResponse(RootWeather rootWeather) {
-                            sendWarnNotification(context, rootWeather, city, isCheckAlarm);
-                            SystemSetting.notifyWeatherDataChange(context);
-                        }
+        if (city != null && !TextUtils.isEmpty(city.getLocationId()) && !city.getLocationId().equals("0")) {
+            new WeatherClientProxy(context).setCacheMode(mode).requestWeatherInfo(15, city,
+                    new WeatherClientProxy.OnResponseListener() {
+                @Override
+                public void onCacheResponse(RootWeather rootWeather) {
+                    sendWarnNotification(context, rootWeather, city, isCheckAlarm);
+                    SystemSetting.notifyWeatherDataChange(context);
+                }
 
-                        @Override
-                        public void onErrorResponse(WeatherException weatherException) {
-                            Log.e(TAG, "requestWeather error");
-                            if (mHandler != null) {
-                                mHandler.sendEmptyMessage(CitySearchProvider
-                                        .GET_SEARCH_RESULT_FAIL);
-                            }
-                        }
+                @Override
+                public void onErrorResponse(WeatherException weatherException) {
+                    Log.e(TAG, "requestWeather error");
+                    if (mHandler != null) {
+                        mHandler.sendEmptyMessage(CitySearchProvider.GET_SEARCH_RESULT_FAIL);
+                    }
+                }
 
-                        @Override
-                        public void onNetworkResponse(RootWeather rootWeather) {
-                            sendWarnNotification(context, rootWeather, city, isCheckAlarm);
-                            SystemSetting.notifyWeatherDataChange(context);
-                            SystemSetting.setLocale(context);
-                            if (mHandler != null) {
-                                mHandler.sendEmptyMessage(CitySearchProvider
-                                        .GET_SEARCH_RESULT_FAIL);
-                            }
-                        }
-                    });
+                @Override
+                public void onNetworkResponse(RootWeather rootWeather) {
+                    sendWarnNotification(context, rootWeather, city, isCheckAlarm);
+                    SystemSetting.notifyWeatherDataChange(context);
+                    SystemSetting.setLocale(context);
+                    if (mHandler != null) {
+                        mHandler.sendEmptyMessage(CitySearchProvider.GET_SEARCH_RESULT_FAIL);
+                    }
+                }
+            });
         }
     }
 
