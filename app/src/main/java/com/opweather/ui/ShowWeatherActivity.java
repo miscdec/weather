@@ -61,7 +61,7 @@ public class ShowWeatherActivity extends BaseActivity {
                 }
             }
         });
-        Toast.makeText(this, alert, Toast.LENGTH_LONG).show();
+        //Toast.makeText(this, alert, Toast.LENGTH_LONG).show();
     }
 
     protected void onPause() {

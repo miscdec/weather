@@ -70,7 +70,7 @@ public class WeatherCache implements Cache {
 
     private void init() {
         LogUtils.d(TAG, "Memory cache created (size = 8)");
-        mMemoryCache = new LruCache(DEFAULT_MEM_CACHE_SIZE);
+        mMemoryCache = new LruCache<>(DEFAULT_MEM_CACHE_SIZE);
         initDiskCacheBackground();
     }
 

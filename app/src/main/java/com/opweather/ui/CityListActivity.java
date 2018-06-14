@@ -76,7 +76,7 @@ public class CityListActivity extends BaseBarActivity implements CityListAdapter
             @Override
             public void onClickFrontView(int position) {
                 super.onClickFrontView(position);
-                Cursor cursor = CityListActivity.this.mCityWeatherDB.getAllCities();
+                Cursor cursor = mCityWeatherDB.getAllCities();
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 if (!(mAppWidgetId == -1 || cursor == null || cursor.getCount() <= position)) {
                     if (cursor.moveToPosition(position)) {
@@ -246,6 +246,7 @@ public class CityListActivity extends BaseBarActivity implements CityListAdapter
             this.context = context;
         }
 
+        @Override
         public void handleMessage(Message msg) {
             if (!hasMessages(msg.what)) {
                 CityWeatherDB.getInstance(context).deleteCity((Long) msg.obj);

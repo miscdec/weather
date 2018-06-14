@@ -32,7 +32,7 @@ public class CityListSearchAdapter extends ArrayAdapter<CommonCandidateCity> imp
     @Nullable
     @Override
     public CommonCandidateCity getItem(int position) {
-        return mCandidateList != null ? (CommonCandidateCity) mCandidateList.get(position) : null;
+        return mCandidateList != null ? mCandidateList.get(position) : null;
     }
 
     @Override
@@ -45,27 +45,27 @@ public class CityListSearchAdapter extends ArrayAdapter<CommonCandidateCity> imp
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         View result = convertView;
         if (result == null) {
-            result = ((LayoutInflater) this.mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R
+            result = ((LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R
                     .layout.citylist_search, parent, false);
         }
-        TextView tv = (TextView) result.findViewById(R.id.cityListSearchResult);
-        CommonCandidateCity city = (CommonCandidateCity) this.mCandidateList.get(position);
-        String name = city.getCityName(this.mContext);
+        TextView tv = result.findViewById(R.id.cityListSearchResult);
+        CommonCandidateCity city = mCandidateList.get(position);
+        String name = city.getCityName(mContext);
         String cityInfo = StringUtils.EMPTY_STRING;
         if (!TextUtils.isEmpty(name)) {
             cityInfo = cityInfo + name;
         }
-        if (!TextUtils.isEmpty(city.getCityProvince(this.mContext))) {
+        if (!TextUtils.isEmpty(city.getCityProvince(mContext))) {
             if (!TextUtils.isEmpty(cityInfo)) {
                 cityInfo = cityInfo + "  ";
             }
-            cityInfo = cityInfo + city.getCityProvince(this.mContext);
+            cityInfo = cityInfo + city.getCityProvince(mContext);
         }
-        if (!TextUtils.isEmpty(city.getCityCountry(this.mContext))) {
+        if (!TextUtils.isEmpty(city.getCityCountry(mContext))) {
             if (!TextUtils.isEmpty(cityInfo)) {
                 cityInfo = cityInfo + "  ";
             }
-            cityInfo = cityInfo + city.getCityCountry(this.mContext);
+            cityInfo = cityInfo + city.getCityCountry(mContext);
         }
         tv.setText(cityInfo);
         return result;

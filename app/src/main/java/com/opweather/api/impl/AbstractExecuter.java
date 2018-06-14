@@ -31,10 +31,10 @@ public abstract class AbstractExecuter implements RequestExecuter {
     public abstract void execute(WeatherRequest weatherRequest);
 
     protected void addToDiskCache(Context context, String key, byte[] value) {
-        new CacheAsyncTask(context, key).execute();
+        new CacheAsyncTask(context, key).execute(value);
     }
 
     protected void removeWeatherTimeDiskCache(Context context, String key, byte[] value) {
-        new CacheAsyncTask(context, key).execute();
+        new CacheAsyncTask(context, key).execute(value);
     }
 }

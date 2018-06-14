@@ -19,10 +19,12 @@ public class ByteArrayRequest extends Request<byte[]> {
         mIsOppo = isOppo;
     }
 
+    @Override
     protected void deliverResponse(byte[] response) {
         mListener.onResponse(response, contentCharset);
     }
 
+    @Override
     protected Response<byte[]> parseNetworkResponse(NetworkResponse response) {
         contentCharset = HttpHeaderParser.parseCharset(response.headers);
         return mIsOppo ? Response.success(response.data, OppoHttpHeaderParser

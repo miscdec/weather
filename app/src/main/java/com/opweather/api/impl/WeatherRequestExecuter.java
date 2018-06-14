@@ -334,7 +334,7 @@ public class WeatherRequestExecuter extends AbstractExecuter {
             public void onResponse(byte[] data, String str) {
                 Log.d(TAG, "onResponse: str = " + str);
                 addToDiskCache(mContext, request.getDiskCacheKey(type), data);
-                new NetworkParserWorkerTask(type, request, response).execute();
+                new NetworkParserWorkerTask(type, request, response).execute(data);
             }
         }, request.getHttpCacheEnable());
     }

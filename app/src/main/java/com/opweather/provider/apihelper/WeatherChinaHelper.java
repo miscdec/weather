@@ -52,7 +52,7 @@ public class WeatherChinaHelper implements IWeatherAPIHelper, ICitySearchAPIHelp
 
         protected void onPostExecute(Boolean success) {
             if (success) {
-                mWeatherProviderHandler.sendMessage(WeatherChinaHelper.this.getMessage(1073745920, mCandidateList));
+                mWeatherProviderHandler.sendMessage(getMessage(1073745920, mCandidateList));
             } else {
                 mWeatherProviderHandler.sendEmptyMessage(-2147479552);
             }

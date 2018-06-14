@@ -187,7 +187,7 @@ public class LocationProvider {
             switch (provider.hashCode()) {
                 case RainSurfaceView.RAIN_LEVEL_DRIZZLE:
                     CityData cityData = CityWeatherDB.getInstance(mContext).getLocationCity();
-                    if (cityData != null && !TextUtils.isEmpty(cityData.getLocationId()) && !"0" .equals(cityData
+                    if (cityData != null && !TextUtils.isEmpty(cityData.getLocationId()) && !"0".equals(cityData
                             .getLocationId()) && mListener != null) {
                         mListener.onLocationChanged(cityData);
                         return;

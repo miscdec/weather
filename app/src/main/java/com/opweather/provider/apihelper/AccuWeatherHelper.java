@@ -42,32 +42,39 @@ public class AccuWeatherHelper implements IWeatherAPIHelper, ICitySearchAPIHelpe
         private Context mContext;
 
         public JudgeTask(Context context, CityData city) {
-            this.mContext = context;
-            this.mCity = city;
+            mContext = context;
+            mCity = city;
         }
 
+        @Override
         protected Integer doInBackground(Integer... params) {
-            return AccuWeatherHelper.this.executeTask(this.mContext, this.mCity, params[0].intValue()) ? Integer.valueOf(params[0].intValue() | 1073741824) : Integer.valueOf(params[0].intValue() | Integer.MIN_VALUE);
+            return executeTask(mContext, mCity, params[0].intValue()) ? Integer
+                    .valueOf(params[0] | 1073741824) : Integer.valueOf(params[0] | Integer
+                    .MIN_VALUE);
         }
 
+        @Override
         protected void onPostExecute(Integer result) {
             super.onPostExecute(result);
-            if ((result.intValue() & Integer.MIN_VALUE) == Integer.MIN_VALUE) {
-                AccuWeatherHelper.this.mProviderHandler.sendEmptyMessage(CitySearchProvider.GET_SEARCH_RESULT_FAIL);
+            if ((result & Integer.MIN_VALUE) == Integer.MIN_VALUE) {
+                mProviderHandler.sendEmptyMessage(CitySearchProvider.GET_SEARCH_RESULT_FAIL);
                 return;
             }
-            switch (result.intValue() & -1073741825) {
+            switch (result & -1073741825) {
                 case WEATHER_TYPE_LOCATION_DATA:
-                    LocationData ld = AccuWeatherParser.parseLocation(CacheUtils.getUrlCache(this.mContext, this.mCity.getLocalName() + WEATHER_FILE_LOCATION_DATA));
+                    LocationData ld = AccuWeatherParser.parseLocation(CacheUtils.getUrlCache(this.mContext, this
+                            .mCity.getLocalName() + WEATHER_FILE_LOCATION_DATA));
                     if (ld.getCountry().getID().equals("CN")) {
                         String str = StringUtils.EMPTY_STRING;
                         if (ld.getSupplementalAdminAreas() == null || ld.getSupplementalAdminAreas().length <= 0) {
-                            str = ld.getAdministrativeArea().getEnglishName() + " " + ld.getAdministrativeArea().getEnglishName();
+                            str = ld.getAdministrativeArea().getEnglishName() + " " + ld.getAdministrativeArea()
+                                    .getEnglishName();
                         } else {
-                            str = ld.getAdministrativeArea().getEnglishName() + " " + ld.getSupplementalAdminAreas()[0].getEnglishName();
+                            str = ld.getAdministrativeArea().getEnglishName() + " " + ld.getSupplementalAdminAreas()
+                                    [0].getEnglishName();
                         }
                         if (!str.equals(StringUtils.EMPTY_STRING) && str.split(" ").length > 0) {
-                            AccuWeatherHelper.this.mProviderHandler.sendMessage(AccuWeatherHelper.this.getMessage(GlobalConfig.MESSAGE_ACCU_GET_COUNTRY_CHINA, str));
+                           mProviderHandler.sendMessage(getMessage(GlobalConfig.MESSAGE_ACCU_GET_COUNTRY_CHINA, str));
                             return;
                         }
                         return;
@@ -83,8 +90,8 @@ public class AccuWeatherHelper implements IWeatherAPIHelper, ICitySearchAPIHelpe
                     if (TextUtils.isEmpty(city.getLocalName())) {
                         city.setLocalName(city.getName());
                     }
-                    if (AccuWeatherHelper.this.mOnLocationListener != null) {
-                        AccuWeatherHelper.this.mOnLocationListener.onLocationChanged(city);
+                    if (mOnLocationListener != null) {
+                        mOnLocationListener.onLocationChanged(city);
                     }
                 default:
                     break;
@@ -100,49 +107,57 @@ public class AccuWeatherHelper implements IWeatherAPIHelper, ICitySearchAPIHelpe
         private String mLocale;
 
         public SearchCityTask(Context context) {
-            this.API_RUL = "http://api.accuweather.com/locations/v1/cities/autocomplete.json?apikey=eey3z2dBNI896hIG08j7q1uxXzTxJqkZ";
-            this.mContext = context;
+            API_RUL = "http://api.accuweather.com/locations/v1/cities/autocomplete" +
+                    ".json?apikey=eey3z2dBNI896hIG08j7q1uxXzTxJqkZ";
+            mContext = context;
         }
 
         public void setKeyword(String keyword) {
             try {
-                this.mKeyword = URLEncoder.encode(keyword, "UTF-8");
+                mKeyword = URLEncoder.encode(keyword, "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
         }
 
         public void setLocale(String locale) {
-            this.mLocale = locale;
+            mLocale = locale;
         }
 
+        @Override
         protected Boolean doInBackground(Void... params) {
-            Log.d(TAG, "Get city list from url http://api.accuweather.com/locations/v1/cities/autocomplete.json?apikey=eey3z2dBNI896hIG08j7q1uxXzTxJqkZ&language=" + this.mLocale + "&q=" + this.mKeyword);
-            this.mCandidateList = null;
+            Log.d(TAG, "Get city list from url http://api.accuweather.com/locations/v1/cities/autocomplete" +
+                    ".json?apikey=eey3z2dBNI896hIG08j7q1uxXzTxJqkZ&language=" + this.mLocale + "&q=" + this.mKeyword);
+            mCandidateList = null;
             try {
-                String strResult = NetUtil.httpGet("http://api.accuweather.com/locations/v1/cities/autocomplete.json?apikey=eey3z2dBNI896hIG08j7q1uxXzTxJqkZ&language=" + this.mLocale + "&q=" + this.mKeyword);
+                String strResult = NetUtil.httpGet("http://api.accuweather.com/locations/v1/cities/autocomplete" +
+                        ".json?apikey=eey3z2dBNI896hIG08j7q1uxXzTxJqkZ&language=" + mLocale + "&q=" + mKeyword);
+                Log.d(TAG, "doInBackground: strResult = " + strResult);
                 if (!TextUtils.isEmpty(strResult)) {
-                    this.mCandidateList = AccuWeatherParser.getSearchCityResult(strResult);
-                    if (this.mCandidateList != null) {
+                    mCandidateList = AccuWeatherParser.getSearchCityResult(strResult);
+                    if (mCandidateList != null) {
                         Log.d(TAG, "get candidate city list from AccuWeather");
-                        Iterator it = this.mCandidateList.iterator();
+                        Iterator it = mCandidateList.iterator();
                         while (it.hasNext()) {
                             CandidateCity city = (CandidateCity) it.next();
-                            Log.d(TAG, "Type : " + city.getType() + ", LocalizedName : " + city.getLocalizedName() + ", Country : " + city.getCountry().getLocalizedName() + ", AdministrativeArea : " + city.getAdministrativeArea().getLocalizedName());
+                            Log.d(TAG, "Type : " + city.getType() + ", LocalizedName : " + city.getLocalizedName() +
+                                    ", Country : " + city.getCountry().getLocalizedName() + ", AdministrativeArea : "
+                                    + city.getAdministrativeArea().getLocalizedName());
                         }
-                        return Boolean.valueOf(true);
+                        return true;
                     }
                 }
-                return Boolean.valueOf(false);
+                return false;
             } catch (Exception e) {
-                return Boolean.valueOf(false);
+                return false;
             }
         }
 
         protected void onPostExecute(Boolean success) {
             if (success.booleanValue()) {
                 Log.d(TAG, "search city name from AccuWeather success");
-                AccuWeatherHelper.this.mProviderHandler.sendMessage(AccuWeatherHelper.this.getMessage(1073743872, AccuWeatherHelper.this.convertToCandidateCity(this.mCandidateList)));
+                AccuWeatherHelper.this.mProviderHandler.sendMessage(AccuWeatherHelper.this.getMessage(1073743872,
+                        AccuWeatherHelper.this.convertToCandidateCity(this.mCandidateList)));
                 return;
             }
             Log.d(TAG, "search city name from AccuWeather fail");
@@ -160,7 +175,9 @@ public class AccuWeatherHelper implements IWeatherAPIHelper, ICitySearchAPIHelpe
         }
 
         protected Integer doInBackground(Integer... params) {
-            return AccuWeatherHelper.this.executeTask(this.mContext, this.mCity, params[0].intValue()) ? Integer.valueOf(params[0].intValue() | 1073741824) : Integer.valueOf(params[0].intValue() | Integer.MIN_VALUE);
+            return AccuWeatherHelper.this.executeTask(this.mContext, this.mCity, params[0].intValue()) ? Integer
+                    .valueOf(params[0].intValue() | 1073741824) : Integer.valueOf(params[0].intValue() | Integer
+                    .MIN_VALUE);
         }
 
         protected void onPostExecute(Integer result) {
@@ -175,7 +192,8 @@ public class AccuWeatherHelper implements IWeatherAPIHelper, ICitySearchAPIHelpe
             }
             switch (result.intValue() & -1073741825) {
                 case WEATHER_TYPE_LOCATION_DATA:
-                    LocationData ld = AccuWeatherParser.parseLocation(CacheUtils.getUrlCache(this.mContext, this.mCity.getLocalName() + WEATHER_FILE_LOCATION_DATA));
+                    LocationData ld = AccuWeatherParser.parseLocation(CacheUtils.getUrlCache(this.mContext, this
+                            .mCity.getLocalName() + WEATHER_FILE_LOCATION_DATA));
                     CityData city = new CityData();
                     city.setName(ld.getEnglishName());
                     city.setLocalName(ld.getLocalizedName());
@@ -212,7 +230,8 @@ public class AccuWeatherHelper implements IWeatherAPIHelper, ICitySearchAPIHelpe
         Log.d(TAG, "get weather info of " + type + " from " + locationKey);
         switch (type) {
             case WEATHER_TYPE_LOCATION_DATA:
-                return "http://api.accuweather.com/locations/v1/cities/geoposition/search.json?q=" + lat + "," + lon + "&apikey=" + API_KEY + "&language=" + this.mLocale;
+                return "http://api.accuweather.com/locations/v1/cities/geoposition/search.json?q=" + lat + "," + lon
+                        + "&apikey=" + API_KEY + "&language=" + this.mLocale;
             default:
                 return null;
         }
@@ -229,23 +248,28 @@ public class AccuWeatherHelper implements IWeatherAPIHelper, ICitySearchAPIHelpe
 
     public void getAccWeatherinfo(Context context, CityData city) {
         setLocale(context);
-        new JudgeTask(context, city).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, new Integer[]{Integer.valueOf(WEATHER_TYPE_LOCATION_DATA)});
+        new JudgeTask(context, city).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, new Integer[]{Integer.valueOf
+                (WEATHER_TYPE_LOCATION_DATA)});
     }
 
     @Override
     public void getWeatherAPIResponse(Context context, CityData city, int type) {
-        new WeatherTask(context, city).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, new Integer[]{Integer.valueOf(type)});
+        new WeatherTask(context, city).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, new Integer[]{Integer.valueOf
+                (type)});
     }
 
     private boolean executeTask(Context context, CityData city, int type) {
         try {
-            String strResult = NetUtil.httpGet(composeWeatherAPIRequest(city.getLocationId(), type, city.getLatitude(), city.getLongitude()));
+            String strResult = NetUtil.httpGet(composeWeatherAPIRequest(city.getLocationId(), type, city.getLatitude
+                    (), city.getLongitude()));
             if (!TextUtils.isEmpty(strResult)) {
                 switch (type) {
                     case WEATHER_TYPE_LOCATION_DATA:
                         if (AccuWeatherParser.parseLocation(strResult) != null) {
-                            CacheUtils.setUrlCache(context, strResult, city.getLocationId() + WEATHER_FILE_LOCATION_DATA);
-                            Log.d(TAG, "get location data weather info from AccuWeather, file name : " + city.getLocalName() + WEATHER_FILE_LOCATION_DATA);
+                            CacheUtils.setUrlCache(context, strResult, city.getLocationId() +
+                                    WEATHER_FILE_LOCATION_DATA);
+                            Log.d(TAG, "get location data weather info from AccuWeather, file name : " + city
+                                    .getLocalName() + WEATHER_FILE_LOCATION_DATA);
                             return true;
                         }
                 }
@@ -277,7 +301,9 @@ public class AccuWeatherHelper implements IWeatherAPIHelper, ICitySearchAPIHelpe
         }
         List<CommonCandidateCity> localList = new ArrayList();
         for (CandidateCity cityAccu : list) {
-            localList.add(new CommonCandidateCity(cityAccu.getKey(), cityAccu.getLocalizedName(), cityAccu.getAdministrativeArea().getLocalizedName(), cityAccu.getCountry().getLocalizedName(), cityAccu.getCountry().getID(), 2));
+            localList.add(new CommonCandidateCity(cityAccu.getKey(), cityAccu.getLocalizedName(), cityAccu
+                    .getAdministrativeArea().getLocalizedName(), cityAccu.getCountry().getLocalizedName(), cityAccu
+                    .getCountry().getID(), 2));
         }
         return localList;
     }

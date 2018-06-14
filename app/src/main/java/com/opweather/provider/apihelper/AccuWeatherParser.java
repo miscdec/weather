@@ -30,7 +30,7 @@ public class AccuWeatherParser {
             if (jArray.size() == 0) {
                 return null;
             }
-            ArrayList<CandidateCity> candidateCityList = new ArrayList();
+            ArrayList<CandidateCity> candidateCityList = new ArrayList<>();
             for (int i = 0; i < jArray.size(); i++) {
                 candidateCityList.add(new Gson().fromJson(jArray.get(i).getAsJsonObject(), CandidateCity.class));
             }

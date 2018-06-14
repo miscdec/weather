@@ -128,12 +128,9 @@ public class CitySearchActivity extends BaseActivity {
                     if (chinaCitySearchResult != null) {
                         Iterator<CommonCandidateCity> chinaCityIterator = chinaCitySearchResult.iterator();
                         while (chinaCityIterator.hasNext()) {
-                            CommonCandidateCity city = (CommonCandidateCity) chinaCityIterator.next();
+                            CommonCandidateCity city = chinaCityIterator.next();
                             country = city.getCityCountryID();
                             String provinceEn = city.getCityProvinceEn();
-                            Log.d(TAG, "4096 city: " + city);
-                            Log.d(TAG, "4096 country: " + country);
-                            Log.d(TAG, "4096 provinceEn: " + provinceEn);
                             if (!country.equals("China") || provinceEn.equals("Taiwan Province")) {
                                 chinaCityIterator.remove();
                             }
@@ -150,7 +147,6 @@ public class CitySearchActivity extends BaseActivity {
                         Iterator<CommonCandidateCity> foreignIterator = foreignCitySearchResult.iterator();
                         while (foreignIterator.hasNext()) {
                             country = ((CommonCandidateCity) foreignIterator.next()).getCityCountryID();
-                            Log.d(TAG, "2048 country: " + country);
                             if (country.equals("CN") || country.equals("HK") || country.equals("MO")) {
                                 foreignIterator.remove();
                             }
@@ -205,7 +201,7 @@ public class CitySearchActivity extends BaseActivity {
                 String searchText = s.toString();
                 if (searchText.equals("一加雾")) {
                     Intent intent = new Intent(CitySearchActivity.this, ShowWeatherActivity.class);
-                    intent.putExtra("type", WeatherDescription.WEATHER_DESCRIPTION_FOG);
+                    intent.putExtra("type", WeatherDescription.WEATHER_DESCRIPTION_RAIN);
                     startActivity(intent);
                 } else if (searchText.length() < 1) {
                 } else {

@@ -69,7 +69,7 @@ import com.opweather.widget.widget.WidgetHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitListener, OnLocationListener {
+public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitListener {
     private static final int NO_TEMP_DATA_FLAG = -2000;
     public static final String TAG = "ContentWrapper";
     private int cacheWeatherID;
@@ -96,20 +96,6 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
     private OnUIChangedListener mUIListener;
     private boolean mUp;
     private RootWeather mWeatherData;
-
-    @Override
-    public void onError(int i) {
-        if (mOnLocationListener != null) {
-            mOnLocationListener.onError(i);
-        }
-    }
-
-    @Override
-    public void onLocationChanged(CityData cityData) {
-        if (mOnLocationListener != null) {
-            mOnLocationListener.onLocationChanged(cityData);
-        }
-    }
 
     public interface OnUIChangedListener {
         void ChangePathMenuResource(int i, boolean z, boolean z2);
@@ -230,8 +216,7 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                 mWeatherData = rootWeather;
                 refreshLocatindLayout(false);
                 updateCurrentWeatherUI();
-                if (mSwipeRefreshLayout != null && mSwipeRefreshLayout
-                        .isRefreshing()) {
+                if (mSwipeRefreshLayout != null && mSwipeRefreshLayout.isRefreshing()) {
                     mSwipeRefreshLayout.setRefreshing(false);
                 }
                 if (!(rootWeather == null || mOnResponseListener == null)) {
@@ -266,6 +251,7 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
 
             @Override
             public void onNetworkResponse(RootWeather rootWeather) {
+                Log.d(TAG, "onNetworkResponse: rootWeather  " + rootWeather.getWeatherName());
                 mLoading = false;
                 SystemSetting.setRefreshTime(mContext, city.getLocationId(), System.currentTimeMillis());
                 mSuccess = true;
@@ -323,7 +309,6 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                         mLocationProvider = null;
                     }
                     mLocationProvider = new LocationProvider(mContext);
-                    setOnLocationListener(this);
                     mLocationProvider.setOnLocationListener(new OnLocationListener() {
                         @Override
                         public void onError(int error) {
