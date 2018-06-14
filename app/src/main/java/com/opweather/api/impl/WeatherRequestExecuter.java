@@ -34,7 +34,7 @@ public class WeatherRequestExecuter extends AbstractExecuter {
             if (weather != null) {
                 if (mResult == null) {
                     mResult = weather;
-                } else if (weather != null) {
+                } else {
                     switch (type) {
                         case 1:
                             mResult.setCurrentWeather(weather.getCurrentWeather());
@@ -95,7 +95,7 @@ public class WeatherRequestExecuter extends AbstractExecuter {
                     }
                     break;
                 case 32:
-                    hasData = (mResult == null || mResult.getWeatherAlarms() == null) ? false : true;
+                    hasData = mResult != null && mResult.getWeatherAlarms() != null;
                     break;
             }
             return (mRequestedType & type) == type || hasData;
@@ -117,6 +117,7 @@ public class WeatherRequestExecuter extends AbstractExecuter {
             mCacheBox = cacheBox;
         }
 
+        @Override
         protected Void doInBackground(String... key) {
             byte[] data = WeatherCache.getInstance(mContext).getFromDiskCache(key[0]);
             try {
@@ -125,7 +126,7 @@ public class WeatherRequestExecuter extends AbstractExecuter {
                     rootWeather = mRequest.getResponseParser().parseAqi(data);
                 } else if (mRequestType == 1) {
                     if (mRequest == null) {
-                        Log.d(TAG, "doInBackground: mRequest null");
+                        Log.d("1111", "doInBackground: mRequest null");
                     }
                     rootWeather = mRequest.getResponseParser().parseCurrent(data);
                 } else if (mRequestType == 16) {
@@ -150,6 +151,7 @@ public class WeatherRequestExecuter extends AbstractExecuter {
             return null;
         }
 
+        @Override
         protected void onPostExecute(Void result) {
             requestOrDeliverCache(mRequest, mCacheBox);
         }
@@ -166,6 +168,7 @@ public class WeatherRequestExecuter extends AbstractExecuter {
             mResponse = response;
         }
 
+        @Override
         protected Void doInBackground(String... key) {
             byte[] data = WeatherCache.getInstance(mContext).getFromDiskCache(key[0]);
             try {
@@ -199,6 +202,7 @@ public class WeatherRequestExecuter extends AbstractExecuter {
             return null;
         }
 
+        @Override
         protected void onPostExecute(Void result) {
             requestOrDeliverNetwork(mRequest, mResponse);
         }
@@ -215,6 +219,7 @@ public class WeatherRequestExecuter extends AbstractExecuter {
             mResponse = response;
         }
 
+        @Override
         protected Void doInBackground(byte[]... params) {
             byte[] data = params[0];
             try {
@@ -248,6 +253,7 @@ public class WeatherRequestExecuter extends AbstractExecuter {
             return null;
         }
 
+        @Override
         protected void onPostExecute(Void result) {
             requestOrDeliverNetwork(mRequest, mResponse);
         }
@@ -399,6 +405,11 @@ public class WeatherRequestExecuter extends AbstractExecuter {
 
     private void requestCacheData(int type, WeatherRequest request, CacheBox box) {
         LogUtils.d(TAG, "Cache key: " + request.getDiskCacheKey(type));
+        LogUtils.d(TAG, "Cache key: " + request.getMemCacheKey());
+        LogUtils.d(TAG, "Cache key: " + request.getCacheMode());
+        LogUtils.d(TAG, "Cache key: " + request.getRequestUrl(type));
+        LogUtils.d(TAG, "Cache key: " + request.getRequestType());
+        LogUtils.d(TAG, "Cache key: " + request.getLocale());
         new CacheParserWorkerTask(type, request, box).execute(request.getDiskCacheKey(type));
     }
 }

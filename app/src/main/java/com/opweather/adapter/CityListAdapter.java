@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -99,6 +100,7 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
         }
 
         private void onResponse(RootWeather response) {
+            Log.d("1111", "onResponse: ");
             if (response != null) {
                 mWeatherMap.put(response.getAreaCode(), response);
             }

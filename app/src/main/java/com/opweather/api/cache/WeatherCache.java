@@ -1,6 +1,5 @@
 package com.opweather.api.cache;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Build.VERSION;
@@ -12,8 +11,8 @@ import android.util.Log;
 
 import com.opweather.api.helper.IOUtils;
 import com.opweather.api.helper.LogUtils;
-import com.opweather.api.nodes.RootWeather;
 import com.opweather.api.helper.StringUtils;
+import com.opweather.api.nodes.RootWeather;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +22,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class WeatherCache implements Cache {
-    private static final int DEFAULT_DISK_CACHE_SIZE = 1048576;
+    private static final int DEFAULT_DISK_CACHE_SIZE = 1024 * 1024;
     private static final int DEFAULT_MEM_CACHE_SIZE = 8;
     private static final int DISK_CACHE_INDEX = 0;
     private static final String TAG = "WeatherCache";
@@ -103,16 +102,12 @@ public class WeatherCache implements Cache {
     }
 
     public static long getUsableSpace(File path) {
-        if (VERSION.SDK_INT >= 9) {
             return path.getUsableSpace();
-        }
-        StatFs stats = new StatFs(path.getPath());
-        return ((long) stats.getBlockSize()) * ((long) stats.getAvailableBlocks());
     }
 
     public static File getDiskCacheDir(Context context, String uniqueName) {
         String cachePath = context.getCacheDir().getPath();
-        if ("mounted" .equals(Environment.getExternalStorageState()) || !isExternalStorageRemovable()) {
+        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) || !isExternalStorageRemovable()) {
             File ext = getExternalCacheDir(context);
             if (ext != null) {
                 cachePath = ext.getPath();
@@ -121,18 +116,12 @@ public class WeatherCache implements Cache {
         return new File(cachePath + File.separator + uniqueName);
     }
 
-    @TargetApi(9)
     public static boolean isExternalStorageRemovable() {
-        return VERSION.SDK_INT >= 9 ? Environment.isExternalStorageRemovable() : true;
+        return Environment.isExternalStorageRemovable();
     }
 
-    @TargetApi(8)
     public static File getExternalCacheDir(Context context) {
-        if (VERSION.SDK_INT >= 8) {
-            return context.getExternalCacheDir();
-        }
-        return new File(Environment.getExternalStorageDirectory().getPath() + ("/Android/data/" + context
-                .getPackageName() + "/cache/"));
+        return context.getExternalCacheDir();
     }
 
     public static String hashKeyForDisk(String key) {
