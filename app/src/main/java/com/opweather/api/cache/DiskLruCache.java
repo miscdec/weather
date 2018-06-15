@@ -1,9 +1,13 @@
 package com.opweather.api.cache;
 
+import android.support.annotation.NonNull;
+import android.util.Log;
+
 import com.opweather.util.StringUtils;
 import com.opweather.widget.openglbase.RainSurfaceView;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.EOFException;
@@ -78,7 +82,7 @@ public final class DiskLruCache implements Closeable {
             }
 
             @Override
-            public void write(byte[] buffer, int offset, int length) {
+            public void write(@NonNull byte[] buffer, int offset, int length) {
                 try {
                     out.write(buffer, offset, length);
                 } catch (IOException e) {
@@ -403,19 +407,43 @@ public final class DiskLruCache implements Closeable {
     }
 
     private void readJournal() throws IOException {
-        InputStream in = new BufferedInputStream(new FileInputStream(journalFile), 8192);
-        String magic = readAsciiLine(in);
-        String version = readAsciiLine(in);
-        String appVersionString = readAsciiLine(in);
-        String valueCountString = readAsciiLine(in);
-        String blank = readAsciiLine(in);
+        //InputStream in = new BufferedInputStream(new FileInputStream(journalFile), 8192);
+        FileInputStream inputStream = new FileInputStream(journalFile);
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        /*String str = null;
+        while ((str = bufferedReader.readLine()) != null) {
+            Log.d("1111", "readJournal: " + str);
+        }
+        //close*/
+        /*inputStream.close();
+        bufferedReader.close();*/
+//        String magic = readAsciiLine(in);
+//        String version = readAsciiLine(in);
+//        String appVersionString = readAsciiLine(in);
+//        String valueCountString = readAsciiLine(in);
+//        String blank = readAsciiLine(in);
+        String magic = bufferedReader.readLine();
+        String version = bufferedReader.readLine();
+        String appVersionString = bufferedReader.readLine();
+        String valueCountString = bufferedReader.readLine();
+        String blank = bufferedReader.readLine();
+        Log.d("1111", "magic: " + magic);
+        Log.d("1111", "version: " + version);
+        Log.d("1111", "appVersionString: " + appVersionString);
+        Log.d("1111", "valueCountString: " + valueCountString);
+        Log.d("1111", "blank: " + blank);
         if (MAGIC.equals(magic) && VERSION_1.equals(version) && Integer.toString(appVersion).equals(appVersionString)
                 && Integer.toString(valueCount).equals(valueCountString) && StringUtils.EMPTY_STRING.equals(blank)) {
+            Log.d("1111", "while: ");
             while (true) {
                 try {
-                    readJournalLine(readAsciiLine(in));
+                    //Log.d("1111", "readJournal: " + bufferedReader.readLine());
+                    //readJournalLine(readAsciiLine(in));
+                    readJournalLine(bufferedReader.readLine());
                 } catch (EOFException e) {
-                    closeQuietly(in);
+                    //closeQuietly(in);
+                    inputStream.close();
+                    bufferedReader.close();
                 }
             }
         }
@@ -424,28 +452,30 @@ public final class DiskLruCache implements Closeable {
     }
 
     private void readJournalLine(String line) throws IOException {
-        String[] parts = line.split(" ");
-        if (parts.length < 2) {
-            throw new IOException("unexpected journal line: " + line);
-        }
-        String key = parts[1];
-        if (parts[0].equals(REMOVE) && parts.length == 2) {
-            lruEntries.remove(key);
-            return;
-        }
-        Entry entry = (Entry) lruEntries.get(key);
-        if (entry == null) {
-            entry = new Entry(key);
-            lruEntries.put(key, entry);
-        }
-        if (parts[0].equals(CLEAN) && parts.length == valueCount + 2) {
-            entry.readable = true;
-            entry.currentEditor = null;
-            entry.setLengths(copyOfRange(parts, RainSurfaceView.RAIN_LEVEL_SHOWER, parts.length));
-        } else if (parts[0].equals(DIRTY) && parts.length == 2) {
-            entry.currentEditor = new Editor(entry);
-        } else if (!parts[0].equals(READ) || parts.length != 2) {
-            throw new IOException("unexpected journal line: " + line);
+        if (line != null) {
+            String[] parts = line.split(" ");
+            if (parts.length < 2) {
+                throw new IOException("unexpected journal line: " + line);
+            }
+            String key = parts[1];
+            if (parts[0].equals(REMOVE) && parts.length == 2) {
+                lruEntries.remove(key);
+                return;
+            }
+            Entry entry = (Entry) lruEntries.get(key);
+            if (entry == null) {
+                entry = new Entry(key);
+                lruEntries.put(key, entry);
+            }
+            if (parts[0].equals(CLEAN) && parts.length == valueCount + 2) {
+                entry.readable = true;
+                entry.currentEditor = null;
+                entry.setLengths(copyOfRange(parts, RainSurfaceView.RAIN_LEVEL_SHOWER, parts.length));
+            } else if (parts[0].equals(DIRTY) && parts.length == 2) {
+                entry.currentEditor = new Editor(entry);
+            } else if (!parts[0].equals(READ) || parts.length != 2) {
+                throw new IOException("unexpected journal line: " + line);
+            }
         }
     }
 
