@@ -15,6 +15,8 @@ import com.opweather.api.nodes.RootWeather;
 import com.opweather.api.WeatherException;
 import com.opweather.api.WeatherResponse;
 
+import java.util.Arrays;
+
 public class WeatherRequestExecuter extends AbstractExecuter {
     private static final String TAG = "WeatherRequestExecuter";
     private Context mContext;
@@ -120,14 +122,12 @@ public class WeatherRequestExecuter extends AbstractExecuter {
         @Override
         protected Void doInBackground(String... key) {
             byte[] data = WeatherCache.getInstance(mContext).getFromDiskCache(key[0]);
+            Log.d(TAG, "doInBackground: data " + Arrays.toString(data));
             try {
                 RootWeather rootWeather;
                 if (mRequestType == 8) {
                     rootWeather = mRequest.getResponseParser().parseAqi(data);
                 } else if (mRequestType == 1) {
-                    if (mRequest == null) {
-                        Log.d("1111", "doInBackground: mRequest null");
-                    }
                     rootWeather = mRequest.getResponseParser().parseCurrent(data);
                 } else if (mRequestType == 16) {
                     rootWeather = mRequest.getResponseParser().parseLifeIndex(data);

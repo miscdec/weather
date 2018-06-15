@@ -19,8 +19,8 @@ import com.opweather.widget.openglbase.RainSurfaceView;
 import java.util.ArrayList;
 
 public class SunnyView extends BaseWeatherView {
-    private static final int BACKGROUND_COLOR;
-    private static final int BACKGROUND_NIGHT_COLOR;
+    private static final int BACKGROUND_COLOR = Color.parseColor("#ff4a97d2");
+    private static final int BACKGROUND_NIGHT_COLOR =  Color.parseColor("#0a213e");
     private static final int MAX_TIME = 30;
     protected final float MAX_SPEED;
     protected float acceleration;
@@ -336,11 +336,6 @@ public class SunnyView extends BaseWeatherView {
             }
             this.paint.setAlpha((int) (-(150.0f * alpha)));
         }
-    }
-
-    static {
-        BACKGROUND_COLOR = Color.parseColor("#ff4a97d2");
-        BACKGROUND_NIGHT_COLOR = Color.parseColor("#0a213e");
     }
 
     public SunnyView(Context context, boolean isDay) {
