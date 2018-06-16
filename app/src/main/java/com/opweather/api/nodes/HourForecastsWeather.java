@@ -1,14 +1,10 @@
-package com.opweather.bean;
+package com.opweather.api.nodes;
 
 import android.content.Context;
-
-import com.opweather.api.nodes.AbstractWeather;
-import com.opweather.api.nodes.Temperature;
 
 import java.util.Date;
 
 public abstract class HourForecastsWeather extends AbstractWeather {
-
     public abstract Temperature getTemperature();
 
     public abstract Date getTime();

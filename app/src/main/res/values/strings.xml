@@ -20,6 +20,7 @@
     <string name="abc_shareactionprovider_share_with">分享方式</string>
     <string name="abc_shareactionprovider_share_with_application">通过%s分享</string>
     <string name="abc_toolbar_collapse_description">收起</string>
+    <string name="location_id_hint">location id 用于刷新预警信息, 不需要不填</string>
     <string name="about">关于</string>
     <string name="absolute_humidity">g/m³ - 绝对湿度</string>
     <string name="agreement">用户协议</string>

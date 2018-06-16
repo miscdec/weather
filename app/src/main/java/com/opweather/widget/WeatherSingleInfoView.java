@@ -20,11 +20,11 @@ public class WeatherSingleInfoView extends LinearLayout {
     private View mView;
 
     public WeatherSingleInfoView(Context context) {
-        this(context,null);
+        this(context, null);
     }
 
     public WeatherSingleInfoView(Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs,0);
+        this(context, attrs, 0);
     }
 
     public WeatherSingleInfoView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
@@ -34,9 +34,9 @@ public class WeatherSingleInfoView extends LinearLayout {
         String weatherType = t.getString(R.styleable.WeatherSingleInfoView_weatherType);
         Drawable weathIcon = t.getDrawable(R.styleable.WeatherSingleInfoView_weatherIcon);
         mView = LayoutInflater.from(context).inflate(R.layout.weather_single_info_view, this);
-        mInfoIcon = (ImageView) mView.findViewById(R.id.single_info_icon);
-        mInfoType = (TextView) mView.findViewById(R.id.single_info_type);
-        mInfoLevel = (TextView) mView.findViewById(R.id.single_info_level);
+        mInfoIcon = mView.findViewById(R.id.single_info_icon);
+        mInfoType = mView.findViewById(R.id.single_info_type);
+        mInfoLevel = mView.findViewById(R.id.single_info_level);
         mInfoIcon.setBackground(weathIcon);
         mInfoType.setText(weatherType);
         mInfoLevel.setText(weatherLevel);

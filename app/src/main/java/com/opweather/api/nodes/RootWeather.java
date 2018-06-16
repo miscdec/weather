@@ -9,7 +9,6 @@ import com.opweather.api.helper.WeatherUtils;
 import com.opweather.api.impl.AccuRequest;
 import com.opweather.api.impl.OppoChinaRequest;
 import com.opweather.api.impl.SwaRequest;
-import com.opweather.bean.HourForecastsWeather;
 import com.opweather.provider.CitySearchProvider;
 import com.opweather.util.StringUtils;
 

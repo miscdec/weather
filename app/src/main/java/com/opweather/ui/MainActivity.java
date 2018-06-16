@@ -28,9 +28,9 @@ import android.os.Message;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
-import android.support.v4.widget.AutoScrollHelper;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Layout.Alignment;
@@ -47,7 +47,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.DefaultRetryPolicy;
 import com.opweather.R;
 import com.opweather.adapter.MainPagerAdapter;
 import com.opweather.api.nodes.Alarm;
@@ -55,6 +54,7 @@ import com.opweather.api.nodes.RootWeather;
 import com.opweather.bean.CityData;
 import com.opweather.constants.GlobalConfig;
 import com.opweather.constants.WeatherDescription;
+import com.opweather.constants.WeatherType;
 import com.opweather.db.ChinaCityDB;
 import com.opweather.db.CityWeatherDB;
 import com.opweather.db.CityWeatherDB.CityListDBListener;
@@ -95,34 +95,119 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int UPDATE_UNIT = 88;
     private int MOCK_BUTTON_ENALBE_CONDITION = 20;
-    public int currentPositon;
-    private int currentWeatherId;
+    public int currentPositon = -1;
+    private int currentWeatherId = 0;
     private AbsWeather currentWeatherView;
-    private float currentWeatherViewAlpha;
+    private float currentWeatherViewAlpha = 1.0f;
     private ViewGroup mBackground;
-    private boolean mCityChanged;
-    private CityListDBListener mCityListDBListener;
+    private boolean mCityChanged = false;
+    private final CityListDBListener mCityListDBListener = new CityListDBListener() {
+
+        @Override
+        public void onCityAdded(long newId) {
+            if (newId != 0) {
+                mCityChanged = true;
+            }
+        }
+
+        @Override
+        public void onCityDeleted(long deletedId) {
+            if (deletedId != 0) {
+                mCityChanged = true;
+            }
+        }
+
+        @Override
+        public void onCityUpdated(long recordId) {
+            if (recordId != 0) {
+                mCityChanged = true;
+            }
+        }
+    };
     private CityWeatherDB mCityWeatherDB;
     private View mDecorView;
-    private int mLastHour;
-    private int mLastIndex;
-    private boolean mLastIsDay;
+    private final Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case UPDATE_UNIT:
+                    refreshViewPagerChild();
+                    return;
+                default:
+                    return;
+            }
+        }
+    };
+    private int mLastHour = -1;
+    private int mLastIndex = 0;
+    private boolean mLastIsDay = true;
     private MainPagerAdapter mMainPagerAdapter;
-    private int mMockButtonClickCount;
-    private boolean mNeedUpdateUnit;
-    private BroadcastReceiver mReceiver;
-    private BroadcastReceiver mTimeChangeReceiver;
+    private int mMockButtonClickCount = 0;
+    private boolean mNeedUpdateUnit = false;
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
+                NetworkInfo info = ((ConnectivityManager) getApplicationContext().getSystemService
+                        (Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
+                if (info != null && info.isAvailable()) {
+                    if (!(mMainPagerAdapter == null || mViewPager == null)) {
+                        mMainPagerAdapter.loadWeather(mViewPager.getCurrentItem());
+                    }
+                    if (noConnectionDialog != null && noConnectionDialog.isShowing()) {
+                        try {
+                            noConnectionDialog.dismiss();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
+    };
+    private BroadcastReceiver mTimeChangeReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (ACTION_DATE_CHANGED.equals(action)) {
+            }
+            if (ACTION_TIME_CHANGED.equals(action)) {
+                System.out.println("ACTION_TIME_CHANGED");
+            }
+            if (ACTION_TIME_TICK.equals(action)) {
+                int currentHour = DateTimeUtils.longTimeToHour(System.currentTimeMillis(), mMainPagerAdapter
+                        .getCityAtPosition(currentPositon).getWeathers().getCurrentWeather().getLocalTimeZone());
+                if (currentHour != mLastHour) {
+                    refreshViewPagerChild();
+                    mLastHour = currentHour;
+                }
+            }
+            if (currentPositon != -1) {
+                boolean isday = isDay(currentPositon);
+                if (mLastIsDay != isday) {
+                    updateBackground(currentPositon, false, true);
+                    if (mMainPagerAdapter != null) {
+                        ContentWrapper cw = mMainPagerAdapter.getContentWrap(currentPositon);
+                        if (cw != null) {
+                            cw.updateCurrentWeatherUI();
+                            mLastIsDay = isday;
+                        }
+                    }
+                }
+            }
+        }
+    };
     private Toolbar mToolbar;
     private ImageView mToolbar_gps;
     private TextView mToolbar_subtitle;
     private TextView mToolbar_title;
-    private ViewPager mViewPager;
+    private ViewPager mViewPager = null;
     private final CopyOnWriteArrayList<OnViewPagerScrollListener> mViewPagerListener = new CopyOnWriteArrayList<>();
-    private int nextPositon;
+    private int nextPositon = -1;
     private AbsWeather nextWeatherView;
     private Dialog noConnectionDialog;
     private boolean sameWeatherView;
-    private Handler mHandler;
 
     public interface OnViewPagerScrollListener {
         void onScrolled(float f, int i);
@@ -131,8 +216,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class SavePic extends AsyncTask<String, Void, String> {
-        private SavePic() {
-        }
 
         @Override
         protected String doInBackground(String... params) {
@@ -142,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
             return params[0];
         }
 
+        @Override
         protected void onPostExecute(String path) {
             if (TextUtils.isEmpty(path)) {
                 Toast.makeText(MainActivity.this, getString(R.string.no_weather_data), Toast.LENGTH_SHORT).show();
@@ -151,85 +235,10 @@ public class MainActivity extends AppCompatActivity {
             intent.setType("image/*");
             intent.putExtra("android.intent.extra.SUBJECT", getString(R.string.share_subject));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.putExtra("android.intent.extra.STREAM", MediaUtil.getInstace().getImageContentUri(
-                    MainActivity.this, new File(path)));
+            intent.putExtra("android.intent.extra.STREAM", MediaUtil.getInstace().getImageContentUri(MainActivity
+                    .this, new File(path)));
             startActivity(Intent.createChooser(intent, getString(R.string.share_title)));
         }
-    }
-
-    public void init() {
-        mCityListDBListener = new CityListDBListener() {
-            public void onCityAdded(long newId) {
-                if (newId != 0) {
-                    mCityChanged = true;
-                }
-            }
-
-            public void onCityDeleted(long deletedId) {
-                if (deletedId != 0) {
-                    mCityChanged = true;
-                }
-            }
-
-            public void onCityUpdated(long recordId) {
-                if (recordId != 0) {
-                    mCityChanged = true;
-                }
-            }
-        };
-        mReceiver = new BroadcastReceiver() {
-            public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals("android.net.conn.CONNECTIVITY_CHANGE")) {
-                    NetworkInfo info = ((ConnectivityManager) getApplicationContext()
-                            .getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
-                    if (info != null && info.isAvailable()) {
-                        if (!(mMainPagerAdapter == null || mViewPager == null)) {
-                            mMainPagerAdapter.loadWeather(mViewPager.getCurrentItem());
-                        }
-                        if (noConnectionDialog != null && noConnectionDialog.isShowing()) {
-                            try {
-                                noConnectionDialog.dismiss();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-            }
-        };
-        mTimeChangeReceiver = new BroadcastReceiver() {
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-                if (ACTION_DATE_CHANGED.equals(action)) {
-                }
-                if (ACTION_TIME_CHANGED.equals(action)) {
-                    System.out.println("ACTION_TIME_CHANGED");
-                }
-                if (ACTION_TIME_TICK.equals(action)) {
-                    int currentHour = DateTimeUtils.longTimeToHour(System.currentTimeMillis(),
-                            mMainPagerAdapter.getCityAtPosition(currentPositon).getWeathers()
-                                    .getCurrentWeather()
-                                    .getLocalTimeZone());
-                    if (currentHour != mLastHour) {
-                        refreshViewPagerChild();
-                        mLastHour = currentHour;
-                    }
-                }
-                if (currentPositon != -1) {
-                    boolean isday = isDay(currentPositon);
-                    if (mLastIsDay != isday) {
-                        updateBackground(currentPositon, false, true);
-                        if (mMainPagerAdapter != null) {
-                            ContentWrapper cw = mMainPagerAdapter.getContentWrap(currentPositon);
-                            if (cw != null) {
-                                cw.updateCurrentWeatherUI();
-                                mLastIsDay = isday;
-                            }
-                        }
-                    }
-                }
-            }
-        };
     }
 
     @Override
@@ -241,39 +250,28 @@ public class MainActivity extends AppCompatActivity {
         mDecorView = getWindow().getDecorView();
         ChinaCityDB.openCityDB(this);
         mViewPager = findViewById(R.id.pager);
-        mHandler = new Handler() {
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                switch (msg.what) {
-                    case UPDATE_UNIT:
-                        refreshViewPagerChild();
-                    default:
-                        break;
-                }
-            }
-        };
+        registerReceiver();
+        init3DView();
         getWindow().setBackgroundDrawable(null);
         mHandler.postDelayed(new Runnable() {
+            @Override
             public void run() {
                 mCityWeatherDB = CityWeatherDB.getInstance(MainActivity.this);
                 initViewPager();
                 addOnSettingChangeListener();
+                addCityWeatherDBListener();
                 mViewPager.setOffscreenPageLimit(8);
                 if (!isNetworkConnected()) {
                     noConnectionDialog = AlertUtils.showNoConnectionDialog(MainActivity.this);
                 }
-                init3DView();
-                init();
-                registerReceiver();
-                addCityWeatherDBListener();
             }
         }, 70);
         AlarmReceiver.setAlarmClock(getApplicationContext());
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[]
+            grantResults) {
         switch (requestCode) {
             case 1:
                 for (int i = 0; i < grantResults.length; i++) {
@@ -307,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             default:
-                break;
+                return;
         }
     }
 
@@ -345,26 +343,29 @@ public class MainActivity extends AppCompatActivity {
                                     cw.resetScrollView();
                                 }
                                 if (currentWeatherView != null) {
-                                    currentWeatherView.setAlpha(DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+                                    currentWeatherView.setAlpha(1.0f);
                                 }
                             }
                             currentWeatherViewAlpha = 1.0f;
+                            return;
                         }
+                        return;
                     } else if (mCityChanged) {
                         mCityChanged = false;
                         mMainPagerAdapter.updateCityList(this);
                         mMainPagerAdapter.notifyDataSetChanged();
+                        return;
+                    } else {
+                        return;
                     }
                 case 2:
                     if (mMainPagerAdapter != null) {
                         mMainPagerAdapter.getContentWrap(0).updateWeatherInfo(CacheMode.LOAD_NO_CACHE);
+                        return;
                     }
-                case 3:
-                    if (mMainPagerAdapter != null) {
-                        mMainPagerAdapter.getContentWrap(0).updateWeatherInfo(CacheMode.LOAD_NO_CACHE);
-                    }
+                    return;
                 default:
-                    break;
+                    return;
             }
         }
     }
@@ -375,7 +376,7 @@ public class MainActivity extends AppCompatActivity {
         }
         RainSurfaceView child = new RainSurfaceView(this, -1, isDay(currentPositon));
         child.stopAnimate();
-        child.setAlpha(AutoScrollHelper.RELATIVE_UNSPECIFIED);
+        child.setAlpha(0.0f);
         mBackground.addView(child);
         child.onPause();
     }
@@ -384,10 +385,10 @@ public class MainActivity extends AppCompatActivity {
         int position = 0;
         int widgetId = getIntent().getIntExtra(WidgetHelper.WIDGET_ID, -1);
         String locationId = String.valueOf(PreferenceUtils.getInt(this, WidgetHelper.WIDGET_ID_PREFIX + widgetId, -1));
-        if (widgetId != -1 && !"-1" .equals(locationId)) {
+        if (widgetId != -1 && !"-1".equals(locationId)) {
             Cursor cursor = mCityWeatherDB.getAllCities();
             if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
-                while (!cursor.getString(RainSurfaceView.RAIN_LEVEL_RAINSTORM).equals(locationId)) {
+                while (!cursor.getString(4).equals(locationId)) {
                     if (!cursor.moveToNext()) {
                         break;
                     }
@@ -395,10 +396,9 @@ public class MainActivity extends AppCompatActivity {
                 position = cursor.getPosition();
                 cursor.close();
             }
-        } else if (widgetId != -1 && "-1" .equals(locationId)) {
+        } else if (widgetId != -1 && "-1".equals(locationId)) {
             WidgetHelper.getInstance(this).updateWidgetById(widgetId, false);
         }
-        mLastIndex = position;
         mMainPagerAdapter = new MainPagerAdapter(this, mViewPagerListener, mToolbar_subtitle);
         mMainPagerAdapter.setOnUIChangedListener(new ContentWrapper.OnUIChangedListener() {
             @Override
@@ -419,13 +419,13 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 CityData cityData;
-                if (mToolbar.getMenu().findItem(R.id.action_cities) == null ||
-                        mToolbar.getMenu().findItem(R.id.action_warning) == null) {
-                    Log.e(TAG, "findItem : is null");
+                if (mToolbar.getMenu().findItem(R.id.action_cities) == null || mToolbar.getMenu().findItem(R.id
+                        .action_warning) == null) {
+                    Log.e(MainActivity.TAG, "findItem : is null");
                     cityData = mMainPagerAdapter.getCityAtPosition(index);
                     if (cityData != null) {
-                        mToolbar_title.setText(cityData.getProvider() != -1 ?
-                                cityData.getLocalName() : getString(R.string.current_location));
+                        mToolbar_title.setText(cityData.getProvider() != -1 ? cityData.getLocalName() : getString(R
+                                .string.current_location));
                         mToolbar_subtitle.setText(DateTimeUtils.getTimeTitle(null, false,
                                 MainActivity.this));
                     } else {
@@ -433,26 +433,27 @@ public class MainActivity extends AppCompatActivity {
                         mToolbar_subtitle.setText(DateTimeUtils.getTimeTitle(null, false,
                                 MainActivity.this));
                     }
-                    mToolbar_title.setTextColor(ContextCompat.getColor(MainActivity.this,
-                            R.color.oneplus_contorl_text_color_primary_dark));
-                    mToolbar_subtitle.setTextColor(ContextCompat.getColor(MainActivity.this,
-                            R.color.oneplus_contorl_text_color_secondary_dark));
+                    mToolbar_title.setTextColor(ContextCompat.getColor(MainActivity.this, R.color
+                            .oneplus_contorl_text_color_primary_dark));
+                    mToolbar_subtitle.setTextColor(ContextCompat.getColor(MainActivity.this, R
+                            .color.oneplus_contorl_text_color_secondary_dark));
                 } else if (weather == null) {
                     Log.e(TAG, "weather is null");
                     Log.e(TAG, "isLoading is :" + isLoading);
                     if (!isLoading) {
                         boolean z;
                         cityData = mMainPagerAdapter.getCityAtPosition(index);
+                        String access$1200 = TAG;
                         StringBuilder append = new StringBuilder().append("cityData is :");
                         if (cityData != null) {
                             z = true;
                         } else {
                             z = false;
                         }
-                        Log.e(TAG, append.append(z).toString());
+                        Log.e(access$1200, append.append(z).toString());
                         if (cityData != null) {
-                            mToolbar_title.setText(cityData.getProvider() != -1 ?
-                                    cityData.getLocalName() : getString(R.string.current_location));
+                            mToolbar_title.setText(cityData.getProvider() != -1 ? cityData
+                                    .getLocalName() : getString(R.string.current_location));
                             mToolbar_subtitle.setText(DateTimeUtils.getTimeTitle(null, false,
                                     MainActivity.this));
                         } else {
@@ -461,44 +462,41 @@ public class MainActivity extends AppCompatActivity {
                                     MainActivity.this));
                         }
                     }
-                    mToolbar_title.setTextColor(ContextCompat.getColor(MainActivity.this,
-                            R.color.oneplus_contorl_text_color_primary_dark));
-                    mToolbar_subtitle.setTextColor(ContextCompat.getColor(MainActivity.this,
-                            R.color.oneplus_contorl_text_color_secondary_dark));
-                    showGPSIcon(index, ContextCompat.getDrawable(MainActivity.this,
-                            R.drawable.icon_gps), ContextCompat.getDrawable(MainActivity.this,
-                            R.mipmap.btn_home_enable));
+                    mToolbar_title.setTextColor(ContextCompat.getColor(MainActivity.this, R.color
+                            .oneplus_contorl_text_color_primary_dark));
+                    mToolbar_subtitle.setTextColor(ContextCompat.getColor(MainActivity.this, R
+                            .color.oneplus_contorl_text_color_secondary_dark));
+                    showGPSIcon(index, ContextCompat.getDrawable(MainActivity.this, R.drawable
+                            .icon_gps), ContextCompat.getDrawable(MainActivity.this, R.mipmap.btn_home_enable));
                 } else {
                     updateWeatherWarning(index);
                     Date date = weather.getDate();
                     if (isBlack) {
-                        mToolbar.setOverflowIcon(ContextCompat.getDrawable(MainActivity.this,
-                                R.drawable.more_setting_black));
-                        mToolbar.getMenu().findItem(R.id.action_cities).setIcon(
-                                R.drawable.ic_city_black);
-                        mToolbar.getMenu().findItem(R.id.action_warning).setIcon(
-                                R.drawable.ic_warn_black);
+                        mToolbar.setOverflowIcon(ContextCompat.getDrawable(MainActivity.this, R.drawable
+                                .more_setting_black));
+                        mToolbar.getMenu().findItem(R.id.action_cities).setIcon(R.drawable.ic_city_black);
+                        mToolbar.getMenu().findItem(R.id.action_warning).setIcon(R.drawable.ic_warn_black);
                         if (!isLoading) {
                             mToolbar_title.setVisibility(View.VISIBLE);
                             mToolbar_subtitle.setVisibility(View.VISIBLE);
-                            mToolbar_title.setText(mMainPagerAdapter
-                                    .getCityAtPosition(index).getLocalName());
-                            mToolbar_subtitle.setText(DateTimeUtils.getTimeTitle(date, weather
-                                    .getRequestIsSuccess(), MainActivity.this));
+                            mToolbar_title.setText(mMainPagerAdapter.getCityAtPosition(index).getLocalName());
+                            mToolbar_subtitle.setText(DateTimeUtils.getTimeTitle(date, weather.getRequestIsSuccess(),
+                                    MainActivity.this));
                         }
-                        mToolbar_title.setTextColor(ContextCompat.getColor(MainActivity.this,
-                                R.color.oneplus_contorl_text_color_primary_light));
-                        mToolbar_subtitle.setTextColor(ContextCompat.getColor(MainActivity.this,
-                                R.color.oneplus_contorl_text_color_secondary_light));
-                        showGPSIcon(index, ContextCompat.getDrawable(MainActivity.this,
-                                R.drawable.icon_gps_black), ContextCompat.getDrawable
-                                (MainActivity.this, R.drawable.ic_home_black));
+                        mToolbar_title.setTextColor(ContextCompat.getColor(MainActivity.this, R
+                                .color.oneplus_contorl_text_color_primary_light));
+                        mToolbar_subtitle.setTextColor(ContextCompat.getColor(MainActivity.this, R
+                                .color.oneplus_contorl_text_color_secondary_light));
+                        showGPSIcon(index, ContextCompat.getDrawable(MainActivity.this, R.drawable
+                                .icon_gps_black), ContextCompat.getDrawable(MainActivity.this, R.drawable
+                                .ic_home_black));
                         mDecorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                                 | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                                 | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
                         return;
                     }
-                    mToolbar.setOverflowIcon(ContextCompat.getDrawable(MainActivity.this, R.drawable.more_setting));
+                    mToolbar.setOverflowIcon(ContextCompat.getDrawable(MainActivity.this, R
+                            .drawable.more_setting));
                     mToolbar.getMenu().findItem(R.id.action_cities).setIcon(R.drawable.ic_city);
                     mToolbar.getMenu().findItem(R.id.action_warning).setIcon(R.drawable.ic_warn);
                     if (!isLoading) {
@@ -506,13 +504,12 @@ public class MainActivity extends AppCompatActivity {
                         mToolbar_subtitle.setText(DateTimeUtils.getTimeTitle(date, weather.getRequestIsSuccess(),
                                 MainActivity.this));
                     }
-                    mToolbar_title.setTextColor(ContextCompat.getColor(MainActivity.this,
-                            R.color.oneplus_contorl_text_color_primary_dark));
-                    mToolbar_subtitle.setTextColor(ContextCompat.getColor(MainActivity.this,
-                            R.color.oneplus_contorl_text_color_secondary_dark));
-                    showGPSIcon(index, ContextCompat.getDrawable(MainActivity.this,
-                            R.drawable.icon_gps), ContextCompat.getDrawable(MainActivity.this,
-                            R.mipmap.btn_home_enable));
+                    mToolbar_title.setTextColor(ContextCompat.getColor(MainActivity.this, R.color
+                            .oneplus_contorl_text_color_primary_dark));
+                    mToolbar_subtitle.setTextColor(ContextCompat.getColor(MainActivity.this, R
+                            .color.oneplus_contorl_text_color_secondary_dark));
+                    showGPSIcon(index, ContextCompat.getDrawable(MainActivity.this, R.drawable
+                            .icon_gps), ContextCompat.getDrawable(MainActivity.this, R.mipmap.btn_home_enable));
                     mDecorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
                             View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
                 }
@@ -548,7 +545,7 @@ public class MainActivity extends AppCompatActivity {
                         cw.resetScrollView();
                     }
                 }
-                currentWeatherViewAlpha = DefaultRetryPolicy.DEFAULT_BACKOFF_MULT;
+                currentWeatherViewAlpha = 1.0f;
                 mLastIndex = position;
                 updateWeatherWarning(position);
                 updateToolbar(position);
@@ -580,10 +577,12 @@ public class MainActivity extends AppCompatActivity {
                 switch (arg0) {
                     case 0:
                         updateBackground(mLastIndex, false, false);
+                        return;
                     case 1:
                         dragging = true;
+                        return;
                     default:
-                        break;
+                        return;
                 }
             }
         });
@@ -635,7 +634,7 @@ public class MainActivity extends AppCompatActivity {
                 if (mMockButtonClickCount > MOCK_BUTTON_ENALBE_CONDITION) {
                     gotoMocLocation();
                 } else {
-                    mMockButtonClickCount += 1;
+                    mMockButtonClickCount = mMockButtonClickCount + 1;
                 }
             }
         });
@@ -670,8 +669,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onRestart() {
         super.onRestart();
         if (mNeedUpdateUnit) {
-            mHandler.removeMessages(UPDATE_UNIT);
-            mHandler.sendEmptyMessage(UPDATE_UNIT);
+            mHandler.removeMessages(88);
+            mHandler.sendEmptyMessage(88);
         }
         if (mMainPagerAdapter != null) {
             if (PermissionUtil.hasGrantedPermissions(this, Manifest.permission.ACCESS_FINE_LOCATION,
@@ -692,6 +691,7 @@ public class MainActivity extends AppCompatActivity {
         if (nextWeatherView != null && (nextWeatherView instanceof GLSurfaceView)) {
             ((GLSurfaceView) nextWeatherView).onResume();
         }
+
     }
 
     @Override
@@ -743,27 +743,29 @@ public class MainActivity extends AppCompatActivity {
     public void updateToolbar(int position) {
         RootWeather weather = mMainPagerAdapter.getWeatherDataAtPosition(position);
         if (weather == null) {
-            mToolbar_title.setTextColor(ContextCompat.getColor(this, R.color.oneplus_contorl_text_color_primary_dark));
+            mToolbar_title.setTextColor(ContextCompat.getColor(this, R.color
+                    .oneplus_contorl_text_color_primary_dark));
             mToolbar_title.setText(mMainPagerAdapter.getCityAtPosition(position).getLocalName());
-            mToolbar_subtitle.setTextColor(ContextCompat.getColor(this,
-                    R.color.oneplus_contorl_text_color_secondary_light));
+            mToolbar_subtitle.setTextColor(ContextCompat.getColor(this, R.color
+                    .oneplus_contorl_text_color_secondary_light));
             mToolbar_subtitle.setText(DateTimeUtils.getTimeTitle(null, false, this));
-            showGPSIcon(position, ContextCompat.getDrawable(this, R.drawable.icon_gps_black),
-                    ContextCompat.getDrawable(this, R.drawable.ic_home_black));
+            showGPSIcon(position, ContextCompat.getDrawable(this, R.drawable.icon_gps_black), ContextCompat
+                    .getDrawable(this, R.drawable.ic_home_black));
             return;
         }
         Date date = weather.getDate();
         if (mMainPagerAdapter.getWeatherDescriptionId(position) == 1003) {
-            mToolbar_title.setTextColor(ContextCompat.getColor(this, R.color.oneplus_contorl_text_color_primary_light));
+            mToolbar_title.setTextColor(ContextCompat.getColor(this, R.color
+                    .oneplus_contorl_text_color_primary_light));
             mToolbar_title.setText(mMainPagerAdapter.getCityAtPosition(position).getLocalName());
-            mToolbar_subtitle.setTextColor(ContextCompat.getColor(this,
-                    R.color.oneplus_contorl_text_color_secondary_light));
+            mToolbar_subtitle.setTextColor(ContextCompat.getColor(this, R.color
+                    .oneplus_contorl_text_color_secondary_light));
             mToolbar_subtitle.setText(DateTimeUtils.getTimeTitle(date, weather.getRequestIsSuccess(), this));
             mToolbar.setOverflowIcon(ContextCompat.getDrawable(this, R.drawable.more_setting_black));
             mToolbar.getMenu().findItem(R.id.action_cities).setIcon(R.drawable.ic_city_black);
             mToolbar.getMenu().findItem(R.id.action_warning).setIcon(R.drawable.ic_warn_black);
-            showGPSIcon(position, ContextCompat.getDrawable(this, R.drawable.icon_gps_black),
-                    ContextCompat.getDrawable(this, R.drawable.ic_home_black));
+            showGPSIcon(position, ContextCompat.getDrawable(this, R.drawable.icon_gps_black), ContextCompat
+                    .getDrawable(this, R.drawable.ic_home_black));
             mDecorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                     | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                     | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
@@ -771,13 +773,13 @@ public class MainActivity extends AppCompatActivity {
         }
         mToolbar_title.setTextColor(ContextCompat.getColor(this, R.color.oneplus_contorl_text_color_primary_dark));
         mToolbar_title.setText(mMainPagerAdapter.getCityAtPosition(position).getLocalName());
-        mToolbar_subtitle.setTextColor(ContextCompat.getColor(this,
-                R.color.oneplus_contorl_text_color_secondary_dark));
+        mToolbar_subtitle.setTextColor(ContextCompat.getColor(this, R.color
+                .oneplus_contorl_text_color_secondary_dark));
         mToolbar_subtitle.setText(DateTimeUtils.getTimeTitle(date, weather.getRequestIsSuccess(), this));
         mToolbar.setOverflowIcon(ContextCompat.getDrawable(this, R.drawable.more_setting));
         mToolbar.getMenu().findItem(R.id.action_cities).setIcon(R.drawable.ic_city);
-        showGPSIcon(position, ContextCompat.getDrawable(this, R.drawable.icon_gps),
-                ContextCompat.getDrawable(this, R.mipmap.btn_home_enable));
+        showGPSIcon(position, ContextCompat.getDrawable(this, R.drawable.icon_gps), ContextCompat.getDrawable(this, R
+                .mipmap.btn_home_enable));
         mToolbar.getMenu().findItem(R.id.action_warning).setIcon(R.drawable.ic_warn);
         mDecorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
     }
@@ -792,22 +794,20 @@ public class MainActivity extends AppCompatActivity {
         } else {
             alarms = (ArrayList<Alarm>) weather.getWeatherAlarms();
         }
-        if (alarms == null || alarms.size() <= 0 || alarms.get(0).getTypeName().equalsIgnoreCase("None")
-                || alarms.get(0).getContentText().equalsIgnoreCase("None")
-                || alarms.get(0).getTypeName().equalsIgnoreCase("null")
-                || alarms.get(0).getContentText().equalsIgnoreCase("null")) {
+        if (alarms == null || alarms.size() <= 0 || alarms.get(0).getTypeName().equalsIgnoreCase("None") ||
+                alarms.get(0).getContentText().equalsIgnoreCase("None")) {
             menuItem.setVisible(false);
             return;
         }
         menuItem.setVisible(true);
         menuItem.setOnMenuItemClickListener(new OnMenuItemClickListener() {
             @Override
-            public boolean onMenuItemClick(MenuItem menuItem) {
+            public boolean onMenuItemClick(MenuItem item) {
                 Intent intent = new Intent(MainActivity.this, WeatherWarningActivity.class);
                 intent.putParcelableArrayListExtra(WeatherWarningActivity.INTENT_PARA_WARNING, alarms);
-                intent.putExtra(WeatherWarningActivity.INTENT_PARA_CITY, data.getLocalName());
+                intent.putExtra("city", data.getLocalName());
                 startActivity(intent);
-                return false;
+                return true;
             }
         });
     }
@@ -825,8 +825,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void gotoMocLocation() {
-//        startActivityForResult(new Intent(this, MockLocation.class), RainSurfaceView.RAIN_LEVEL_SHOWER);
-//        overridePendingTransition(R.anim.citylist_translate_up, R.anim.alpha_out);
+        startActivityForResult(new Intent(this, MockLocation.class), 2);
+        overridePendingTransition(R.anim.citylist_translate_up, R.anim.alpha_out);
     }
 
     public void gotoSettings() {
@@ -853,7 +853,7 @@ public class MainActivity extends AppCompatActivity {
         RootWeather weatherData = mMainPagerAdapter.getWeatherDataAtPosition(mViewPager.getCurrentItem());
         int highTemp = 0;
         int lowTemp = 0;
-        String currentWeather = StringUtils.EMPTY_STRING;
+        String currentWeather = "";
         String cityName = cityDate.getLocalName();
         if (weatherData != null) {
             highTemp = weatherData.getTodayHighTemperature();
@@ -873,25 +873,25 @@ public class MainActivity extends AppCompatActivity {
         } else {
             f = SystemSetting.celsiusToFahrenheit((float) lowTemp);
         }
-        return cityName + "    " + new SimpleDateFormat(getString(R.string.date_format)).format(
-                new Date(System.currentTimeMillis())) + "\n" + currentWeather + "    " + highUnitTemp + tempUnit
-                + " / " + ((int) f) + tempUnit + getString(R.string.share_from_oneplus_weather);
+        return cityName + "    " + new SimpleDateFormat(getString(R.string.date_format)).format(new Date(System
+                .currentTimeMillis())) + "\n" + currentWeather + "    " + highUnitTemp + tempUnit + " / " + ((int) f)
+                + tempUnit + getString(R.string.share_from_oneplus_weather);
     }
 
     public String getShareMsmFirstLineCityName() {
         CityData cityDate = mMainPagerAdapter.getCityAtPosition(mViewPager.getCurrentItem());
         if (cityDate == null) {
-            return StringUtils.EMPTY_STRING;
+            return "";
         }
-        return "\u200e" + cityDate.getLocalName();
+        return "‎" + cityDate.getLocalName();
     }
 
     public String getShareMsmFirstLineDateAndWeekday() {
         long time = System.currentTimeMillis();
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(time);
-        return "\u200e" + DateTimeUtils.longTimeToMMddTwo(this, time, null) + " " + DateTimeUtils
-                .getDayString(this, c.get(Calendar.DAY_OF_WEEK));
+        return "‎" + DateTimeUtils.longTimeToMMddTwo(this, time, null) + " " + DateTimeUtils.getDayString(this, c.get
+                (Calendar.DAY_OF_WEEK));
     }
 
     public String getShareMsmSecondCurrentTemp() {
@@ -900,12 +900,12 @@ public class MainActivity extends AppCompatActivity {
             RootWeather data = cityDate.getWeathers();
             if (data != null) {
                 int curTemp = data.getTodayCurrentTemp();
-                int todayHighTemperature = data.getTodayHighTemperature();
-                int todayLowTemperature = data.getTodayLowTemperature();
+                int highTemp = data.getTodayHighTemperature();
+                int lowTemp = data.getTodayLowTemperature();
                 return TemperatureUtil.getCurrentTemperature(this, curTemp);
             }
         }
-        return StringUtils.EMPTY_STRING;
+        return "";
     }
 
     public String getShareMsmThirdWeatherTypeAndTemp() {
@@ -917,17 +917,16 @@ public class MainActivity extends AppCompatActivity {
                 int highTemp = data.getTodayHighTemperature();
                 int lowTemp = data.getTodayLowTemperature();
                 String hTemp = TemperatureUtil.getHighTemperature(this, highTemp);
-                return "\u200e" + currentTemp + "  " + hTemp + "/" + TemperatureUtil
-                        .getHighTemperature(this,
-                                lowTemp) + (SystemSetting.getTemperature(this) ? "C" : "F");
+                return "‎" + currentTemp + "  " + hTemp + "/" + TemperatureUtil.getHighTemperature(this, lowTemp) +
+                        (SystemSetting.getTemperature(this) ? "C" : "F");
             }
         }
-        return StringUtils.EMPTY_STRING;
+        return "";
     }
 
     private void shareImageAndText() {
-        if (PermissionUtil.check(this, Manifest.permission.WRITE_EXTERNAL_STORAGE, getString(
-                R.string.request_permission_storage), 1) && mMainPagerAdapter != null && mViewPager != null) {
+        if (PermissionUtil.check(this, Manifest.permission.WRITE_EXTERNAL_STORAGE, getString(R.string
+                .request_permission_storage), 1)) {
             CityData cityDate = mMainPagerAdapter.getCityAtPosition(mViewPager.getCurrentItem());
             if (cityDate != null) {
                 String shareIamgePath = BitmapUtils.getPicFileName(cityDate.getLocalName(), this);
@@ -966,8 +965,7 @@ public class MainActivity extends AppCompatActivity {
         layout.draw(cn);
         cn.restore();
         paint.setTextSize(36.0f);
-        StaticLayout staticLayout = new StaticLayout(dateAndWeekday, paint, 264, Alignment
-                .ALIGN_NORMAL, 1.0f, 0.0f,
+        StaticLayout staticLayout = new StaticLayout(dateAndWeekday, paint, 264, Alignment.ALIGN_NORMAL, 1.0f, 0.0f,
                 true);
         cn.save(Canvas.ALL_SAVE_FLAG);
         paint.setTextSize(36.0f);
@@ -977,7 +975,8 @@ public class MainActivity extends AppCompatActivity {
         cn.restore();
         paint.setTextSize(104.0f);
         paint.setColor(-1);
-        staticLayout = new StaticLayout(currentTemp, paint, 1032, Alignment.ALIGN_NORMAL, 1.0f, 0.0f, true);
+        staticLayout = new StaticLayout(currentTemp, paint, WeatherType.ACCU_WEATHER_HAZY_MOONLIGHT, Alignment
+                .ALIGN_NORMAL, 1.0f, 0.0f, true);
         cn.save(Canvas.ALL_SAVE_FLAG);
         cn.translate(41.1f, 243.90001f);
         staticLayout.draw(cn);
@@ -991,8 +990,7 @@ public class MainActivity extends AppCompatActivity {
         cn.restore();
         paint.setTextSize(36.0f);
         paint.setColor(-1);
-        staticLayout = new StaticLayout(getString(R.string.share_from_oneplus_weather), paint,
-                336, Alignment
+        staticLayout = new StaticLayout(getString(R.string.share_from_oneplus_weather), paint, 336, Alignment
                 .ALIGN_NORMAL, 1.0f, 0.0f, true);
         cn.save(Canvas.ALL_SAVE_FLAG);
         cn.translate(696.9f, 368.09998f);
@@ -1045,9 +1043,9 @@ public class MainActivity extends AppCompatActivity {
         float nextAlpha = (1.0f - alpha) * 2.0f;
         setNextWeatherViewAlpha(nextAlpha);
         if (sameWeatherView) {
-            setNextWeatherViewAlpha(AutoScrollHelper.RELATIVE_UNSPECIFIED);
+            setNextWeatherViewAlpha(0.0f);
             if (currentWeatherViewAlpha == 1.0f) {
-                setCurrentWeatherViewAlpha(DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+                setCurrentWeatherViewAlpha(1.0f);
             } else if (currAlpha < nextAlpha) {
                 setCurrentWeatherViewAlpha(nextAlpha);
             }
@@ -1058,22 +1056,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void setWeatherViewAlpha(float alpha, int position) {
-        RootWeather weatherData = mMainPagerAdapter != null ?
-                mMainPagerAdapter.getWeatherDataAtPosition(position) : null;
+        RootWeather weatherData = mMainPagerAdapter != null ? mMainPagerAdapter.getWeatherDataAtPosition
+                (position) : null;
         if (mBackground == null) {
-            mBackground = findViewById(R.id.current_opweather_background);
+            mBackground = (ViewGroup) findViewById(R.id.current_opweather_background);
         }
         int weatherId = 1001;
         if (weatherData != null) {
             weatherId = WeatherResHelper.weatherToResID(this, weatherData.getCurrentWeatherId());
         }
-        mBackground.setBackgroundColor((0x00ffffff & getWeatherColor(this, weatherId, currentPositon)) |
-                (((int) (255.0f * alpha)) << 24));
+        mBackground.setBackgroundColor((ViewCompat.MEASURED_SIZE_MASK & getWeatherColor(this, weatherId, this
+                .currentPositon)) | (((int) (255.0f * alpha)) << 24));
     }
 
     private void addNextWeatherView(int position) {
-        if (mMainPagerAdapter != null && mBackground != null && nextPositon != position && position >= 0 &&
-                position < mMainPagerAdapter.getCount()) {
+        if (mMainPagerAdapter != null && mBackground != null && nextPositon != position && position >=
+                0 && position < mMainPagerAdapter.getCount()) {
             nextPositon = position;
             RootWeather weatherData = mMainPagerAdapter.getWeatherDataAtPosition(position);
             int weatherId = 1001;
@@ -1087,14 +1085,12 @@ public class MainActivity extends AppCompatActivity {
             }
             if (nextWeatherView != null) {
                 mBackground.removeView((View) nextWeatherView);
-                nextWeatherView.setAlpha(AutoScrollHelper.RELATIVE_UNSPECIFIED);
+                nextWeatherView.setAlpha(0.0f);
                 nextWeatherView.stopAnimate();
                 destoryNextWeatherView();
             }
             nextWeatherView = WeatherViewCreator.getViewFromDescription(this, weatherId, isDay(nextPositon));
-            if (nextWeatherView != null) {
-                nextWeatherView.startAnimate();
-            }
+            nextWeatherView.startAnimate();
             mBackground.addView((View) nextWeatherView);
         }
     }
@@ -1123,7 +1119,7 @@ public class MainActivity extends AppCompatActivity {
                     if (nextWeatherView != null) {
                         mBackground.removeView((View) currentWeatherView);
                         if (currentWeatherView != null) {
-                            currentWeatherView.setAlpha(AutoScrollHelper.RELATIVE_UNSPECIFIED);
+                            currentWeatherView.setAlpha(0.0f);
                             currentWeatherView.stopAnimate();
                             destoryCurrentWeatherView();
                         }
@@ -1132,12 +1128,12 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         if (currentWeatherView != null) {
                             mBackground.removeView((View) currentWeatherView);
-                            currentWeatherView.setAlpha(AutoScrollHelper.RELATIVE_UNSPECIFIED);
+                            currentWeatherView.setAlpha(0.0f);
                             currentWeatherView.stopAnimate();
                             destoryCurrentWeatherView();
                         }
-                        currentWeatherView = WeatherViewCreator.getViewFromDescription(this, weatherId,
-                                isDay(currentPositon));
+                        currentWeatherView = WeatherViewCreator.getViewFromDescription(this, weatherId, isDay
+                                (currentPositon));
                         currentWeatherView.startAnimate();
                         currentWeatherView.setAlpha(currentWeatherViewAlpha);
                         mBackground.setBackgroundColor(getWeatherColor(this, weatherId, currentPositon));
@@ -1202,13 +1198,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public int getWeatherColor(Context context, int weatherId, int position) {
-        return context.getResources().getColor(WeatherResHelper.getWeatherColorStringID
-                (weatherId, isDay(position)));
+        return context.getResources().getColor(WeatherResHelper.getWeatherColorStringID(weatherId, isDay(position)));
     }
 
     public int getWeatherId() {
         RootWeather weatherData = mMainPagerAdapter.getWeatherDataAtPosition(currentPositon);
-        return weatherData != null ? WeatherResHelper.weatherToResID(this, weatherData.getCurrentWeatherId()) : 1001;
+        if (weatherData != null) {
+            return WeatherResHelper.weatherToResID(this, weatherData.getCurrentWeatherId());
+        }
+        return 1001;
     }
 
     public boolean isDay(int position) {
@@ -1241,7 +1239,10 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-        return weatherId == 1003 && isDay;
+        if (weatherId == 1003 && isDay) {
+            return true;
+        }
+        return false;
     }
 
     private void registerTimeChangeReceiver() {
@@ -1274,6 +1275,7 @@ public class MainActivity extends AppCompatActivity {
                 switch (view.getId()) {
                     case R.id.aqiView:
                         openBrower(StringUtils.getAqiMobileLink(idOrkey, local), view.getContext());
+                        return;
                     case R.id.click_url_text:
                         if (isChina) {
                             url = StringUtils.getFifteendaysMobileLink(idOrkey, local);
@@ -1281,9 +1283,10 @@ public class MainActivity extends AppCompatActivity {
                             url = weather.getFutureLink();
                         }
                         openBrower(url, view.getContext());
+                        return;
                     case R.id.opweather_detail:
-                        openBrower(StringUtils.getLifeMobileLink(idOrkey, local), view.getContext
-                                ());
+                        openBrower(StringUtils.getLifeMobileLink(idOrkey, local), view.getContext());
+                        return;
                     case R.id.opweather_info:
                         if (isChina) {
                             url = StringUtils.getChinaMainMobileLink(idOrkey, local);
@@ -1291,8 +1294,9 @@ public class MainActivity extends AppCompatActivity {
                             url = weather.getCurrentWeather().getMainMoblieLink();
                         }
                         openBrower(url, view.getContext());
+                        return;
                     default:
-                        break;
+                        return;
                 }
             }
         }

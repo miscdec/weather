@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -14,11 +13,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.opweather.R;
-import com.opweather.util.StringUtils;
-import com.opweather.widget.openglbase.RainSurfaceView;
 
 public class AqiView extends LinearLayout implements AqiBar.OnAqiLevelChangeListener {
-
     private static final boolean DBG = false;
     private static final String TAG = "AqiView";
     private final AqiBar mAqiBar;
@@ -32,34 +28,35 @@ public class AqiView extends LinearLayout implements AqiBar.OnAqiLevelChangeList
         this(context, null);
     }
 
-    public AqiView(Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs, 0);
+    public AqiView(Context context, AttributeSet attrs) {
+        this(context, attrs, R.attr.aqiViewStyle);
     }
 
-    public AqiView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public AqiView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.AqiView, defStyleAttr, 0);
-        ((LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(typedArray.getResourceId
-                (0, R.layout.aqi_view), this, true);
-        int aqiValue = typedArray.getInt(RainSurfaceView.RAIN_LEVEL_SHOWER, 0);
-        mAqiType = typedArray.getString(R.styleable.AqiView_aqiType);
-        typedArray.recycle();
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.AqiView, defStyleAttr, 0);
+        ((LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(a.getResourceId(0, R
+                        .layout.aqi_view),
+                this, true);
+        int aqiValue = a.getInt(R.styleable.AqiView_aqiValue, 0);
+        mAqiType = a.getString(R.styleable.AqiView_aqiType);
+        a.recycle();
         mTextLevel = findViewById(R.id.level);
-        mTextPMLevel = (TextView) findViewById(R.id.pm_type);
-        mTextLevelValue = (TextView) findViewById(R.id.aqi_level_value);
-        mIcon = (ImageView) findViewById(R.id.icon);
+        mTextPMLevel = findViewById(R.id.pm_type);
+        mTextLevelValue = findViewById(R.id.aqi_level_value);
+        mIcon = findViewById(R.id.icon);
         Drawable d = mIcon.getBackground();
         if (d instanceof AnimationDrawable) {
             ((AnimationDrawable) d).start();
         }
-        mAqiBar = (AqiBar) findViewById(R.id.aqiBar);
+        mAqiBar = findViewById(R.id.aqiBar);
         mAqiBar.setOnAqiLevelChangeListener(this);
         mAqiBar.setAqiValue(aqiValue);
     }
 
     public void setAqiValue(int value) {
         if (value < 0) {
-            mAqiBar.setAqiValue(0, DBG);
+            mAqiBar.setAqiValue(0, false);
             mTextPMLevel.setVisibility(View.GONE);
             mTextLevelValue.setVisibility(View.GONE);
             return;
@@ -80,14 +77,13 @@ public class AqiView extends LinearLayout implements AqiBar.OnAqiLevelChangeList
         return mAqiBar.getAqiValue();
     }
 
-    @Override
     public void onLevelChanged(AqiBar.Level level, int value) {
-        if (TextUtils.isEmpty(this.mAqiType)) {
+        if (TextUtils.isEmpty(mAqiType)) {
             mAqiType = getResources().getString(R.string.aqi_level_na);
         }
         mTextLevel.setText(mAqiType);
         mTextLevelValue.setVisibility(View.VISIBLE);
         mTextPMLevel.setVisibility(View.VISIBLE);
-        mTextLevelValue.setText(value + StringUtils.EMPTY_STRING);
+        mTextLevelValue.setText(String.valueOf(value));
     }
 }

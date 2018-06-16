@@ -11,9 +11,9 @@
     <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <application
         android:name=".ui.BaseApplication"
@@ -52,10 +52,15 @@
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ui.WeatherWarningActivity"
+            android:configChanges="orientation|screenSize"
+            android:parentActivityName=".ui.MainActivity"
+            android:screenOrientation="portrait" />
 
         <meta-data
             android:name="com.amap.api.v2.apikey"
-            android:value="43f85c54d6eab237e9392e9d5bfaeaca"/>
+            android:value="f7360b6c64a8ce9047385457a38647e5" />
     </application>
 
 </manifest>

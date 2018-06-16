@@ -14,8 +14,8 @@
     </declare-styleable>
 
     <declare-styleable name="UnderlinedTextView">
-        <attr name="tv_color" format="color" />
-        <attr name="strokeWidth" format="dimension" />
+        <attr name="underlineColor" format="color" />
+        <attr name="underlineWidth" format="dimension"/>
     </declare-styleable>
 
     <declare-styleable name="SwipeListView">

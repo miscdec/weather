@@ -2,7 +2,8 @@
 <com.opweather.widget.RefreshWeatherUnitView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent">
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
@@ -10,7 +11,6 @@
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
         android:layout_marginTop="80dp"
-        android:background="@android:color/transparent"
         android:orientation="vertical">
 
         <com.opweather.widget.WeatherScrollView
@@ -21,7 +21,8 @@
 
             <com.opweather.widget.WeatherInfoFirstLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
                 <FrameLayout
                     android:id="@+id/current_opweather_overlay"
@@ -32,7 +33,7 @@
                     android:id="@+id/opweather_info"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/current_opweather_overlay"
+                    android:layout_below="@+id/current_opweather_overlay"
                     android:onClick="clikUrl"
                     android:orientation="vertical"
                     android:paddingBottom="@dimen/oneplus_contorl_layout_margin_bottom2">
@@ -56,10 +57,10 @@
                             android:id="@+id/current_weather_icon"
                             android:layout_width="37dp"
                             android:layout_height="37dp"
-                            android:layout_alignBottom="@id/realfeel_temperature"
+                            android:layout_alignBottom="@+id/realfeel_temperature"
                             android:layout_marginBottom="@dimen/dimen_20"
                             android:layout_marginLeft="@dimen/oneplus_contorl_layout_margin_left2"
-                            android:layout_toRightOf="@id/realfeel_temperature"
+                            android:layout_toRightOf="@+id/realfeel_temperature"
                             android:contentDescription="@null" />
                     </RelativeLayout>
 
@@ -68,7 +69,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/oneplus_contorl_layout_margin_bottom2"
                         android:layout_marginLeft="@dimen/dimen_16"
-                        android:background="@android:color/transparent"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
@@ -78,7 +78,7 @@
                             android:layout_height="wrap_content"
                             android:ellipsize="marquee"
                             android:marqueeRepeatLimit="marquee_forever"
-                            android:maxWidth="150.0dip"
+                            android:maxWidth="150dp"
                             android:scrollHorizontally="true"
                             android:singleLine="true"
                             android:text="@string/nothing"
@@ -125,8 +125,9 @@
 
                 <LinearLayout
                     android:id="@+id/opweather_detail"
-                    android:layout_width="fill_parent"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/hourForecastView"
                     android:layout_marginTop="@dimen/dimen_45"
                     android:onClick="clikUrl"
                     android:orientation="vertical"
@@ -152,17 +153,17 @@
 
                         <com.opweather.widget.WeatherSingleInfoView
                             android:id="@+id/single_wind_view"
-                            android:layout_width="0.0dip"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1.0"
+                            android:layout_weight="1"
                             app:weatherIcon="@mipmap/ic_wind_level" />
 
                         <com.opweather.widget.WeatherSingleInfoView
                             android:id="@+id/single_bodytemp_view"
-                            android:layout_width="0.0dip"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginLeft="16.0dip"
-                            android:layout_weight="1.0"
+                            android:layout_marginLeft="16dp"
+                            android:layout_weight="1"
                             app:weatherIcon="@mipmap/ic_bodytemp_level"
                             app:weatherType="@string/body_temp" />
                     </LinearLayout>
@@ -171,23 +172,25 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/dimen_40"
+
                         android:orientation="horizontal">
 
                         <com.opweather.widget.WeatherSingleInfoView
                             android:id="@+id/single_humidity_view"
-                            android:layout_width="0.0dip"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1.0"
-                            app:weatherIcon="@mipmap/ic_humidity_level" />
+                            android:layout_weight="1"
+                            app:weatherIcon="@mipmap/ic_humidity_level"
+                            app:weatherType="@string/single_humidity" />
 
                         <com.opweather.widget.WeatherSingleInfoView
                             android:id="@+id/single_visibility_view"
-                            android:layout_width="0.0dip"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginLeft="16.0dip"
-                            android:layout_weight="1.0"
+                            android:layout_marginLeft="16dp"
+                            android:layout_weight="1"
                             app:weatherIcon="@mipmap/ic_visibility_level"
-                            app:weatherType="@string/body_temp" />
+                            app:weatherType="@string/visibility" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -198,26 +201,28 @@
 
                         <com.opweather.widget.WeatherSingleInfoView
                             android:id="@+id/single_uv_view"
-                            android:layout_width="0.0dip"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1.0"
-                            app:weatherIcon="@mipmap/ic_uv_levle" />
+                            android:layout_weight="1"
+                            app:weatherIcon="@mipmap/ic_uv_levle"
+                            app:weatherType="@string/single_uv" />
 
                         <com.opweather.widget.WeatherSingleInfoView
                             android:id="@+id/single_pressure_view"
-                            android:layout_width="0.0dip"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginLeft="16.0dip"
-                            android:layout_weight="1.0"
+                            android:layout_marginLeft="16dp"
+                            android:layout_weight="1"
                             app:weatherIcon="@mipmap/ic_pressure_level"
-                            app:weatherType="@string/body_temp" />
+                            app:weatherType="@string/pressure" />
                     </LinearLayout>
                 </LinearLayout>
 
                 <View
                     android:id="@+id/hourForecastViewline1"
                     android:layout_width="match_parent"
-                    android:layout_height="1.0dip"
+                    android:layout_height="1dp"
+                    android:layout_below="@+id/click_url_text"
                     android:layout_marginTop="@dimen/dimen_24"
                     android:background="@drawable/forcast_weather_line" />
 
@@ -225,14 +230,14 @@
                     android:id="@+id/hourForecastView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/hourForecastViewline1"
+                    android:layout_below="@+id/hourForecastViewline1"
                     android:layout_marginTop="@dimen/dimen_5" />
 
                 <View
                     android:id="@+id/hourForecastViewline2"
                     android:layout_width="match_parent"
-                    android:layout_height="1.0dip"
-                    android:layout_below="@id/hourForecastView"
+                    android:layout_height="1dp"
+                    android:layout_below="@+id/hourForecastView"
                     android:layout_marginTop="@dimen/dimen_5"
                     android:background="@drawable/forcast_weather_line" />
 
@@ -240,100 +245,93 @@
                     android:id="@+id/weather_temp_view"
                     android:layout_width="match_parent"
                     android:layout_height="200dp"
-                    android:layout_alignBottom="@id/weather_week_line_layout"
+                    android:layout_alignBottom="@+id/weather_week_line_layout"
                     android:layout_centerHorizontal="true" />
 
                 <LinearLayout
                     android:id="@+id/weather_week_line_layout"
-                    android:layout_width="fill_parent"
+                    android:layout_width="match_parent"
                     android:layout_height="@dimen/dimen_ling_height"
-                    android:layout_below="@id/opweather_info"
+                    android:layout_below="@+id/opweather_info"
                     android:layout_marginTop="@dimen/dimen_78"
                     android:orientation="horizontal">
 
                     <View
-                        android:layout_width="0.0dip"
+                        android:layout_width="0dp"
                         android:layout_height="@dimen/dimen_1"
-                        android:layout_weight="1.0"
-                        android:background="@android:color/transparent" />
+                        android:layout_weight="1" />
 
                     <View
-                        android:layout_width="1.0dip"
+                        android:layout_width="1dp"
                         android:layout_height="@dimen/dimen_ling_height"
                         android:background="@drawable/forcast_weather_line" />
 
                     <View
-                        android:layout_width="0.0dip"
+                        android:layout_width="0dp"
                         android:layout_height="@dimen/dimen_1"
-                        android:layout_weight="1.0"
-                        android:background="@android:color/transparent" />
+                        android:layout_weight="1" />
 
                     <View
-                        android:layout_width="1.0dip"
+                        android:layout_width="1dp"
                         android:layout_height="@dimen/dimen_ling_height"
                         android:background="@drawable/forcast_weather_line" />
 
                     <View
-                        android:layout_width="0.0dip"
+                        android:layout_width="0dp"
                         android:layout_height="@dimen/dimen_1"
-                        android:layout_weight="1.0"
-                        android:background="@android:color/transparent" />
+                        android:layout_weight="1" />
 
                     <View
-                        android:layout_width="1.0dip"
+                        android:layout_width="1dp"
                         android:layout_height="@dimen/dimen_ling_height"
                         android:background="@drawable/forcast_weather_line" />
 
                     <View
-                        android:layout_width="0.0dip"
+                        android:layout_width="0dp"
                         android:layout_height="@dimen/dimen_1"
-                        android:layout_weight="1.0"
-                        android:background="@android:color/transparent" />
+                        android:layout_weight="1" />
 
                     <View
-                        android:layout_width="1.0dip"
+                        android:layout_width="1dp"
                         android:layout_height="@dimen/dimen_ling_height"
                         android:background="@drawable/forcast_weather_line" />
 
                     <View
-                        android:layout_width="0.0dip"
+                        android:layout_width="0dp"
                         android:layout_height="@dimen/dimen_1"
-                        android:layout_weight="1.0"
-                        android:background="@android:color/transparent" />
+                        android:layout_weight="1" />
 
                     <View
-                        android:layout_width="1.0dip"
+                        android:layout_width="1dp"
                         android:layout_height="@dimen/dimen_ling_height"
                         android:background="@drawable/forcast_weather_line" />
 
                     <View
-                        android:layout_width="0.0dip"
+                        android:layout_width="0dp"
                         android:layout_height="@dimen/dimen_1"
-                        android:layout_weight="1.0"
-                        android:background="@android:color/transparent" />
-
+                        android:layout_weight="1" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/forecast_weather"
-                    android:layout_width="fill_parent"
+                    android:layout_width="match_parent"
                     android:layout_height="@dimen/dimen_ling_height"
-                    android:layout_alignBottom="@id/weather_week_line_layout"
+                    android:layout_alignBottom="@+id/weather_week_line_layout"
                     android:orientation="horizontal" />
 
                 <com.opweather.widget.UnderLineTextView
                     android:id="@+id/click_url_text"
-                    android:layout_width="fill_parent"
+                    android:layout_width="match_parent"
                     android:layout_height="@dimen/oneplus_contorl_list_item_height_one_line1"
-                    android:layout_below="@id/weather_temp_view"
+                    android:layout_below="@+id/weather_temp_view"
                     android:layout_marginEnd="@dimen/oneplus_contorl_layout_margin_right2"
                     android:layout_marginStart="@dimen/oneplus_contorl_layout_margin_left2"
                     android:gravity="center"
                     android:onClick="clikUrl"
                     android:text="@string/click_url_text"
                     android:textColor="@color/oneplus_contorl_text_color_secondary_dark"
-                    app:tv_color="@color/oneplus_contorl_text_color_secondary_dark"
-                    app:strokeWidth="1.0dip" />
+                    app:underlineColor="@color/oneplus_contorl_text_color_secondary_dark"
+                    app:underlineWidth="1dp" />
             </com.opweather.widget.WeatherInfoFirstLayout>
         </com.opweather.widget.WeatherScrollView>
     </android.support.v4.widget.SwipeRefreshLayout>

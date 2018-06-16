@@ -2,7 +2,6 @@ package com.opweather.api.nodes;
 
 import android.os.Parcel;
 
-
 import com.opweather.api.helper.DateUtils;
 import com.opweather.api.helper.StringUtils;
 import com.opweather.api.impl.OppoChinaRequest;
@@ -10,15 +9,14 @@ import com.opweather.api.impl.OppoChinaRequest;
 import java.util.Date;
 
 public class OppoChinaAlarm extends Alarm {
-    public final Creator<OppoChinaAlarm> CREATOR = new Creator<OppoChinaAlarm>() {
-        @Override
-        public OppoChinaAlarm createFromParcel(Parcel parcel) {
-            return setParcel(parcel);
+    public static final Creator<OppoChinaAlarm> CREATOR = new Creator<OppoChinaAlarm>() {
+        public OppoChinaAlarm createFromParcel(Parcel source) {
+            return build(source.readString(), source.readString(), DateUtils.epochDateToDate(source.readLong()), source
+                    .readString(), source.readString());
         }
 
-        @Override
-        public OppoChinaAlarm[] newArray(int i) {
-            return new OppoChinaAlarm[i];
+        public OppoChinaAlarm[] newArray(int size) {
+            return new OppoChinaAlarm[size];
         }
     };
     private String mAlarmAreaName;
@@ -34,34 +32,35 @@ public class OppoChinaAlarm extends Alarm {
     }
 
     public String getAlarmAreaName() {
-        return this.mAlarmAreaName;
+        return mAlarmAreaName;
     }
 
     public Date getPublishTime() {
-        return this.mPublishTime;
+        return mPublishTime;
     }
 
     public Date getStartTime() {
-        return this.mStartTime;
+        return mStartTime;
     }
 
     public Date getEndTime() {
-        return this.mEndTime;
+        return mEndTime;
     }
 
     public String getTypeName() {
-        return this.mTypeName;
+        return mTypeName;
     }
 
     public String getLevelName() {
-        return this.mLevelName;
+        return mLevelName;
     }
 
     public String getContentText() {
-        return this.mContentText;
+        return mContentText;
     }
 
-    public static OppoChinaAlarm build(String areaCode, String areaName, Date observationDate, String warnWeatherTitle, String warnWeatherDetail) {
+    public static OppoChinaAlarm build(String areaCode, String areaName, Date observationDate, String
+            warnWeatherTitle, String warnWeatherDetail) {
         if (StringUtils.isBlank(areaCode)) {
             return null;
         }
@@ -82,13 +81,14 @@ public class OppoChinaAlarm extends Alarm {
 
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(getAreaCode());
-        dest.writeString(this.mAlarmAreaName);
-        dest.writeLong(DateUtils.dateToEpochDate(this.mPublishTime));
-        dest.writeString(this.mTypeName);
-        dest.writeString(this.mContentText);
+        dest.writeString(mAlarmAreaName);
+        dest.writeLong(DateUtils.dateToEpochDate(mPublishTime));
+        dest.writeString(mTypeName);
+        dest.writeString(mContentText);
     }
 
     public OppoChinaAlarm setParcel(Parcel parcel) {
-        return build(parcel.readString(), parcel.readString(), DateUtils.epochDateToDate(parcel.readLong()), parcel.readString(), parcel.readString());
+        return build(parcel.readString(), parcel.readString(), DateUtils.epochDateToDate(parcel.readLong()), parcel
+                .readString(), parcel.readString());
     }
 }

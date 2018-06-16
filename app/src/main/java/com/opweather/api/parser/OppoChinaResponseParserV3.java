@@ -13,6 +13,7 @@ import com.opweather.api.impl.OppoChinaRequest;
 import com.opweather.api.nodes.Alarm;
 import com.opweather.api.nodes.CurrentWeather;
 import com.opweather.api.nodes.DailyForecastsWeather;
+import com.opweather.api.nodes.HourForecastsWeather;
 import com.opweather.api.nodes.OppoChinaAlarm;
 import com.opweather.api.nodes.OppoChinaAqiWeather;
 import com.opweather.api.nodes.OppoChinaCurrentWeather;
@@ -24,9 +25,7 @@ import com.opweather.api.nodes.Sun;
 import com.opweather.api.nodes.Temperature;
 import com.opweather.api.nodes.Wind;
 import com.opweather.api.nodes.Wind.Direction;
-import com.opweather.bean.HourForecastsWeather;
-import com.opweather.db.CityWeatherDBHelper;
-import com.opweather.ui.WeatherWarningActivity;
+import com.opweather.db.CityWeatherDBHelper.WeatherEntry;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -68,124 +67,112 @@ public class OppoChinaResponseParserV3 implements ResponseParser {
         private String warnWeatherTitle;
 
         static class DailyForecastsHolder {
-            Date date;
-            int dayWeatherId;
-            double maxTemperature;
-            double minTemperature;
-            String mobileLink;
-            int nightWeatherId;
-            Date sunRise;
-            Date sunSet;
+            Date date = null;
+            int dayWeatherId = Integer.MIN_VALUE;
+            double maxTemperature = Double.NaN;
+            double minTemperature = Double.NaN;
+            String mobileLink = null;
+            int nightWeatherId = Integer.MIN_VALUE;
+            Date sunRise = null;
+            Date sunSet = null;
 
             DailyForecastsHolder() {
-                this.date = null;
-                this.dayWeatherId = Integer.MIN_VALUE;
-                this.nightWeatherId = Integer.MIN_VALUE;
-                this.minTemperature = Double.NaN;
-                this.maxTemperature = Double.NaN;
-                this.sunRise = null;
-                this.sunSet = null;
-                this.mobileLink = null;
             }
         }
 
         static class HourForecastsHolder {
-            double temperature;
-            Date time;
-            int weatherId;
+            double temperature = Double.NaN;
+            Date time = null;
+            int weatherId = Integer.MIN_VALUE;
 
             HourForecastsHolder() {
-                this.weatherId = Integer.MIN_VALUE;
-                this.temperature = Double.NaN;
-                this.time = null;
             }
         }
 
         private RootWeatherBuilder() {
-            this.areaName = null;
-            this.aqiValue = Integer.MIN_VALUE;
-            this.ts = null;
-            this.currentWeatherId = Integer.MIN_VALUE;
-            this.currentTemperature = Double.NaN;
-            this.currentWindDirection = null;
-            this.currentWindPower = null;
-            this.currentRelativeHumidity = Integer.MIN_VALUE;
-            this.time = null;
-            this.currentUVIndexText = null;
-            this.avg_pm25 = Integer.MIN_VALUE;
-            this.aqi = null;
-            this.body_temp = Double.NaN;
-            this.pressure = Integer.MIN_VALUE;
-            this.visibility = Integer.MIN_VALUE;
-            this.warnWeatherTitle = null;
-            this.warnWeatherDetail = null;
-            this.dailyItemList = null;
-            this.hourItemList = null;
+            areaName = null;
+            aqiValue = Integer.MIN_VALUE;
+            ts = null;
+            currentWeatherId = Integer.MIN_VALUE;
+            currentTemperature = Double.NaN;
+            currentWindDirection = null;
+            currentWindPower = null;
+            currentRelativeHumidity = Integer.MIN_VALUE;
+            time = null;
+            currentUVIndexText = null;
+            avg_pm25 = Integer.MIN_VALUE;
+            aqi = null;
+            body_temp = Double.NaN;
+            pressure = Integer.MIN_VALUE;
+            visibility = Integer.MIN_VALUE;
+            warnWeatherTitle = null;
+            warnWeatherDetail = null;
+            dailyItemList = null;
+            hourItemList = null;
         }
 
         public void add(DailyForecastsHolder item) {
-            if (this.dailyItemList == null) {
-                this.dailyItemList = new ArrayList<>();
+            if (dailyItemList == null) {
+                dailyItemList = new ArrayList<>();
             }
-            this.dailyItemList.add(item);
+            dailyItemList.add(item);
         }
 
         public void add(HourForecastsHolder item) {
-            if (this.hourItemList == null) {
-                this.hourItemList = new ArrayList<>();
+            if (hourItemList == null) {
+                hourItemList = new ArrayList<>();
             }
-            this.hourItemList.add(item);
+            hourItemList.add(item);
         }
 
         public RootWeather build() throws BuilderException {
-            if (StringUtils.isBlank(this.areaCode)) {
+            if (StringUtils.isBlank(areaCode)) {
                 throw new BuilderException("Valid area code empty.");
             }
-            RootWeather rootWeather = new RootWeather(this.areaCode, this.areaName, OppoChinaRequest.DATA_SOURCE_NAME);
-            if (this.date != null) {
-                LogUtils.d(TAG, "Date: " + this.date);
+            RootWeather rootWeather = new RootWeather(areaCode, areaName, OppoChinaRequest.DATA_SOURCE_NAME);
+            if (date != null) {
+                LogUtils.d(OppoChinaResponseParserV3.TAG, "Date: " + date);
             }
-            OppoChinaAqiWeather aqiWeather = new OppoChinaAqiWeather(this.areaCode, this.areaName, OppoChinaRequest
-                    .DATA_SOURCE_NAME, this.aqiValue, this.avg_pm25, this.aqi);
-            CurrentWeather currentWeather = getCurrentWeather(this.date, this.dailyItemList);
+            OppoChinaAqiWeather aqiWeather = new OppoChinaAqiWeather(areaCode, areaName, OppoChinaRequest
+                    .DATA_SOURCE_NAME, aqiValue, avg_pm25, aqi);
+            CurrentWeather currentWeather = getCurrentWeather(date, dailyItemList);
             List<DailyForecastsWeather> dailyForecastsWeather = null;
-            if (this.dailyItemList != null && this.dailyItemList.size() > 0) {
+            if (dailyItemList != null && dailyItemList.size() > 0) {
                 dailyForecastsWeather = new ArrayList<>();
-                for (DailyForecastsHolder holder : this.dailyItemList) {
+                for (DailyForecastsHolder holder : dailyItemList) {
                     if (holder.date != null) {
-                        Temperature minTemperature = new Temperature(this.areaCode, this.areaName, OppoChinaRequest
+                        Temperature minTemperature = new Temperature(areaCode, areaName, OppoChinaRequest
                                 .DATA_SOURCE_NAME, holder.minTemperature, WeatherUtils.centigradeToFahrenheit(holder
                                 .minTemperature));
-                        Temperature maxTemperature = new Temperature(this.areaCode, this.areaName, OppoChinaRequest
+                        Temperature maxTemperature = new Temperature(areaCode, areaName, OppoChinaRequest
                                 .DATA_SOURCE_NAME, holder.maxTemperature, WeatherUtils.centigradeToFahrenheit(holder
                                 .maxTemperature));
-                        Temperature bodyTemperature = new Temperature(this.areaCode, this.areaName, OppoChinaRequest
-                                .DATA_SOURCE_NAME, this.body_temp, WeatherUtils.centigradeToFahrenheit(this.body_temp));
+                        Temperature bodyTemperature = new Temperature(areaCode, areaName, OppoChinaRequest
+                                .DATA_SOURCE_NAME, holder.maxTemperature, WeatherUtils.centigradeToFahrenheit
+                                (body_temp));
                         List<DailyForecastsWeather> list = dailyForecastsWeather;
-                        list.add(new OppoChinaDailyForecastsWeather(this.areaCode, this.areaName, OppoChinaRequest
+                        list.add(new OppoChinaDailyForecastsWeather(areaCode, areaName, OppoChinaRequest
                                 .DATA_SOURCE_NAME, holder.dayWeatherId, holder.nightWeatherId, holder.date,
-                                minTemperature, maxTemperature, new Sun(this.areaCode, this.areaName,
-                                OppoChinaRequest.DATA_SOURCE_NAME, holder.sunRise, holder.sunSet), bodyTemperature,
-                                this.pressure, this.visibility, holder.mobileLink));
+                                minTemperature, maxTemperature, new Sun(areaCode, areaName, OppoChinaRequest
+                                .DATA_SOURCE_NAME, holder.sunRise, holder.sunSet), bodyTemperature, pressure,
+                                visibility, holder.mobileLink));
                     }
                 }
             }
             List<HourForecastsWeather> hourForecastsWeather = null;
-            if (this.hourItemList != null && this.hourItemList.size() > 0) {
+            if (hourItemList != null && hourItemList.size() > 0) {
                 hourForecastsWeather = new ArrayList<>();
-                for (HourForecastsHolder holder2 : this.hourItemList) {
-                    if (holder2.time != null) {
-                        if (holder2.weatherId != Integer.MIN_VALUE || holder2.temperature != Double.NaN) {
-                            List<HourForecastsWeather> list2 = hourForecastsWeather;
-                            list2.add(new OppoChinaHourForecastsWeather(this.areaCode, holder2.weatherId,
-                                    holder2.time, new Temperature(this.areaCode, this.areaName, OppoChinaRequest
-                                    .DATA_SOURCE_NAME, holder2.temperature, WeatherUtils.centigradeToFahrenheit
-                                    (holder2.temperature))));
-                        }
+                for (HourForecastsHolder holder2 : hourItemList) {
+                    if (!(holder2.time == null || (holder2.weatherId == Integer.MIN_VALUE && holder2.temperature ==
+                            Double.NaN))) {
+                        List<HourForecastsWeather> list2 = hourForecastsWeather;
+                        list2.add(new OppoChinaHourForecastsWeather(areaCode, holder2.weatherId, holder2.time, new
+                                Temperature(areaCode, areaName, OppoChinaRequest.DATA_SOURCE_NAME,
+                                holder2.temperature, WeatherUtils.centigradeToFahrenheit(holder2.temperature))));
                     }
                 }
             }
-            List<Alarm> oppoAlarmList = getAlarmWeather(this.date);
+            List<Alarm> oppoAlarmList = getAlarmWeather(date);
             rootWeather.setCurrentWeather(currentWeather);
             rootWeather.setAqiWeather(aqiWeather);
             if (dailyForecastsWeather == null || dailyForecastsWeather.size() <= 0) {
@@ -205,32 +192,31 @@ public class OppoChinaResponseParserV3 implements ResponseParser {
         }
 
         private CurrentWeather getCurrentWeather(String date, List<DailyForecastsHolder> list) {
-            if (NumberUtils.isNaN(this.currentTemperature)) {
+            if (NumberUtils.isNaN(currentTemperature)) {
                 for (DailyForecastsHolder holder : list) {
                     if (DateUtils.isSameDay(System.currentTimeMillis(), holder.date.getTime(), TimeZone.getTimeZone
                             ("GMT+08:00"))) {
-                        this.currentTemperature = (holder.maxTemperature + holder.minTemperature) / 2.0d;
+                        currentTemperature = (holder.maxTemperature + holder.minTemperature) / 2.0d;
                         break;
                     }
                 }
             }
-            Date observationDate = DateUtils.parseOppoObservationDate(this.ts);
-            Temperature temperature = new Temperature(this.areaCode, this.areaName, OppoChinaRequest
-                    .DATA_SOURCE_NAME, this.currentTemperature, WeatherUtils.centigradeToFahrenheit(this
-                    .currentTemperature));
-            return new OppoChinaCurrentWeather(this.areaCode, this.areaName, OppoChinaRequest.DATA_SOURCE_NAME, this
-                    .currentWeatherId, observationDate, temperature, this.currentRelativeHumidity, new OppoWind(this
-                    .areaCode, this.areaName, OppoChinaRequest.DATA_SOURCE_NAME, this.currentWindDirection, this
-                    .currentWindPower), Integer.MIN_VALUE, this.currentUVIndexText);
+            Date observationDate = DateUtils.parseOppoObservationDate(ts);
+            Temperature temperature = new Temperature(areaCode, areaName, OppoChinaRequest.DATA_SOURCE_NAME,
+                    currentTemperature, WeatherUtils.centigradeToFahrenheit(currentTemperature));
+            return new OppoChinaCurrentWeather(areaCode, areaName, OppoChinaRequest.DATA_SOURCE_NAME,
+                    currentWeatherId, observationDate, temperature, currentRelativeHumidity, new OppoWind(areaCode,
+                    areaName, OppoChinaRequest.DATA_SOURCE_NAME, currentWindDirection, currentWindPower), Integer
+                    .MIN_VALUE, currentUVIndexText);
         }
 
         private List<Alarm> getAlarmWeather(String date) {
-            if (TextUtils.isEmpty(this.warnWeatherTitle) || TextUtils.isEmpty(this.warnWeatherDetail)) {
+            if (TextUtils.isEmpty(warnWeatherTitle) || TextUtils.isEmpty(warnWeatherDetail)) {
                 return null;
             }
             List<Alarm> alarmList = new ArrayList<>();
-            OppoChinaAlarm alarm = OppoChinaAlarm.build(this.areaCode, this.areaName, DateUtils
-                    .parseOppoCurrentWeatherDate(date), this.warnWeatherTitle, this.warnWeatherDetail);
+            OppoChinaAlarm alarm = OppoChinaAlarm.build(areaCode, areaName, DateUtils.parseOppoCurrentWeatherDate
+                    (date), warnWeatherTitle, warnWeatherDetail);
             if (alarm == null) {
                 return alarmList;
             }
@@ -240,7 +226,7 @@ public class OppoChinaResponseParserV3 implements ResponseParser {
     }
 
     public OppoChinaResponseParserV3(WeatherRequest request) {
-        this.mRequest = request;
+        mRequest = request;
     }
 
     public RootWeather parseCurrent(byte[] data) throws ParseException {
@@ -268,34 +254,36 @@ public class OppoChinaResponseParserV3 implements ResponseParser {
     }
 
     private RootWeather innerCommonParse(byte[] data) throws ParseException {
+        Exception e;
+        Throwable th;
         if (data == null) {
             throw new ParseException("The data to parser is null!");
         }
         RootWeatherBuilder builder = new RootWeatherBuilder();
-        InputStream inputStream = null;
+        InputStream stream = null;
         try {
-            inputStream = IOUtils.getInputStreamFromByteArray(data);
-            InputStream gZIPInputStream = new GZIPInputStream(inputStream);
+            stream = IOUtils.getInputStreamFromByteArray(data);
+            InputStream gZIPInputStream = new GZIPInputStream(stream);
             try {
                 String jsonData = IOUtils.byteArrayToString(IOUtils.toByteArray(gZIPInputStream), CONTENT_ENCODE);
                 if (jsonData == null) {
                     throw new ParseException("Data to parse is null!");
                 }
                 int i;
-                JSONObject jSONObject = new JSONObject(jsonData);
-                builder.ts = jSONObject.getString("ts");
-                String string = jSONObject.getString("ver");
-                jSONObject = new JSONObject(jSONObject.getString("info"));
-                builder.areaCode = jSONObject.getString("city_id");
-                builder.areaName = jSONObject.getString(WeatherWarningActivity.INTENT_PARA_CITY);
-                JSONObject currentObject = new JSONObject(jSONObject.getString("current"));
+                JSONObject dataObject = new JSONObject(jsonData);
+                builder.ts = dataObject.getString("ts");
+                String ver = dataObject.getString("ver");
+                dataObject = new JSONObject(dataObject.getString("info"));
+                builder.areaCode = dataObject.getString("city_id");
+                builder.areaName = dataObject.getString("city");
+                JSONObject currentObject = new JSONObject(dataObject.getString("current"));
                 builder.currentTemperature = NumberUtils.valueToDouble(currentObject.getString("temp"));
                 builder.currentWeatherId = WeatherUtils.oppoChinaWeatherTextToWeatherId(currentObject.getString
-                        (CityWeatherDBHelper.WeatherEntry.TABLE_NAME));
+                        (WeatherEntry.TABLE_NAME));
                 builder.currentWindDirection = Wind.getDirectionFromOppo(currentObject.getString("wind_direction"));
                 builder.currentWindPower = currentObject.getString("wind_power");
-                builder.currentRelativeHumidity = NumberUtils.valueToInt(currentObject.getString(CityWeatherDBHelper
-                        .WeatherEntry.COLUMN_7_HUMIDITY));
+                builder.currentRelativeHumidity = NumberUtils.valueToInt(currentObject.getString(WeatherEntry
+                        .COLUMN_7_HUMIDITY));
                 builder.time = currentObject.getString("time");
                 builder.currentUVIndexText = currentObject.getString("uv");
                 builder.avg_pm25 = NumberUtils.valueToInt(currentObject.getString("avg_pm25"));
@@ -305,10 +293,10 @@ public class OppoChinaResponseParserV3 implements ResponseParser {
                 builder.body_temp = NumberUtils.valueToDouble(currentObject.getString("body_temp"));
                 builder.pressure = NumberUtils.valueToInt(currentObject.getString("pressure"));
                 builder.visibility = NumberUtils.valueToInt(currentObject.getString("visibility"));
-                jSONObject = new JSONObject(jSONObject.getString("warn"));
-                builder.warnWeatherTitle = jSONObject.getString("warn_name");
-                builder.warnWeatherDetail = jSONObject.getString("warn_text");
-                JSONArray daysArray = jSONObject.getJSONArray("days");
+                JSONObject warnObject = new JSONObject(dataObject.getString("warn"));
+                builder.warnWeatherTitle = warnObject.getString("warn_name");
+                builder.warnWeatherDetail = warnObject.getString("warn_text");
+                JSONArray daysArray = dataObject.getJSONArray("days");
                 int daySize = daysArray.length();
                 for (i = 0; i < daySize; i++) {
                     RootWeatherBuilder.DailyForecastsHolder dayHolder = new RootWeatherBuilder.DailyForecastsHolder();
@@ -325,40 +313,52 @@ public class OppoChinaResponseParserV3 implements ResponseParser {
                     dayHolder.mobileLink = StringUtils.getDailyMobileLink(builder.areaCode, i + 1);
                     builder.add(dayHolder);
                 }
-                JSONArray hoursArray = jSONObject.getJSONArray("hours");
+                JSONArray hoursArray = dataObject.getJSONArray("hours");
                 int hourSize = hoursArray.length();
                 for (i = 0; i < hourSize; i++) {
                     RootWeatherBuilder.HourForecastsHolder hourHolder = new RootWeatherBuilder.HourForecastsHolder();
                     JSONObject hourObject = new JSONObject(hoursArray.getString(i));
                     hourHolder.time = DateUtils.parseOppoCurrentWeatherDate(hourObject.getString("time"));
                     hourHolder.weatherId = WeatherUtils.oppoChinaWeatherTextToWeatherId(hourObject.getString
-                            (CityWeatherDBHelper.WeatherEntry.TABLE_NAME));
+                            (WeatherEntry.TABLE_NAME));
                     hourHolder.temperature = NumberUtils.valueToDouble(hourObject.getString("temp"));
                     builder.add(hourHolder);
                 }
-                try {
-                    gZIPInputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if (gZIPInputStream != null) {
+                    try {
+                        gZIPInputStream.close();
+                    } catch (IOException e2) {
+                        e2.printStackTrace();
+                    }
                 }
                 return builder.build();
-            } catch (Exception e2) {
-                inputStream = gZIPInputStream;
-            } catch (Throwable th3) {
-                inputStream = gZIPInputStream;
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e4) {
-                        e4.printStackTrace();
+            } catch (Exception e3) {
+                e = e3;
+                stream = gZIPInputStream;
+                try {
+                    LogUtils.e(TAG, "Can not parse data!", e);
+                    throw new ParseException(e.getMessage());
+                } catch (Throwable th2) {
+                    if (stream != null) {
+                        try {
+                            stream.close();
+                        } catch (IOException e22) {
+                            e22.printStackTrace();
+                        }
                     }
+                    throw th2;
+                }
+            } catch (Throwable th3) {
+                stream = gZIPInputStream;
+                if (stream != null) {
+                    stream.close();
                 }
                 throw th3;
             }
-        } catch (Exception e5) {
-            LogUtils.e(TAG, "Can not parse data!", e5);
-            throw new ParseException(e5.getMessage());
+        } catch (Exception e4) {
+            e = e4;
+            LogUtils.e(TAG, "Can not parse data!", e);
+            throw new ParseException(e.getMessage());
         }
-        return builder.build();
     }
 }

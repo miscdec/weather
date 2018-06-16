@@ -7,7 +7,8 @@ import android.widget.RelativeLayout;
 
 import com.opweather.R;
 
-public class WeatherInfoFirstLayout extends RelativeLayout{
+
+public class WeatherInfoFirstLayout extends RelativeLayout {
     public WeatherInfoFirstLayout(Context context) {
         super(context);
     }
@@ -21,15 +22,15 @@ public class WeatherInfoFirstLayout extends RelativeLayout{
     }
 
     @Override
-    public void addView(View child) {
-        if (child.getId() == R.id.opweather_info){
-            ((LayoutParams) child.getLayoutParams()).topMargin = - child.getHeight();
+    public void addView(View view) {
+        if (view.getId() == R.id.opweather_info) {
+            ((LayoutParams) view.getLayoutParams()).topMargin = -view.getHeight();
         }
-        super.addView(child);
+        super.addView(view);
     }
 
     @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+    public void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
         View childView = findViewById(R.id.opweather_info);
         ((LayoutParams) childView.getLayoutParams()).topMargin = -childView.getHeight();

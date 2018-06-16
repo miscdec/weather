@@ -2,9 +2,8 @@ package com.opweather.adapter;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
-import android.support.v7.widget.ListPopupWindow;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -18,9 +17,7 @@ import com.opweather.constants.WeatherDescription;
 import com.opweather.db.ChinaCityDB;
 import com.opweather.db.CityWeatherDB;
 import com.opweather.ui.ContentWrapper;
-import com.opweather.ui.ContentWrapper.OnUIChangedListener;
 import com.opweather.ui.MainActivity;
-import com.opweather.ui.MainActivity.OnViewPagerScrollListener;
 import com.opweather.util.DateTimeUtils;
 import com.opweather.util.SystemSetting;
 import com.opweather.util.WeatherClientProxy;
@@ -33,21 +30,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 public class MainPagerAdapter extends PagerAdapter {
     public static final int DEFAULT_WEATHER_INDEX = 0;
-    private List<CityData> mCitys;
+    private List<CityData> mCitys = new ArrayList<>();
     private Map<Integer, WeakReference<ContentWrapper>> mContentWrapper;
     private Context mContext;
-    private OnUIChangedListener mOnUIChangedListener;
-    private List<OnViewPagerScrollListener> mOnViewPagerScrollListener;
+    private ContentWrapper.OnUIChangedListener mOnUIChangedListener;
+    private List<MainActivity.OnViewPagerScrollListener> mOnViewPagerScrollListener;
     private TextView mTextView;
 
-    public MainPagerAdapter(Context context, List<OnViewPagerScrollListener> l, TextView textView) {
+    public MainPagerAdapter(Context context, List<MainActivity.OnViewPagerScrollListener> l, TextView textView) {
         mContext = context;
-        mCitys = new ArrayList<>();
         updateCityList(context);
         mOnViewPagerScrollListener = l;
         mContentWrapper = new HashMap<>();
+
         mTextView = textView;
     }
 
@@ -56,10 +54,10 @@ public class MainPagerAdapter extends PagerAdapter {
     }
 
     public void loadWeather(int position, boolean force) {
-        if (this.mContentWrapper.size() > position) {
-            WeakReference<ContentWrapper> wp = mContentWrapper.get(position);
+        if (mContentWrapper.size() > position) {
+            WeakReference<ContentWrapper> wp =  mContentWrapper.get(position);
             if (wp != null) {
-                ContentWrapper cw = (ContentWrapper) wp.get();
+                ContentWrapper cw =  wp.get();
                 if (cw == null) {
                     return;
                 }
@@ -70,7 +68,7 @@ public class MainPagerAdapter extends PagerAdapter {
                         cw.updateWeatherInfo(CacheMode.LOAD_NO_CACHE);
                     } else if (mCitys.size() > position) {
                         String cityId = mCitys.get(position).getLocationId();
-                        long rTime = SystemSetting.getRefreshTime(this.mContext, cityId);
+                        long rTime = SystemSetting.getRefreshTime(mContext, cityId);
                         if (force || DateTimeUtils.checkNeedRefresh(rTime) || WeatherClientProxy.needPullWeather
                                 (mContext, cityId, cw.getCityWeather())) {
                             cw.updateWeatherInfo(CacheMode.LOAD_NO_CACHE);
@@ -81,7 +79,7 @@ public class MainPagerAdapter extends PagerAdapter {
         }
     }
 
-    public void setOnUIChangedListener(OnUIChangedListener l) {
+    public void setOnUIChangedListener(ContentWrapper.OnUIChangedListener l) {
         mOnUIChangedListener = l;
     }
 
@@ -91,13 +89,12 @@ public class MainPagerAdapter extends PagerAdapter {
     }
 
     @Override
-    public boolean isViewFromObject(@NonNull View arg0, @NonNull Object arg1) {
+    public boolean isViewFromObject(View arg0, Object arg1) {
         return arg0 == ((ContentWrapper) arg1).getContent();
     }
 
-    @NonNull
     @Override
-    public Object instantiateItem(@NonNull ViewGroup container, int position) {
+    public Object instantiateItem(ViewGroup container, int position) {
         final CityData city = mCitys.get(position);
         WeakReference<ContentWrapper> wr = mContentWrapper.get(position);
         ContentWrapper wrapper = null;
@@ -110,19 +107,19 @@ public class MainPagerAdapter extends PagerAdapter {
         if (wrapper == null) {
             wrapper = new ContentWrapper(mContext, city, new WeatherClientProxy.OnResponseListener() {
                 @Override
-                public void onCacheResponse(RootWeather rootWeather) {
-                }
-
-                @Override
-                public void onErrorResponse(WeatherException weatherException) {
-                }
-
-                @Override
-                public void onNetworkResponse(RootWeather rootWeather) {
-                    if (rootWeather != null) {
+                public void onNetworkResponse(RootWeather response) {
+                    if (response != null) {
                         CityWeatherDB.getInstance(mContext).updateLastRefreshTime(city.getLocationId(), DateTimeUtils
                                 .longTimeToRefreshTime(mContext, System.currentTimeMillis()));
                     }
+                }
+
+                @Override
+                public void onErrorResponse(WeatherException errorCode) {
+                }
+
+                @Override
+                public void onCacheResponse(RootWeather response) {
                 }
             }, mTextView);
             wrapper.setOnUIChangedListener(mOnUIChangedListener);
@@ -139,13 +136,14 @@ public class MainPagerAdapter extends PagerAdapter {
     }
 
     @Override
-    public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
+    public void destroyItem(ViewGroup container, int position, Object object) {
         container.removeView(((ContentWrapper) object).getContent());
         mOnViewPagerScrollListener.remove(object);
     }
 
-    public int getItemPosition(@NonNull Object object) {
-        return ListPopupWindow.WRAP_CONTENT;
+    @Override
+    public int getItemPosition(Object object) {
+        return -2;
     }
 
     public boolean contains(CityData city) {
@@ -215,7 +213,10 @@ public class MainPagerAdapter extends PagerAdapter {
     }
 
     public CityData getLocatedCityData() {
-        return (mCitys == null || mCitys.size() == 0) ? null : (CityData) mCitys.get(0);
+        if (mCitys == null || mCitys.size() == 0) {
+            return null;
+        }
+        return mCitys.get(0);
     }
 
     public int getWeatherDescriptionId(int position) {
@@ -223,17 +224,21 @@ public class MainPagerAdapter extends PagerAdapter {
             return WeatherDescription.WEATHER_DESCRIPTION_UNKNOWN;
         }
         RootWeather cWeather = mCitys.get(position).getWeathers();
-        return (cWeather == null || cWeather.getCurrentWeather() == null || cWeather.getTodayForecast() == null) ?
-                WeatherDescription.WEATHER_DESCRIPTION_UNKNOWN : WeatherResHelper.weatherToResID(mContext,
-                cWeather.getCurrentWeatherId());
+        if (cWeather == null || cWeather.getTodayForecast() == null) {
+            return WeatherDescription.WEATHER_DESCRIPTION_UNKNOWN;
+        }
+        return WeatherResHelper.weatherToResID(mContext, cWeather.getCurrentWeatherId());
     }
 
     public CityData getCityAtPosition(int position) {
-        return (mCitys.size() <= position || position <= -1) ? null : mCitys.get(position);
+        if (mCitys.size() <= position || position <= -1) {
+            return null;
+        }
+        return mCitys.get(position);
     }
 
     public ContentWrapper getContentWrap(int position) {
-        if (this.mContentWrapper != null && mContentWrapper.size() > position) {
+        if (mContentWrapper != null && mContentWrapper.size() > position) {
             WeakReference<ContentWrapper> wr = mContentWrapper.get(position);
             if (wr != null) {
                 ContentWrapper cw = wr.get();
@@ -248,6 +253,9 @@ public class MainPagerAdapter extends PagerAdapter {
     }
 
     public RootWeather getWeatherDataAtPosition(int position) {
-        return (mCitys.size() <= position || position == -1) ? null : mCitys.get(position).getWeathers();
+        if (mCitys.size() > position) {
+            return mCitys.get(position).getWeathers();
+        }
+        return null;
     }
 }

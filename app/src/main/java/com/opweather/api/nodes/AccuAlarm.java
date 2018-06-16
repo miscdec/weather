@@ -9,10 +9,11 @@ import com.opweather.api.impl.AccuRequest;
 import java.util.Date;
 
 public class AccuAlarm extends Alarm {
-    public final Creator<AccuAlarm> CREATOR = new Creator<AccuAlarm>() {
+    public static final Creator<AccuAlarm> CREATOR = new Creator<AccuAlarm>() {
         @Override
         public AccuAlarm createFromParcel(Parcel parcel) {
-            return setParcel(parcel);
+            return build(parcel.readString(), parcel.readString(), parcel.readString(), parcel.readString(), parcel
+                    .readString(), parcel.readLong(), parcel.readLong());
         }
 
         @Override

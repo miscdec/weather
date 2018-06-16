@@ -406,11 +406,6 @@ public class WeatherRequestExecuter extends AbstractExecuter {
 
     private void requestCacheData(int type, WeatherRequest request, CacheBox box) {
         LogUtils.d(TAG, "getDiskCacheKey : " + request.getDiskCacheKey(type));
-        LogUtils.d(TAG, "getMemCacheKey: " + request.getMemCacheKey());
-        LogUtils.d(TAG, "getCacheMode: " + request.getCacheMode());
-        LogUtils.d(TAG, "getRequestUrl: " + request.getRequestUrl(type));
-        LogUtils.d(TAG, "getRequestType: " + request.getRequestType());
-        LogUtils.d(TAG, "getLocale: " + request.getLocale());
         new CacheParserWorkerTask(type, request, box).execute(request.getDiskCacheKey(type));
     }
 }

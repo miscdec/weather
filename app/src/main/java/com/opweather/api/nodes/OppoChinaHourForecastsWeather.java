@@ -4,7 +4,6 @@ import android.content.Context;
 
 import com.opweather.api.helper.WeatherUtils;
 import com.opweather.api.impl.OppoChinaRequest;
-import com.opweather.bean.HourForecastsWeather;
 
 
 import java.util.Date;

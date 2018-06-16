@@ -13,11 +13,11 @@ import android.widget.FrameLayout;
 import com.opweather.R;
 import com.opweather.adapter.HourForecastAdapter;
 import com.opweather.api.helper.DateUtils;
-import com.opweather.bean.HourForecastsWeather;
-import com.opweather.bean.HourForecastsWeatherData;
 import com.opweather.api.nodes.DailyForecastsWeather;
+import com.opweather.api.nodes.HourForecastsWeather;
 import com.opweather.api.nodes.Sun;
 import com.opweather.api.nodes.Temperature;
+import com.opweather.bean.HourForecastsWeatherData;
 import com.opweather.util.DateTimeUtils;
 import com.opweather.util.StringUtils;
 import com.opweather.util.SystemSetting;
@@ -36,7 +36,6 @@ public class HourForecastView extends FrameLayout {
     private SpacesItemDecoration mSpacesItemDecoration;
 
     public class AsyncTaskHourLoad extends AsyncTask<Void, Void, List<HourForecastsWeatherData>> {
-
         private HourForecastAdapter adapter;
         private List<HourForecastsWeather> dataset;
         private int mCurrentTemp;
@@ -44,22 +43,19 @@ public class HourForecastView extends FrameLayout {
 
         public AsyncTaskHourLoad(HourForecastAdapter adapter, List<HourForecastsWeather> dataset,
                                  List<DailyForecastsWeather> dailyDate, int currentTemp, String timeZoneStr) {
-            this.adapter = null;
-            this.dataset = null;
-            this.mSun = null;
             this.adapter = adapter;
             this.dataset = dataset;
             mCurrentTemp = currentTemp;
             DailyForecastsWeather today = DailyForecastsWeather.getTodayForecast(dailyDate, DateUtils.getTimeZone
                     (timeZoneStr));
             if (today != null) {
-                this.mSun = today.getRealSun(dailyDate, DateUtils.getTimeZone(timeZoneStr));
+                mSun = today.getRealSun(dailyDate, DateUtils.getTimeZone(timeZoneStr));
             }
         }
 
         @Override
         protected List<HourForecastsWeatherData> doInBackground(Void... voids) {
-            List<HourForecastsWeatherData> result = new ArrayList();
+            List<HourForecastsWeatherData> result = new ArrayList<>();
             for (int i = 0; i < dataset.size(); i++) {
                 int iconId;
                 String tempText;
@@ -70,7 +66,8 @@ public class HourForecastView extends FrameLayout {
                     iconId = R.drawable.ic_sunset;
                     tempText = mContext.getString(R.string.sunset);
                 } else if (mSun == null || !checkSunTime(mSun.getRise(), time)) {
-                    iconId = WeatherResHelper.getWeatherIconResID(WeatherResHelper.weatherToResID(mContext, weather.getWeatherId()));
+                    iconId = WeatherResHelper.getWeatherIconResID(WeatherResHelper.weatherToResID(mContext, weather
+                            .getWeatherId()));
                     Temperature temperature = weather.getTemperature();
                     if (temperature == null || temperature.getCentigradeValue() == Double.NaN) {
                         tempText = StringUtils.EMPTY_STRING;
@@ -99,7 +96,16 @@ public class HourForecastView extends FrameLayout {
                     result.add(new HourForecastsWeatherData(hourText, weather.getWeatherId(), iconId, tempText));
                 }
             }
-            return null;
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(List<HourForecastsWeatherData> result) {
+            super.onPostExecute(result);
+            if (result != null && result.size() > 0 && adapter != null) {
+                adapter.bindForecastData(result);
+                adapter.notifyDataSetChanged();
+            }
         }
     }
 
@@ -113,6 +119,7 @@ public class HourForecastView extends FrameLayout {
 
     public HourForecastView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        mContext = context;
         ((LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout
                 .hour_forecast_layout, this, true);
         mRecyclerView = findViewById(R.id.recyclerView);
@@ -130,7 +137,7 @@ public class HourForecastView extends FrameLayout {
     public void updateForecastData(List<HourForecastsWeather> dataset, List<DailyForecastsWeather> dailyDate, int
             currentTemp, String timeZone) {
         if (mAdapter != null) {
-            new AsyncTaskHourLoad(mAdapter, dataset, dailyDate, currentTemp, timeZone).execute(new Void[0]);
+            new AsyncTaskHourLoad(mAdapter, dataset, dailyDate, currentTemp, timeZone).execute();
         }
     }
 

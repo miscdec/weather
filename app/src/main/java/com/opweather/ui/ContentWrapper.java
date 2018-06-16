@@ -1,22 +1,17 @@
 package com.opweather.ui;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.location.LocationListener;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.AutoScrollHelper;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
-import android.support.v7.widget.helper.ItemTouchHelper;
-import android.support.v7.widget.helper.ItemTouchHelper.Callback;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -26,11 +21,12 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout.LayoutParams;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,7 +37,7 @@ import com.opweather.api.nodes.CurrentWeather;
 import com.opweather.api.nodes.DailyForecastsWeather;
 import com.opweather.api.nodes.RootWeather;
 import com.opweather.bean.CityData;
-import com.opweather.constants.GlobalConfig;
+import com.opweather.constants.WeatherDescription;
 import com.opweather.db.CityWeatherDB;
 import com.opweather.provider.LocationProvider;
 import com.opweather.provider.LocationProvider.OnLocationListener;
@@ -49,7 +45,6 @@ import com.opweather.ui.MainActivity.OnViewPagerScrollListener;
 import com.opweather.util.DateTimeUtils;
 import com.opweather.util.NetUtil;
 import com.opweather.util.PermissionUtil;
-import com.opweather.util.StringUtils;
 import com.opweather.util.SystemSetting;
 import com.opweather.util.TemperatureUtil;
 import com.opweather.util.UIUtil;
@@ -62,10 +57,8 @@ import com.opweather.widget.HourForecastView;
 import com.opweather.widget.RefreshWeatherUnitView;
 import com.opweather.widget.RefreshWeatherUnitView.OnRefreshUnitListener;
 import com.opweather.widget.WeatherScrollView;
-import com.opweather.widget.WeatherScrollView.ScrollViewListener;
 import com.opweather.widget.WeatherSingleInfoView;
 import com.opweather.widget.WeatherTemperatureView;
-import com.opweather.widget.openglbase.RainSurfaceView;
 import com.opweather.widget.widget.WidgetHelper;
 
 import java.util.ArrayList;
@@ -74,6 +67,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TimeZone;
+
 
 public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitListener {
     private static final int NO_TEMP_DATA_FLAG = -2000;
@@ -86,21 +80,21 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
     private Context mContext;
     public int mCurrentTemp;
     private GestureDetector mGestureDetector;
-    private boolean mHasLocation;
-    private boolean mIsFling;
+    private boolean mHasLocation = false;
+    private boolean mIsFling = false;
     private boolean mLoading;
     private LocationProvider mLocationProvider;
-    private boolean mMoved;
+    private boolean mMoved = false;
     private int mNeedMoveOffset;
-    private float mOffset;
+    private float mOffset = 0.0f;
     private OnLocationListener mOnLocationListener;
     private OnResponseListener mOnResponseListener;
-    Handler mScrollHandler;
+    Handler mScrollHandler = new Handler();
     private boolean mSuccess;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private TextView mToolbar_subTitle;
     private OnUIChangedListener mUIListener;
-    private boolean mUp;
+    private boolean mUp = false;
     private RootWeather mWeatherData;
 
     public interface OnUIChangedListener {
@@ -116,13 +110,13 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
     }
 
     class ScrollViewGestureListener extends SimpleOnGestureListener {
-        ScrollViewGestureListener() {
-        }
 
+        @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             return false;
         }
 
+        @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             if (velocityY < -200.0f) {
                 mIsFling = true;
@@ -136,20 +130,14 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
     }
 
     public int getIndex() {
-        return index;
+        return this.index;
     }
 
-    public void setOnUIChangedListener(OnUIChangedListener mUIListener) {
-        this.mUIListener = mUIListener;
+    public void setOnUIChangedListener(OnUIChangedListener onUIChangedListener) {
+        this.mUIListener = onUIChangedListener;
     }
 
     public ContentWrapper(Context context, CityData city, OnResponseListener l, TextView textView) {
-        mMoved = false;
-        mUp = false;
-        mOffset = 0.0f;
-        mIsFling = false;
-        mHasLocation = false;
-        mScrollHandler = new Handler();
         mContext = context;
         mCityData = city;
         setOnResponseListener(l);
@@ -194,11 +182,17 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
     }
 
     public boolean isLocation() {
-        return mCityData != null ? mCityData.isLocatedCity() : false;
+        if (mCityData != null) {
+            return mCityData.isLocatedCity();
+        }
+        return false;
     }
 
     public RootWeather getCityWeather() {
-        return mCityData != null ? mCityData.getWeathers() : null;
+        if (mCityData != null) {
+            return mCityData.getWeathers();
+        }
+        return null;
     }
 
     public void requestWeather(final CityData city, CacheMode mode) {
@@ -215,24 +209,24 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
         mLoading = true;
         new WeatherClientProxy(mContext).setCacheMode(mode).requestWeatherInfo(city, new OnResponseListener() {
             @Override
-            public void onCacheResponse(RootWeather rootWeather) {
+            public void onCacheResponse(RootWeather response) {
                 mSuccess = true;
                 mLoading = false;
-                mCityData.setWeathers(rootWeather);
-                mWeatherData = rootWeather;
+                mCityData.setWeathers(response);
+                mWeatherData = response;
                 refreshLocatindLayout(false);
                 updateCurrentWeatherUI();
                 if (mSwipeRefreshLayout != null && mSwipeRefreshLayout.isRefreshing()) {
                     mSwipeRefreshLayout.setRefreshing(false);
                 }
-                if (!(rootWeather == null || mOnResponseListener == null)) {
-                    mOnResponseListener.onCacheResponse(rootWeather);
+                if (!(response == null || mOnResponseListener == null)) {
+                    mOnResponseListener.onCacheResponse(response);
                 }
                 if (mUIListener != null) {
                     mUIListener.onWeatherDataUpdate(index);
                 }
-                if (!(rootWeather == null || rootWeather.getCurrentWeather() == null)) {
-                    cacheWeatherID = rootWeather.getCurrentWeather().getWeatherId();
+                if (!(response == null || response.getCurrentWeather() == null)) {
+                    cacheWeatherID = response.getCurrentWeather().getWeatherId();
                 }
                 if (mCityData.isLocatedCity()) {
                     SystemSetting.notifyWeatherDataChange(mContext.getApplicationContext());
@@ -241,7 +235,39 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
             }
 
             @Override
-            public void onErrorResponse(WeatherException weatherException) {
+            public void onNetworkResponse(RootWeather response) {
+                mLoading = false;
+                SystemSetting.setRefreshTime(mContext, city.getLocationId(), System.currentTimeMillis());
+                mSuccess = true;
+                mCityData.setWeathers(response);
+                if (response != null) {
+                    cacheWeatherID = response.getCurrentWeatherId();
+                    mWeatherData = response;
+                }
+                refreshLocatindLayout(false);
+                updateCurrentWeatherUI();
+                CityWeatherDB.getInstance(mContext).updateLastRefreshTime(mCityData.getLocationId(), DateTimeUtils
+                        .longTimeToRefreshTime(mContext, System.currentTimeMillis()));
+                System.out.println("LastRefreshTime:" + CityWeatherDB.getInstance(mContext).getLastRefreshTime
+                        (mCityData.getLocationId()));
+                if (mSwipeRefreshLayout != null && mSwipeRefreshLayout.isRefreshing()) {
+                    mSwipeRefreshLayout.setRefreshing(false);
+                }
+                if (mOnResponseListener != null) {
+                    mOnResponseListener.onNetworkResponse(response);
+                }
+                if (mUIListener != null) {
+                    mUIListener.onWeatherDataUpdate(index);
+                }
+                if (mCityData.isDefault()) {
+                    SystemSetting.setLocationOrDefaultCity(mContext, city);
+                    SystemSetting.notifyWeatherDataChange(mContext.getApplicationContext());
+                    SystemSetting.setLocale(mContext);
+                }
+            }
+
+            @Override
+            public void onErrorResponse(WeatherException exception) {
                 mSuccess = false;
                 mLoading = false;
                 refreshLocatindLayout(false);
@@ -251,41 +277,7 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                     mSwipeRefreshLayout.setRefreshing(false);
                 }
                 if (mOnResponseListener != null) {
-                    mOnResponseListener.onErrorResponse(weatherException);
-                }
-            }
-
-            @Override
-            public void onNetworkResponse(RootWeather rootWeather) {
-                Log.d(TAG, "onNetworkResponse: rootWeather  " + rootWeather.getWeatherName());
-                mLoading = false;
-                SystemSetting.setRefreshTime(mContext, city.getLocationId(), System.currentTimeMillis());
-                mSuccess = true;
-                mCityData.setWeathers(rootWeather);
-                if (rootWeather != null) {
-                    cacheWeatherID = rootWeather.getCurrentWeatherId();
-                    mWeatherData = rootWeather;
-                }
-                refreshLocatindLayout(false);
-                updateCurrentWeatherUI();
-                CityWeatherDB.getInstance(mContext).updateLastRefreshTime(mCityData.getLocationId(), DateTimeUtils
-                        .longTimeToRefreshTime(mContext, System.currentTimeMillis()));
-                System.out.println("LastRefreshTime:" + CityWeatherDB.getInstance(mContext)
-                        .getLastRefreshTime(mCityData.getLocationId()));
-                if (mSwipeRefreshLayout != null && mSwipeRefreshLayout
-                        .isRefreshing()) {
-                    mSwipeRefreshLayout.setRefreshing(false);
-                }
-                if (mOnResponseListener != null) {
-                    mOnResponseListener.onNetworkResponse(rootWeather);
-                }
-                if (mUIListener != null) {
-                    mUIListener.onWeatherDataUpdate(index);
-                }
-                if (mCityData.isDefault()) {
-                    SystemSetting.setLocationOrDefaultCity(mContext, city);
-                    SystemSetting.notifyWeatherDataChange(mContext.getApplicationContext());
-                    SystemSetting.setLocale(mContext);
+                    mOnResponseListener.onErrorResponse(exception);
                 }
             }
         });
@@ -307,18 +299,29 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                 requestWeather(mCityData, CacheMode.LOAD_CACHE_ONLY);
             }
             if (NetUtil.isNetworkAvailable(mContext)) {
-                if (PermissionUtil.check((Activity) mContext, new String[]{"android.permission" +
-                        ".ACCESS_FINE_LOCATION", "android.permission.WRITE_EXTERNAL_STORAGE"}, 1)) {
+                if (PermissionUtil.check((Activity) mContext, new String[]{"android.permission.ACCESS_FINE_LOCATION",
+                        "android.permission.WRITE_EXTERNAL_STORAGE"}, 1)) {
                     mHasLocation = true;
                     if (mLocationProvider != null) {
                         mLocationProvider.stopLocation();
                         mLocationProvider = null;
                     }
-                    mLocationProvider = new LocationProvider(mContext);
+                    mLocationProvider = new LocationProvider(mContext.getApplicationContext());
                     mLocationProvider.setOnLocationListener(new OnLocationListener() {
                         @Override
+                        public void onLocationChanged(CityData data) {
+                            Log.i("zhangyuan", "onLocationChanged name = " + data.getLocalName());
+                            if (mOnLocationListener != null) {
+                                mOnLocationListener.onLocationChanged(data);
+                            }
+                            mCityData.copy(data);
+                            CityWeatherDB.getInstance(mContext).addCurrentCity(mCityData);
+                            requestWeather(mCityData, mode);
+                        }
+
+                        @Override
                         public void onError(int error) {
-                            Log.i("1111", "onLocationChanged onError");
+                            Log.i("zhangyuan", "onLocationChanged onError");
                             if (mOnLocationListener != null) {
                                 mOnLocationListener.onError(error);
                             }
@@ -332,19 +335,8 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                             }
                             changePathMenuResource(false, mLoading);
                         }
-
-                        @Override
-                        public void onLocationChanged(CityData cityData) {
-                            Log.i("1111", "onLocationChanged name = " + cityData.getLocalName());
-                            if (mOnLocationListener != null) {
-                                mOnLocationListener.onLocationChanged(cityData);
-                            }
-                            mCityData.copy(cityData);
-                            CityWeatherDB.getInstance(mContext).addCurrentCity(mCityData);
-                            requestWeather(mCityData, mode);
-                        }
                     });
-                    mLocationProvider.startLocation();
+                    mLocationProvider.initLocation();
                     return;
                 }
             }
@@ -412,7 +404,7 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
         TextView tv = (TextView) getChild(resId);
         MarginLayoutParams mlp = (MarginLayoutParams) tv.getLayoutParams();
         if (length < 2) {
-            mlp.setMargins(Callback.DEFAULT_SWIPE_ANIMATION_DURATION, 170, 0, 0);
+            mlp.setMargins(250, 170, 0, 0);
         } else if (length > 2) {
             mlp.setMargins(130, 170, 0, 0);
         }
@@ -424,7 +416,10 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
         if (heightDp == 0) {
             heightDp = 151;
         }
-        return (Build.PRODUCT.equals("A0001") && VERSION.RELEASE.equals("4.3")) ? -(heightDp + 20) : -(heightDp - 10);
+        if (Build.PRODUCT.equals("A0001") && VERSION.RELEASE.equals("4.3")) {
+            return -(heightDp + 20);
+        }
+        return -(heightDp - 10);
     }
 
     public void updateCurrentWeatherUI() {
@@ -437,9 +432,9 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
             RootWeather data = mCityData.getWeathers();
             if (data != null) {
                 if (data.isFromAccu()) {
-                    setVisibility(R.id.accu_logo, View.VISIBLE);
+                    setVisibility(R.id.accu_logo, 0);
                 } else {
-                    setVisibility(R.id.accu_logo, View.INVISIBLE);
+                    setVisibility(R.id.accu_logo, 4);
                 }
                 CurrentWeather current = data.getCurrentWeather();
                 if (current != null) {
@@ -452,8 +447,7 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                     mCurrentTemp = curTemp;
                     setText(R.id.current_low_temperature, TemperatureUtil.getLowTemperature(mContext, lowTemp) +
                             (SystemSetting.getTemperature(mContext) ? "C" : "F"));
-                    setText(R.id.current_hight_temperature, TemperatureUtil.getHighTemperature(mContext, highTemp)
-                            .replace("°", StringUtils.EMPTY_STRING));
+                    setText(R.id.current_hight_temperature, TemperatureUtil.getHighTemperature(mContext, highTemp));
                     setText(R.id.current_weather_type, current.getWeatherText(mContext));
                     setText(R.id.realfeel_temperature, TemperatureUtil.getCurrentTemperature(mContext, curTemp));
                     setImage(R.id.current_weather_icon, WeatherResHelper.getWeatherIconResID(WeatherResHelper
@@ -470,15 +464,15 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                         relativeHumidity = SystemSetting.kmToMp((float) current.getRelativeHumidity());
                     }
                     int humidity = (int) relativeHumidity;
-                    String str = "--";
-                    if (humidity < -2000) {
-                        str = "--" + humUnit;
+                    String humidityString = "--";
+                    if (humidity < NO_TEMP_DATA_FLAG) {
+                        humidityString = "--" + humUnit;
                     } else {
-                        str = humidity + humUnit;
+                        humidityString = humidity + humUnit;
                     }
                     if (isChinaCity) {
                         getChild(R.id.opweather_detail).setVisibility(View.VISIBLE);
-                        setIndexValue(R.id.single_humidity_view, str);
+                        setIndexValue(R.id.single_humidity_view, humidityString);
                         setIndex(R.id.single_wind_view, data.getCurrentWindDir(mContext), data.getCurrentWindPower
                                 (mContext));
                         setIndex(R.id.single_wind_view, data.getCurrentWindDir(mContext), data.getCurrentWindPower
@@ -511,7 +505,6 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
         }
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     private void updateForecastWeatherUI(List<DailyForecastsWeather> data, String timeZone) {
         if (data != null && data.size() > 0) {
             int count;
@@ -520,11 +513,11 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
             long realCurrentTime = DateTimeUtils.getTimeByTimeZone();
             int averageHighTemp = getAverageHighTemp(data);
             int averageLowTemp = getAverageLowTemp(data);
-            int realCurrentdate = DateTimeUtils.timeToDay(this.mContext, realCurrentTime, timeZone);
+            int realCurrentdate = DateTimeUtils.timeToDay(mContext, realCurrentTime, timeZone);
             Iterator<DailyForecastsWeather> iterator = data.iterator();
             while (iterator.hasNext()) {
-                DailyForecastsWeather d =  iterator.next();
-                if (DateTimeUtils.timeToDay(this.mContext, d.getDate().getTime(), timeZone) < realCurrentdate) {
+                DailyForecastsWeather d = iterator.next();
+                if (DateTimeUtils.timeToDay(mContext, d.getDate().getTime(), timeZone) < realCurrentdate) {
                     iterator.remove();
                 }
             }
@@ -554,11 +547,11 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                     if (position > list.size() - 1) {
                         Log.e(ContentWrapper.TAG, "position > data.size()");
                     } else {
-                        String url = ((DailyForecastsWeather) list.get(position)).getMobileLink();
+                        String url = list.get(position).getMobileLink();
                         if (url == null || TextUtils.isEmpty(url)) {
                             Log.e(ContentWrapper.TAG, "url is null");
                         } else {
-                            ContentWrapper.this.clickUrl(url, v.getContext());
+                            clickUrl(url, v.getContext());
                         }
                     }
                     return true;
@@ -567,7 +560,7 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
             for (int i = 0; i < 6; i++) {
                 View dailyWeatherView = inflater.inflate(R.layout.forecast_daily_weather, null);
                 if (i < data.size()) {
-                    DailyForecastsWeather w = data.get(i);
+                    DailyForecastsWeather w = (DailyForecastsWeather) data.get(i);
                     Calendar c = Calendar.getInstance();
                     c.setTimeZone(TimeZone.getTimeZone("GMT" + timeZone));
                     long time = w.getDate().getTime();
@@ -577,16 +570,16 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                             .longTimeToMMdd(mContext, realCurrentTime, null))) {
                         day = mContext.getString(R.string.totay);
                     }
-                    if (!DateTimeUtils.longTimeToMMdd(mContext, time, timeZone).equals(DateTimeUtils
-                            .longTimeToMMdd(mContext, realCurrentTime, null))) {
+                    if (!DateTimeUtils.longTimeToMMdd(mContext, time, timeZone).equals(DateTimeUtils.longTimeToMMdd
+                            (mContext, realCurrentTime, null))) {
                         day = DateTimeUtils.getDayString(mContext, c.get(Calendar.DAY_OF_WEEK));
                     }
                     ((TextView) dailyWeatherView.findViewById(R.id.day_date)).setText(DateTimeUtils.longTimeToMMddTwo
                             (mContext, time, timeZone));
                     ((TextView) dailyWeatherView.findViewById(R.id.day)).setText(day);
                     ((ImageView) dailyWeatherView.findViewById(R.id.forecast_daily_weather_icon)).setImageResource
-                            (WeatherResHelper.getWeatherIconResID(WeatherResHelper.weatherToResID(mContext,
-                                    w.getDayWeatherId())));
+                            (WeatherResHelper.getWeatherIconResID(WeatherResHelper.weatherToResID(mContext, w
+                                    .getDayWeatherId())));
                     if (w.getMaxTemperature() == null || w.getMaxTemperature().getCentigradeValue() < -2000.0d) {
                         arrayList.add(averageHighTemp);
                     } else {
@@ -649,201 +642,6 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
         }
     }
 
-
-  /*  @SuppressLint("ClickableViewAccessibility")
-    private void updateForecastWeatherUI(final List<DailyForecastsWeather> weatherList, String timeZone) {
-        ArrayList localArrayList1;
-        ArrayList localArrayList2;
-        int averageHighTemp;
-        int averageLowTemp;
-        int j;
-        if ((weatherList != null) && (weatherList.size() > 0)) {
-            localArrayList1 = new ArrayList(6);
-            localArrayList2 = new ArrayList(6);
-            long l1 = DateTimeUtils.getTimeByTimeZone();
-            averageHighTemp = getAverageHighTemp(weatherList);
-            averageLowTemp = getAverageLowTemp(weatherList);
-            int timeToDay = DateTimeUtils.timeToDay(mContext, l1, timeZone);
-            Iterator localObject1 = weatherList.iterator();
-            Object localObject2;
-            while (localObject1.hasNext()) {
-                localObject2 = localObject1.next();
-                if (DateTimeUtils.timeToDay(mContext, ((DailyForecastsWeather) localObject2).getDate().getTime()
-                        , timeZone) < timeToDay) {
-                    localObject1.remove();
-                }
-            }
-            LinearLayout localLinearLayout = (LinearLayout) getChild(R.id.forecast_weather);
-            localLinearLayout.removeAllViews();
-            localLinearLayout.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent motionEvent) {
-                    boolean isMove = false;
-                    int position;
-                    String url;
-                    switch (motionEvent.getAction()) {
-                        case MotionEvent.ACTION_DOWN:
-                            ((ViewGroup) ContentWrapper.this.getChild(R.id.weather_scrollview))
-                                    .requestDisallowInterceptTouchEvent(true);
-                            break;
-                        case MotionEvent.ACTION_UP:
-                            if (isMove) {
-                                position = (int) Math.ceil((double) (((int) motionEvent.getRawX()) / (UIUtil
-                                        .getScreenWidth(v.getContext()) / 6)));
-                                if (position <= weatherList.size() - 1) {
-                                    Log.e(TAG, "position > data.size()");
-                                } else {
-                                    url = weatherList.get(position).getMobileLink();
-                                    if (url != null || TextUtils.isEmpty(url)) {
-                                        Log.e(TAG, "url is null");
-                                    } else {
-                                        clickUrl(url, v.getContext());
-                                    }
-                                }
-                            } else {
-                                ((ViewGroup) ContentWrapper.this.getChild(R.id.weather_scrollview))
-                                        .requestDisallowInterceptTouchEvent(false);
-                                return false;
-                            }
-                        case MotionEvent.ACTION_MOVE:
-                            isMove = true;
-                            if (isMove) {
-                                position = (int) Math.ceil((double) (((int) motionEvent.getRawX()) / (UIUtil
-                                        .getScreenWidth(v.getContext()) / 6)));
-                                if (position <= weatherList.size() - 1) {
-                                    url = weatherList.get(position).getMobileLink();
-                                    if (url != null) {
-                                    }
-                                    Log.e(TAG, "url is null");
-                                } else {
-                                    Log.e(TAG, "position > data.size()");
-                                }
-                            } else {
-                                ((ViewGroup) ContentWrapper.this.getChild(R.id.weather_scrollview))
-                                        .requestDisallowInterceptTouchEvent(false);
-                                return false;
-                            }
-                    }
-                    return true;
-                }
-            });
-            //timeToDay = 0;
-            if (timeToDay < 6) {
-                View localView = inflater.inflate(R.layout.forecast_daily_weather, null);
-                DailyForecastsWeather localDailyForecastsWeather;
-                if (timeToDay < weatherList.size()) {
-                    localDailyForecastsWeather = weatherList.get(timeToDay);
-                    Calendar localCalendar = Calendar.getInstance();
-                    localCalendar.setTimeZone(TimeZone.getTimeZone("GMT" + timeZone));
-                    long l2 = localDailyForecastsWeather.getDate().getTime();
-                    localCalendar.setTimeInMillis(l2);
-                    localObject2 = DateTimeUtils.getDayString(this.mContext, localCalendar.get(7));
-                    localObject1 = localObject2;
-                    if (timeToDay == 0) {
-                        localObject1 = localObject2;
-                        if (DateTimeUtils.longTimeToMMdd(mContext, l2, timeZone).equals(DateTimeUtils
-                                .longTimeToMMdd(mContext, l1, null))) {
-                            localObject1 = mContext.getString(R.string.totay);
-                        }
-                    }
-                    if (!DateTimeUtils.longTimeToMMdd(mContext, l2, timeZone).equals(DateTimeUtils
-                            .longTimeToMMdd(mContext, l1, null))) {
-                        localObject1 = DateTimeUtils.getDayString(mContext, localCalendar.get(Calendar.DAY_OF_WEEK));
-                    }
-                    localObject2 = DateTimeUtils.longTimeToMMddTwo(mContext, l2, timeZone);
-                    ((TextView) localView.findViewById(R.id.day_date)).setText((CharSequence) localObject2);
-                    ((TextView) localView.findViewById(R.id.day)).setText((CharSequence) localObject1);
-                    j = WeatherResHelper.getWeatherIconResID(WeatherResHelper.weatherToResID(mContext,
-                            localDailyForecastsWeather.getDayWeatherId()));
-                    ((ImageView) localView.findViewById(R.id.forecast_daily_weather_icon)).setImageResource(j);
-                    if ((localDailyForecastsWeather.getMaxTemperature() == null) || (localDailyForecastsWeather
-                            .getMaxTemperature().getCentigradeValue() < -2000.0D)) {
-                        localArrayList1.add(averageHighTemp);
-                        label468:
-                        if ((localDailyForecastsWeather.getMinTemperature() != null) && (localDailyForecastsWeather
-                                .getMinTemperature().getCentigradeValue() >= -2000.0D)) {
-                            break label568;
-                        }
-                        localArrayList2.add(averageLowTemp);
-                    }
-                }
-                for (; ; ) {
-                    localObject1 = new LinearLayout.LayoutParams(-1, -1);
-                    ((LinearLayout.LayoutParams) localObject1).weight = 1.0F;
-                    localLinearLayout.addView(localView, (ViewGroup.LayoutParams) localObject1);
-                    timeToDay += 1;
-                    break;
-                    localArrayList1.add(Integer.valueOf(Math.max((int) localDailyForecastsWeather.getMaxTemperature()
-                            .getCentigradeValue(), (int) localDailyForecastsWeather.getMinTemperature()
-                            .getCentigradeValue())));
-                    break label468;
-                    label568:
-                    localArrayList2.add(Integer.valueOf(Math.min((int) localDailyForecastsWeather.getMaxTemperature()
-                            .getCentigradeValue(), (int) localDailyForecastsWeather.getMinTemperature()
-                            .getCentigradeValue())));
-                    continue;
-                    ((TextView) localView.findViewById(R.id.day_date)).setText(R.string.na);
-                    ((TextView) localView.findViewById(R.id.day)).setText(R.string.na);
-                    j = WeatherResHelper.getWeatherIconResID(0);
-                    ((ImageView) localView.findViewById(R.id.forecast_daily_weather_icon)).setImageResource(j);
-                    if ((localArrayList2.size() > 0) && (localArrayList1.size() > 0)) {
-                        localArrayList2.add(localArrayList2.get(localArrayList2.size() - 1));
-                        localArrayList1.add(localArrayList1.get(localArrayList1.size() - 1));
-                    }
-                }
-            }
-            if (weatherList.size() >= 6) {
-                break label937;
-            }
-        }
-
-        label928:
-        label937:
-        for (
-                int i = weatherList.size();
-                ; i = 6)
-
-        {
-            for (; ; ) {
-                try {
-                    int n = ((Integer) Collections.max(localArrayList1)).intValue();
-                    int i1 = ((Integer) Collections.min(localArrayList2)).intValue();
-                    if (n - i1 > 45) {
-                        if (n - averageHighTemp >= averageLowTemp - i1) {
-                            averageLowTemp = localArrayList1.size();
-                            j = 0;
-                            if (j < averageLowTemp) {
-                                if (n - ((Integer) localArrayList1.get(j)).intValue() > 5) {
-                                    break label928;
-                                }
-                                localArrayList1.set(j, Integer.valueOf(averageHighTemp));
-                                break label928;
-                            }
-                        } else {
-                            averageHighTemp = localArrayList2.size();
-                            j = 0;
-                            if (j < averageHighTemp) {
-                                if (((Integer) localArrayList2.get(j)).intValue() - i1 <= 5) {
-                                    localArrayList2.set(j, Integer.valueOf(averageLowTemp));
-                                }
-                                j += 1;
-                                continue;
-                            }
-                        }
-                    }
-                    return;
-                } catch (Exception paramList) {
-                    Log.e("contentwrapper", "check temp error");
-                    if ((localArrayList1.size() > 0) && (localArrayList2.size() > 0)) {
-                        updateTempView(localArrayList1, localArrayList2, i);
-                    }
-                }
-                j += 1;
-            }
-        }
-
-    }*/
-
     private void clickUrl(String url, Context context) {
         try {
             context.startActivity(new Intent("android.intent.action.VIEW", Uri.parse(url)));
@@ -873,13 +671,16 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
         for (int j = 0; j < averageHighTemp.size(); j++) {
             highTempSum += averageHighTemp.get(j);
         }
-        return averageHighTemp.size() == 0 ? 0 : highTempSum / averageHighTemp.size();
+        if (averageHighTemp.size() == 0) {
+            return 0;
+        }
+        return highTempSum / averageHighTemp.size();
     }
 
     public int getAverageLowTemp(List<DailyForecastsWeather> data) {
         List<Integer> averageLowTemp = new ArrayList<>();
         for (int i = 0; i < data.size(); i++) {
-            DailyForecastsWeather w = (DailyForecastsWeather) data.get(i);
+            DailyForecastsWeather w = data.get(i);
             if (w == null || w.getMinTemperature() == null) {
                 if (w == null || w.getMinTemperature() == null) {
                     averageLowTemp.add(0);
@@ -894,7 +695,10 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
         for (int j = 0; j < averageLowTemp.size(); j++) {
             lowTempSum += averageLowTemp.get(j);
         }
-        return averageLowTemp.size() == 0 ? 0 : lowTempSum / averageLowTemp.size();
+        if (averageLowTemp.size() == 0) {
+            return 0;
+        }
+        return lowTempSum / averageLowTemp.size();
     }
 
     private void refreshLocatindLayout(boolean locating) {
@@ -911,16 +715,16 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
             mSwipeRefreshLayout = (SwipeRefreshLayout) getChild(R.id.swipeRefreshLayout);
             mSwipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_light, android.R.color
                     .holo_red_light, android.R.color.holo_orange_light, android.R.color.holo_green_light);
-            mSwipeRefreshLayout.setProgressViewOffset(true, 0, GlobalConfig.MESSAGE_ACCU_GET_LOCATION_SUCC);
+            mSwipeRefreshLayout.setProgressViewOffset(true, 0, 200);
             mSwipeRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
+                @Override
                 public void onRefresh() {
                     mLoading = true;
                     new Handler().post(new Runnable() {
                         public void run() {
                             if (NetUtil.isNetworkAvailable(mContext)) {
                                 if (mWeatherData != null) {
-                                    mToolbar_subTitle.setTextColor(ContextCompat.getColor
-                                            (mContext, getTitleColor()));
+                                    mToolbar_subTitle.setTextColor(ContextCompat.getColor(mContext, getTitleColor()));
                                 }
                                 updateWeatherInfo(CacheMode.LOAD_NO_CACHE);
                                 WidgetHelper.getInstance(mContext).updateAllWidget(true);
@@ -939,9 +743,11 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
     }
 
     private int getTitleColor() {
-        return (mCityData == null || mCityData.getWeathers() == null || !needGrayColor(WeatherResHelper
-                .weatherToResID(mContext, mCityData.getWeathers().getCurrentWeatherId()))) ? R.color
-                .oneplus_contorl_text_color_disable_dark : R.color.oneplus_contorl_text_color_disable_light;
+        if (mCityData == null || mCityData.getWeathers() == null || !needGrayColor(WeatherResHelper.weatherToResID
+                (mContext, mCityData.getWeathers().getCurrentWeatherId()))) {
+            return R.color.oneplus_contorl_text_color_disable_dark;
+        }
+        return R.color.oneplus_contorl_text_color_disable_light;
     }
 
     public void updateHourForecastView(RootWeather data, String timeZone) {
@@ -970,30 +776,29 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
         return Color.parseColor(mContext.getString(WeatherResHelper.getWeatherNightArcColorID(weatherId)));
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     public void initWeatherScrollView() {
         WeatherScrollView mWeatherScrollView = (WeatherScrollView) getChild(R.id.weather_scrollview);
         FrameLayout mBackground = (FrameLayout) mWeatherScrollView.findViewById(R.id.current_opweather_overlay);
-        LayoutParams bgParams = (LayoutParams) mBackground.getLayoutParams();
-        bgParams.height = UIUtil.getWindowHeight(mContext) - ((int) mContext.getResources().getDimension(R
-                .dimen.dimen_top_info_view));
+        RelativeLayout.LayoutParams bgParams = (RelativeLayout.LayoutParams) mBackground.getLayoutParams();
+        bgParams.height = UIUtil.getWindowHeight(mContext) - ((int) mContext.getResources().getDimension(R.dimen
+                .dimen_top_info_view));
         mBackground.setLayoutParams(bgParams);
-        mWeatherScrollView.setOverScrollMode(RainSurfaceView.RAIN_LEVEL_SHOWER);
+        mWeatherScrollView.setOverScrollMode(2);
         mWeatherScrollView.setOnTouchListener(new OnTouchListener() {
-            float downY;
-            float upY;
+            float downY = 0.0f;
+            float upY = 0.0f;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 mGestureDetector.onTouchEvent(event);
                 switch (event.getAction()) {
-                    case RainSurfaceView.RAIN_LEVEL_DRIZZLE:
+                    case 0:
                         mUp = false;
                         mIsFling = false;
                         downY = event.getY();
                         break;
-                    case RainSurfaceView.RAIN_LEVEL_NORMAL_RAIN:
-                    case RainSurfaceView.RAIN_LEVEL_DOWNPOUR:
+                    case 1:
+                    case 3:
                         upY = event.getY();
                         mUp = true;
                         float moveInstance = upY - downY;
@@ -1009,7 +814,7 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                 return mGestureDetector.onTouchEvent(event);
             }
         });
-        mWeatherScrollView.setScrollViewListener(new ScrollViewListener() {
+        mWeatherScrollView.setScrollViewListener(new WeatherScrollView.ScrollViewListener() {
             @Override
             public void onScrollChanged(WeatherScrollView scrollView, int x, int y, int oldx, int oldy) {
                 mOffset = (float) y;
@@ -1038,7 +843,7 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
         if (mOffset > 0.0f) {
             float dy = ((float) moveToOffset) - mOffset;
             if (dy < 0.0f) {
-                dy = AutoScrollHelper.RELATIVE_UNSPECIFIED;
+                dy = 0.0f;
             }
             float alpha = dy / ((float) moveToOffset);
             if (mUIListener != null) {
@@ -1061,14 +866,13 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
     }
 
     public void changeTopViewTextColor(int moveToOffset) {
-        int y = (int) getChild(R.id.opweather_info).getY();
+        int moveTo = (int) getChild(R.id.opweather_info).getY();
         if (mCityData.getWeathers() == null) {
             changePathMenuResource(false, mLoading);
             return;
         }
-        int weatherId = WeatherResHelper.weatherToResID(mContext, mCityData.getWeathers()
-                .getCurrentWeatherId());
-        if (weatherId == 9999) {
+        int weatherId = WeatherResHelper.weatherToResID(mContext, mCityData.getWeathers().getCurrentWeatherId());
+        if (weatherId == WeatherDescription.WEATHER_DESCRIPTION_UNKNOWN) {
             weatherId = WeatherResHelper.weatherToResID(mContext, cacheWeatherID);
         }
         if (!needGrayColor(weatherId)) {
@@ -1082,9 +886,9 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
 
     public void resetTopViewTextColor() {
         if (mCityData.getWeathers() != null) {
-            int weatherId = WeatherResHelper.weatherToResID(mContext, mCityData.getWeathers()
-                    .getCurrentWeatherId());
-            if (weatherId == 9999) {
+            int moveTo;
+            int weatherId = WeatherResHelper.weatherToResID(mContext, mCityData.getWeathers().getCurrentWeatherId());
+            if (weatherId == WeatherDescription.WEATHER_DESCRIPTION_UNKNOWN) {
                 weatherId = WeatherResHelper.weatherToResID(mContext, cacheWeatherID);
             }
             View secondView = getChild(R.id.opweather_info);
@@ -1093,7 +897,12 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
             if (data != null) {
                 isChinaCity = data.isFromChina();
             }
-            if (mOffset >= ((float) (isChinaCity ? (int) secondView.getY() : 1000))) {
+            if (isChinaCity) {
+                moveTo = (int) secondView.getY();
+            } else {
+                moveTo = 1000;
+            }
+            if (mOffset >= ((float) moveTo)) {
                 return;
             }
             if (needGrayColor(weatherId)) {
@@ -1114,7 +923,10 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                 e.printStackTrace();
             }
         }
-        return weatherId == 1003 && isDay;
+        if (weatherId == 1003 && isDay) {
+            return true;
+        }
+        return false;
     }
 
     public void doScroll() {
@@ -1135,7 +947,6 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
 
     public void startScroll(final int offset) {
         mScrollHandler.post(new Runnable() {
-            @Override
             public void run() {
                 ((ScrollView) getChild(R.id.weather_scrollview)).smoothScrollTo(0, offset);
             }
@@ -1147,33 +958,33 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
     }
 
     public boolean isDay() {
+        boolean isDay = true;
         if (mWeatherData == null) {
-            return true;
+            return isDay;
         }
         try {
             return mCityData.isDay(mWeatherData);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
-            return true;
+            return isDay;
         }
     }
 
-    @Override
     public void onScrolled(float a, int position) {
         if (index >= position - 1 && index <= position + 1) {
             changeTopColor();
-            float f = a;
+            float alpha = a;
             if (index == position) {
                 if (a < 1.0f && ((double) a) >= 0.5d) {
-                    f = (2.0f * a) - 1.0f;
+                    alpha = (2.0f * a) - 1.0f;
                 } else if (((double) a) < 0.5d) {
                 }
             } else if (index < position) {
-                f = (1.0f - a) * 2.0f;
+                alpha = (1.0f - a) * 2.0f;
             } else if (index > position) {
                 float a1 = a * 2.0f;
                 if (a <= 0.5f) {
-                    f = 1.0f - a1;
+                    alpha = 1.0f - a1;
                 }
             }
             resetTopViewTextColor();
@@ -1190,7 +1001,7 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
     public void onSelected(int position) {
         if (index >= position - 1 && index <= position + 1) {
             resetScrollView();
-            ((ScrollView) content.findViewById(R.id.weather_scrollview)).scrollTo(0, 0);
+            content.findViewById(R.id.weather_scrollview).scrollTo(0, 0);
         }
     }
 

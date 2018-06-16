@@ -9,6 +9,7 @@ import com.opweather.api.helper.WeatherUtils;
 import com.opweather.api.impl.SwaRequest;
 import com.opweather.api.nodes.Alarm;
 import com.opweather.api.nodes.DailyForecastsWeather;
+import com.opweather.api.nodes.HourForecastsWeather;
 import com.opweather.api.nodes.LifeIndexWeather;
 import com.opweather.api.nodes.RootWeather;
 import com.opweather.api.nodes.Sun;
@@ -21,7 +22,6 @@ import com.opweather.api.nodes.SwaLifeIndexWeather;
 import com.opweather.api.nodes.SwaWind;
 import com.opweather.api.nodes.Temperature;
 import com.opweather.api.nodes.Wind;
-import com.opweather.bean.HourForecastsWeather;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

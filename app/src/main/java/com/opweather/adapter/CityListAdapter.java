@@ -84,23 +84,19 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
                     .requestWeatherInfo(mCityData, new WeatherClientProxy.OnResponseListener() {
                         public void onNetworkResponse(RootWeather response) {
                             onResponse(response);
-                            WeatherLog.d("1111", "onNetworkResponse : " + response.getCurrentWeather());
                         }
 
                         public void onErrorResponse(WeatherException error) {
                             onResponse(null);
-                            WeatherLog.d("1111", "onErrorResponse : " + error.getMessage());
                         }
 
                         public void onCacheResponse(RootWeather response) {
                             onResponse(response);
-                            WeatherLog.d("1111", "onCacheResponse : " + response.getCurrentWeather());
                         }
                     });
         }
 
         private void onResponse(RootWeather response) {
-            Log.d("1111", "onResponse: ");
             if (response != null) {
                 mWeatherMap.put(response.getAreaCode(), response);
             }
