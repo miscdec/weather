@@ -25,9 +25,11 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout.LayoutParams;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -67,7 +69,11 @@ import com.opweather.widget.openglbase.RainSurfaceView;
 import com.opweather.widget.widget.WidgetHelper;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.TimeZone;
 
 public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitListener {
     private static final int NO_TEMP_DATA_FLAG = -2000;
@@ -505,13 +511,338 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
         }
     }
 
-    /* JADX WARNING: inconsistent code. */
-    /* Code decompiled incorrectly, please refer to instructions dump. */
-    private void updateForecastWeatherUI(List<DailyForecastsWeather> r37_data, String
-            r38_timeZone) {
-        throw new UnsupportedOperationException("Method not decompiled: weather.app.ContentWrapper" +
-                ".updateForecastWeatherUI(java.util.List, java.lang.String):void");
+    @SuppressLint("ClickableViewAccessibility")
+    private void updateForecastWeatherUI(List<DailyForecastsWeather> data, String timeZone) {
+        if (data != null && data.size() > 0) {
+            int count;
+            ArrayList<Integer> arrayList = new ArrayList<>(6);
+            ArrayList<Integer> mLowTemp = new ArrayList<>(6);
+            long realCurrentTime = DateTimeUtils.getTimeByTimeZone();
+            int averageHighTemp = getAverageHighTemp(data);
+            int averageLowTemp = getAverageLowTemp(data);
+            int realCurrentdate = DateTimeUtils.timeToDay(this.mContext, realCurrentTime, timeZone);
+            Iterator<DailyForecastsWeather> iterator = data.iterator();
+            while (iterator.hasNext()) {
+                DailyForecastsWeather d =  iterator.next();
+                if (DateTimeUtils.timeToDay(this.mContext, d.getDate().getTime(), timeZone) < realCurrentdate) {
+                    iterator.remove();
+                }
+            }
+            LinearLayout forecastLayoutContainer = (LinearLayout) getChild(R.id.forecast_weather);
+            forecastLayoutContainer.removeAllViews();
+            final List<DailyForecastsWeather> list = data;
+            forecastLayoutContainer.setOnTouchListener(new OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    boolean isMove = false;
+                    switch (event.getAction()) {
+                        case 0:
+                            ((ViewGroup) getChild(R.id.weather_scrollview)).requestDisallowInterceptTouchEvent(true);
+                            break;
+                        case 1:
+                            break;
+                        case 2:
+                            isMove = true;
+                            break;
+                    }
+                    if (isMove) {
+                        ((ViewGroup) getChild(R.id.weather_scrollview)).requestDisallowInterceptTouchEvent(false);
+                        return false;
+                    }
+                    int position = (int) Math.ceil((double) (((int) event.getRawX()) / (UIUtil.getScreenWidth(v
+                            .getContext()) / 6)));
+                    if (position > list.size() - 1) {
+                        Log.e(ContentWrapper.TAG, "position > data.size()");
+                    } else {
+                        String url = ((DailyForecastsWeather) list.get(position)).getMobileLink();
+                        if (url == null || TextUtils.isEmpty(url)) {
+                            Log.e(ContentWrapper.TAG, "url is null");
+                        } else {
+                            ContentWrapper.this.clickUrl(url, v.getContext());
+                        }
+                    }
+                    return true;
+                }
+            });
+            for (int i = 0; i < 6; i++) {
+                View dailyWeatherView = inflater.inflate(R.layout.forecast_daily_weather, null);
+                if (i < data.size()) {
+                    DailyForecastsWeather w = data.get(i);
+                    Calendar c = Calendar.getInstance();
+                    c.setTimeZone(TimeZone.getTimeZone("GMT" + timeZone));
+                    long time = w.getDate().getTime();
+                    c.setTimeInMillis(time);
+                    String day = DateTimeUtils.getDayString(mContext, c.get(Calendar.DAY_OF_WEEK));
+                    if (i == 0 && DateTimeUtils.longTimeToMMdd(mContext, time, timeZone).equals(DateTimeUtils
+                            .longTimeToMMdd(mContext, realCurrentTime, null))) {
+                        day = mContext.getString(R.string.totay);
+                    }
+                    if (!DateTimeUtils.longTimeToMMdd(mContext, time, timeZone).equals(DateTimeUtils
+                            .longTimeToMMdd(mContext, realCurrentTime, null))) {
+                        day = DateTimeUtils.getDayString(mContext, c.get(Calendar.DAY_OF_WEEK));
+                    }
+                    ((TextView) dailyWeatherView.findViewById(R.id.day_date)).setText(DateTimeUtils.longTimeToMMddTwo
+                            (mContext, time, timeZone));
+                    ((TextView) dailyWeatherView.findViewById(R.id.day)).setText(day);
+                    ((ImageView) dailyWeatherView.findViewById(R.id.forecast_daily_weather_icon)).setImageResource
+                            (WeatherResHelper.getWeatherIconResID(WeatherResHelper.weatherToResID(mContext,
+                                    w.getDayWeatherId())));
+                    if (w.getMaxTemperature() == null || w.getMaxTemperature().getCentigradeValue() < -2000.0d) {
+                        arrayList.add(averageHighTemp);
+                    } else {
+                        arrayList.add(Math.max((int) w.getMaxTemperature().getCentigradeValue(),
+                                (int) w.getMinTemperature().getCentigradeValue()));
+                    }
+                    if (w.getMinTemperature() == null || w.getMinTemperature().getCentigradeValue() < -2000.0d) {
+                        mLowTemp.add(averageLowTemp);
+                    } else {
+                        mLowTemp.add(Math.min((int) w.getMaxTemperature().getCentigradeValue(), (int)
+                                w.getMinTemperature().getCentigradeValue()));
+                    }
+                } else {
+                    ((TextView) dailyWeatherView.findViewById(R.id.day_date)).setText(R.string.na);
+                    ((TextView) dailyWeatherView.findViewById(R.id.day)).setText(R.string.na);
+                    ((ImageView) dailyWeatherView.findViewById(R.id.forecast_daily_weather_icon)).setImageResource
+                            (WeatherResHelper.getWeatherIconResID(0));
+                    if (mLowTemp.size() > 0 && arrayList.size() > 0) {
+                        mLowTemp.add(mLowTemp.get(mLowTemp.size() - 1));
+                        arrayList.add(arrayList.get(arrayList.size() - 1));
+                    }
+                }
+                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(-1, -1);
+                layoutParams.weight = 1.0f;
+                forecastLayoutContainer.addView(dailyWeatherView, layoutParams);
+            }
+            if (data.size() < 6) {
+                count = data.size();
+            } else {
+                count = 6;
+            }
+            try {
+                int highTemp = Collections.max(arrayList);
+                int lowTemp = Collections.min(mLowTemp);
+                if (highTemp - lowTemp > 45) {
+                    int size;
+                    int j;
+                    if (highTemp - averageHighTemp >= averageLowTemp - lowTemp) {
+                        size = arrayList.size();
+                        for (j = 0; j < size; j++) {
+                            if (highTemp - arrayList.get(j) <= 5) {
+                                arrayList.set(j, averageHighTemp);
+                            }
+                        }
+                    } else {
+                        size = mLowTemp.size();
+                        for (j = 0; j < size; j++) {
+                            if (mLowTemp.get(j) - lowTemp <= 5) {
+                                mLowTemp.set(j, averageLowTemp);
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Log.e("contentwrapper", "check temp error");
+            }
+            if (arrayList.size() > 0 && mLowTemp.size() > 0) {
+                updateTempView(arrayList, mLowTemp, count);
+            }
+        }
     }
+
+
+  /*  @SuppressLint("ClickableViewAccessibility")
+    private void updateForecastWeatherUI(final List<DailyForecastsWeather> weatherList, String timeZone) {
+        ArrayList localArrayList1;
+        ArrayList localArrayList2;
+        int averageHighTemp;
+        int averageLowTemp;
+        int j;
+        if ((weatherList != null) && (weatherList.size() > 0)) {
+            localArrayList1 = new ArrayList(6);
+            localArrayList2 = new ArrayList(6);
+            long l1 = DateTimeUtils.getTimeByTimeZone();
+            averageHighTemp = getAverageHighTemp(weatherList);
+            averageLowTemp = getAverageLowTemp(weatherList);
+            int timeToDay = DateTimeUtils.timeToDay(mContext, l1, timeZone);
+            Iterator localObject1 = weatherList.iterator();
+            Object localObject2;
+            while (localObject1.hasNext()) {
+                localObject2 = localObject1.next();
+                if (DateTimeUtils.timeToDay(mContext, ((DailyForecastsWeather) localObject2).getDate().getTime()
+                        , timeZone) < timeToDay) {
+                    localObject1.remove();
+                }
+            }
+            LinearLayout localLinearLayout = (LinearLayout) getChild(R.id.forecast_weather);
+            localLinearLayout.removeAllViews();
+            localLinearLayout.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent motionEvent) {
+                    boolean isMove = false;
+                    int position;
+                    String url;
+                    switch (motionEvent.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            ((ViewGroup) ContentWrapper.this.getChild(R.id.weather_scrollview))
+                                    .requestDisallowInterceptTouchEvent(true);
+                            break;
+                        case MotionEvent.ACTION_UP:
+                            if (isMove) {
+                                position = (int) Math.ceil((double) (((int) motionEvent.getRawX()) / (UIUtil
+                                        .getScreenWidth(v.getContext()) / 6)));
+                                if (position <= weatherList.size() - 1) {
+                                    Log.e(TAG, "position > data.size()");
+                                } else {
+                                    url = weatherList.get(position).getMobileLink();
+                                    if (url != null || TextUtils.isEmpty(url)) {
+                                        Log.e(TAG, "url is null");
+                                    } else {
+                                        clickUrl(url, v.getContext());
+                                    }
+                                }
+                            } else {
+                                ((ViewGroup) ContentWrapper.this.getChild(R.id.weather_scrollview))
+                                        .requestDisallowInterceptTouchEvent(false);
+                                return false;
+                            }
+                        case MotionEvent.ACTION_MOVE:
+                            isMove = true;
+                            if (isMove) {
+                                position = (int) Math.ceil((double) (((int) motionEvent.getRawX()) / (UIUtil
+                                        .getScreenWidth(v.getContext()) / 6)));
+                                if (position <= weatherList.size() - 1) {
+                                    url = weatherList.get(position).getMobileLink();
+                                    if (url != null) {
+                                    }
+                                    Log.e(TAG, "url is null");
+                                } else {
+                                    Log.e(TAG, "position > data.size()");
+                                }
+                            } else {
+                                ((ViewGroup) ContentWrapper.this.getChild(R.id.weather_scrollview))
+                                        .requestDisallowInterceptTouchEvent(false);
+                                return false;
+                            }
+                    }
+                    return true;
+                }
+            });
+            //timeToDay = 0;
+            if (timeToDay < 6) {
+                View localView = inflater.inflate(R.layout.forecast_daily_weather, null);
+                DailyForecastsWeather localDailyForecastsWeather;
+                if (timeToDay < weatherList.size()) {
+                    localDailyForecastsWeather = weatherList.get(timeToDay);
+                    Calendar localCalendar = Calendar.getInstance();
+                    localCalendar.setTimeZone(TimeZone.getTimeZone("GMT" + timeZone));
+                    long l2 = localDailyForecastsWeather.getDate().getTime();
+                    localCalendar.setTimeInMillis(l2);
+                    localObject2 = DateTimeUtils.getDayString(this.mContext, localCalendar.get(7));
+                    localObject1 = localObject2;
+                    if (timeToDay == 0) {
+                        localObject1 = localObject2;
+                        if (DateTimeUtils.longTimeToMMdd(mContext, l2, timeZone).equals(DateTimeUtils
+                                .longTimeToMMdd(mContext, l1, null))) {
+                            localObject1 = mContext.getString(R.string.totay);
+                        }
+                    }
+                    if (!DateTimeUtils.longTimeToMMdd(mContext, l2, timeZone).equals(DateTimeUtils
+                            .longTimeToMMdd(mContext, l1, null))) {
+                        localObject1 = DateTimeUtils.getDayString(mContext, localCalendar.get(Calendar.DAY_OF_WEEK));
+                    }
+                    localObject2 = DateTimeUtils.longTimeToMMddTwo(mContext, l2, timeZone);
+                    ((TextView) localView.findViewById(R.id.day_date)).setText((CharSequence) localObject2);
+                    ((TextView) localView.findViewById(R.id.day)).setText((CharSequence) localObject1);
+                    j = WeatherResHelper.getWeatherIconResID(WeatherResHelper.weatherToResID(mContext,
+                            localDailyForecastsWeather.getDayWeatherId()));
+                    ((ImageView) localView.findViewById(R.id.forecast_daily_weather_icon)).setImageResource(j);
+                    if ((localDailyForecastsWeather.getMaxTemperature() == null) || (localDailyForecastsWeather
+                            .getMaxTemperature().getCentigradeValue() < -2000.0D)) {
+                        localArrayList1.add(averageHighTemp);
+                        label468:
+                        if ((localDailyForecastsWeather.getMinTemperature() != null) && (localDailyForecastsWeather
+                                .getMinTemperature().getCentigradeValue() >= -2000.0D)) {
+                            break label568;
+                        }
+                        localArrayList2.add(averageLowTemp);
+                    }
+                }
+                for (; ; ) {
+                    localObject1 = new LinearLayout.LayoutParams(-1, -1);
+                    ((LinearLayout.LayoutParams) localObject1).weight = 1.0F;
+                    localLinearLayout.addView(localView, (ViewGroup.LayoutParams) localObject1);
+                    timeToDay += 1;
+                    break;
+                    localArrayList1.add(Integer.valueOf(Math.max((int) localDailyForecastsWeather.getMaxTemperature()
+                            .getCentigradeValue(), (int) localDailyForecastsWeather.getMinTemperature()
+                            .getCentigradeValue())));
+                    break label468;
+                    label568:
+                    localArrayList2.add(Integer.valueOf(Math.min((int) localDailyForecastsWeather.getMaxTemperature()
+                            .getCentigradeValue(), (int) localDailyForecastsWeather.getMinTemperature()
+                            .getCentigradeValue())));
+                    continue;
+                    ((TextView) localView.findViewById(R.id.day_date)).setText(R.string.na);
+                    ((TextView) localView.findViewById(R.id.day)).setText(R.string.na);
+                    j = WeatherResHelper.getWeatherIconResID(0);
+                    ((ImageView) localView.findViewById(R.id.forecast_daily_weather_icon)).setImageResource(j);
+                    if ((localArrayList2.size() > 0) && (localArrayList1.size() > 0)) {
+                        localArrayList2.add(localArrayList2.get(localArrayList2.size() - 1));
+                        localArrayList1.add(localArrayList1.get(localArrayList1.size() - 1));
+                    }
+                }
+            }
+            if (weatherList.size() >= 6) {
+                break label937;
+            }
+        }
+
+        label928:
+        label937:
+        for (
+                int i = weatherList.size();
+                ; i = 6)
+
+        {
+            for (; ; ) {
+                try {
+                    int n = ((Integer) Collections.max(localArrayList1)).intValue();
+                    int i1 = ((Integer) Collections.min(localArrayList2)).intValue();
+                    if (n - i1 > 45) {
+                        if (n - averageHighTemp >= averageLowTemp - i1) {
+                            averageLowTemp = localArrayList1.size();
+                            j = 0;
+                            if (j < averageLowTemp) {
+                                if (n - ((Integer) localArrayList1.get(j)).intValue() > 5) {
+                                    break label928;
+                                }
+                                localArrayList1.set(j, Integer.valueOf(averageHighTemp));
+                                break label928;
+                            }
+                        } else {
+                            averageHighTemp = localArrayList2.size();
+                            j = 0;
+                            if (j < averageHighTemp) {
+                                if (((Integer) localArrayList2.get(j)).intValue() - i1 <= 5) {
+                                    localArrayList2.set(j, Integer.valueOf(averageLowTemp));
+                                }
+                                j += 1;
+                                continue;
+                            }
+                        }
+                    }
+                    return;
+                } catch (Exception paramList) {
+                    Log.e("contentwrapper", "check temp error");
+                    if ((localArrayList1.size() > 0) && (localArrayList2.size() > 0)) {
+                        updateTempView(localArrayList1, localArrayList2, i);
+                    }
+                }
+                j += 1;
+            }
+        }
+
+    }*/
 
     private void clickUrl(String url, Context context) {
         try {
@@ -523,10 +854,10 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
     }
 
     public int getAverageHighTemp(List<DailyForecastsWeather> data) {
-        List<Integer> averageHighTemp = new ArrayList();
+        List<Integer> averageHighTemp = new ArrayList<>();
         for (int i = 0; i < data.size(); i++) {
             if (i < 7) {
-                DailyForecastsWeather w = (DailyForecastsWeather) data.get(i);
+                DailyForecastsWeather w = data.get(i);
                 if (w == null || w.getMaxTemperature() == null) {
                     if (w == null || w.getMinTemperature() == null) {
                         averageHighTemp.add(0);

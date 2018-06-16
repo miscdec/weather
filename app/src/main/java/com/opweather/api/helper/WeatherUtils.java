@@ -13,6 +13,7 @@ import com.opweather.api.nodes.RootWeather;
 import com.opweather.util.StringUtils;
 import com.opweather.widget.WeatherCircleView;
 import com.opweather.widget.WidgetUpdateJob;
+import com.opweather.widget.openglbase.RainDownpour;
 import com.opweather.widget.openglbase.RainSurfaceView;
 
 import java.net.URLEncoder;
@@ -547,7 +548,7 @@ public final class WeatherUtils {
             return WeatherType.SWA_WEATHER_HEAVY_FOGGY;
         } else if (weatherId.equals("58")) {
             return WeatherType.SWA_WEATHER_SEVERE_FOGGY;
-        }  else {
+        } else {
             return 0;
         }
     }
@@ -801,549 +802,167 @@ public final class WeatherUtils {
         }
     }
 
-   /* public static int oppoChinaWeatherTextToWeatherId(String name) {
-        Object obj = -1;
-        switch (name.hashCode()) {
-            case -1236115480:
-                if (name.equals("\u96f7\u9635\u96e8\u4f34\u6709\u51b0\u96f9")) {
-                    obj = RainSurfaceView.RAIN_LEVEL_THUNDERSHOWER;
-                }
-                break;
-            case -1229291873:
-                if (name.equals("\u66b4\u96e8\u5230\u5927\u66b4\u96e8")) {
-                    obj = net.oneplus.weather.R.styleable.Toolbar_titleMarginStart;
-                }
-                break;
-            case 26228:
-                if (name.equals("\u6674")) {
-                    int i = 0;
-                }
-                break;
-            case 38452:
-                if (name.equals("\u9634")) {
-                    obj = RainSurfaceView.RAIN_LEVEL_SHOWER;
-                }
-                break;
-            case 38634:
-                if (name.equals("\u96ea")) {
-                    obj = net.oneplus.weather.R.styleable.OneplusTheme_op_borderWidth;
-                }
-                break;
-            case 38654:
-                if (name.equals("\u96fe")) {
-                    obj = ConnectionResult.SERVICE_UPDATING;
-                }
-                break;
-            case 38718:
-                if (name.equals("\u973e")) {
-                    obj = net.oneplus.weather.R.styleable.OneplusTheme_op_elevation;
-                }
-                break;
-            case 659035:
-                if (name.equals("\u4e2d\u96e8")) {
-                    obj = DetectedActivity.RUNNING;
-                }
-                break;
-            case 659037:
-                if (name.equals("\u4e2d\u96ea")) {
-                    obj = ConnectionResult.INTERRUPTED;
-                }
-                break;
-            case 687245:
-                if (name.equals("\u51bb\u96e8")) {
-                    obj = ConnectionResult.SERVICE_MISSING_PERMISSION;
-                }
-                break;
-            case 727223:
-                if (name.equals("\u591a\u4e91")) {
-                    obj = 1;
-                }
-                break;
-            case 746145:
-                if (name.equals("\u5927\u96e8")) {
-                    obj = ConnectionResult.SERVICE_INVALID;
-                }
-                break;
-            case 746147:
-                if (name.equals("\u5927\u96ea")) {
-                    obj = ConnectionResult.API_UNAVAILABLE;
-                }
-                break;
-            case 746167:
-                if (name.equals("\u5927\u96fe")) {
-                    obj = net.oneplus.weather.R.styleable.OneplusTheme_op_pressedTranslationZ;
-                }
-                break;
-            case 769209:
-                if (name.equals("\u5c0f\u96e8")) {
-                    obj = DetectedActivity.WALKING;
-                }
-                break;
-            case 769211:
-                if (name.equals("\u5c0f\u96ea")) {
-                    obj = ConnectionResult.TIMEOUT;
-                }
-                break;
-            case 808877:
-                if (name.equals("\u626c\u6c99")) {
-                    obj = RainDownpour.Z_RANDOM_RANGE;
-                }
-                break;
-            case 853684:
-                if (name.equals("\u66b4\u96e8")) {
-                    obj = ConnectionResult.DEVELOPER_ERROR;
-                }
-                break;
-            case 853686:
-                if (name.equals("\u66b4\u96ea")) {
-                    obj = ConnectionResult.SIGN_IN_FAILED;
-                }
-                break;
-            case 892010:
-                if (name.equals("\u6d6e\u5c18")) {
-                    obj = net.oneplus.weather.R.styleable.OneplusTheme_onePlusTabTextSelectedAlpha;
-                }
-                break;
-            case 906251:
-                if (name.equals("\u6d53\u96fe")) {
-                    obj = ItemTouchHelper.END;
-                }
-                break;
-            case 1230675:
-                if (name.equals("\u9635\u96e8")) {
-                    obj = RainSurfaceView.RAIN_LEVEL_DOWNPOUR;
-                }
-                break;
-            case 1230677:
-                if (name.equals("\u9635\u96ea")) {
-                    obj = ConnectionResult.CANCELED;
-                }
-                break;
-            case 20022341:
-                if (name.equals("\u4e2d\u5ea6\u973e")) {
-                    obj = net.oneplus.weather.R.styleable.OneplusTheme_op_listItemLayout;
-                }
-                break;
-            case 20420598:
-                if (name.equals("\u4e25\u91cd\u973e")) {
-                    obj = net.oneplus.weather.R.styleable.OneplusTheme_op_multiChoiceItemLayout;
-                }
-                break;
-            case 22786587:
-                if (name.equals("\u5927\u66b4\u96e8")) {
-                    obj = ConnectionResult.LICENSE_CHECK_FAILED;
-                }
-                break;
-            case 24333509:
-                if (name.equals("\u5f3a\u6d53\u96fe")) {
-                    obj = net.oneplus.weather.R.styleable.OneplusTheme_op_buttonPanelSideLayout;
-                }
-                break;
-            case 27473909:
-                if (name.equals("\u6c99\u5c18\u66b4")) {
-                    obj = ConnectionResult.RESTRICTED_PROFILE;
-                }
-                break;
-            case 36659173:
-                if (name.equals("\u91cd\u5ea6\u973e")) {
-                    obj = net.oneplus.weather.R.styleable.OneplusTheme_op_listLayout;
-                }
-                break;
-            case 37872057:
-                if (name.equals("\u96e8\u5939\u96ea")) {
-                    obj = 6;
-                }
-                break;
-            case 38370442:
-                if (name.equals("\u96f7\u9635\u96e8")) {
-                    obj = RainSurfaceView.RAIN_LEVEL_RAINSTORM;
-                }
-                break;
-            case 617172868:
-                if (name.equals("\u4e2d\u5230\u5927\u96e8")) {
-                    obj = net.oneplus.weather.R.styleable.Toolbar_titleMarginBottom;
-                }
-                break;
-            case 617172870:
-                if (name.equals("\u4e2d\u5230\u5927\u96ea")) {
-                    obj = net.oneplus.weather.R.styleable.Toolbar_titleTextAppearance;
-                }
-                break;
-            case 700993117:
-                if (name.equals("\u5927\u5230\u66b4\u96e8")) {
-                    obj = net.oneplus.weather.R.styleable.Toolbar_titleMarginEnd;
-                }
-                break;
-            case 700993119:
-                if (name.equals("\u5927\u5230\u66b4\u96ea")) {
-                    obj = net.oneplus.weather.R.styleable.Toolbar_titleTextColor;
-                }
-                break;
-            case 722962972:
-                if (name.equals("\u5c0f\u5230\u4e2d\u96e8")) {
-                    obj = net.oneplus.weather.R.styleable.Toolbar_titleMargin;
-                }
-                break;
-            case 722962974:
-                if (name.equals("\u5c0f\u5230\u4e2d\u96ea")) {
-                    obj = net.oneplus.weather.R.styleable.Toolbar_titleMargins;
-                }
-                break;
-            case 753718907:
-                if (name.equals("\u5f3a\u6c99\u5c18\u66b4")) {
-                    obj = net.oneplus.weather.R.styleable.OneplusTheme_onePlusTextColor;
-                }
-                break;
-            case 895811842:
-                if (name.equals("\u7279\u5927\u66b4\u96e8")) {
-                    obj = WeatherCircleView.ARC_DIN;
-                }
-                break;
-            case 897358764:
-                if (name.equals("\u7279\u5f3a\u6d53\u96fe")) {
-                    obj = net.oneplus.weather.R.styleable.OneplusTheme_op_rippleColor;
-                }
-                break;
-            case 1204232695:
-                if (name.equals("\u5927\u66b4\u96e8\u5230\u7279\u5927\u66b4\u96e8")) {
-                    obj = MessagingStyle.MAXIMUM_RETAINED_MESSAGES;
-                }
-                break;
+    public static int oppoChinaWeatherTextToWeatherId(String name) {
+        if (name.equals("雷阵雨伴有冰雹")) {
+            return WeatherType.OPPO_CHINA_WEATHER_THUNDERSHOWER_WITH_HAIL;
+        } else if (name.equals("暴雨到大暴雨")) {
+            return WeatherType.OPPO_CHINA_WEATHER_STORM_TO_HEAVY_STORM;
+        } else if (name.equals("晴")) {
+            return WeatherType.OPPO_CHINA_WEATHER_SUNNY;
+        } else if (name.equals("阴")) {
+            return WeatherType.OPPO_CHINA_WEATHER_OVERCAST;
+        } else if (name.equals("雪")) {
+            return WeatherType.OPPO_CHINA_WEATHER_SNOW;
+        } else if (name.equals("雾")) {
+            return WeatherType.OPPO_CHINA_WEATHER_FOGGY;
+        } else if (name.equals("霾")) {
+            return WeatherType.OPPO_CHINA_WEATHER_HAZE;
+        } else if (name.equals("中雨")) {
+            return WeatherType.OPPO_CHINA_WEATHER_MODERATE_RAIN;
+        } else if (name.equals("中雪")) {
+            return WeatherType.OPPO_CHINA_WEATHER_MODERATE_SNOW;
+        } else if (name.equals("冻雨")) {
+            return WeatherType.OPPO_CHINA_WEATHER_ICE_RAIN;
+        } else if (name.equals("多云")) {
+            return WeatherType.OPPO_CHINA_WEATHER_CLOUDY;
+        } else if (name.equals("大雨")) {
+            return WeatherType.OPPO_CHINA_WEATHER_HEAVY_RAIN;
+        } else if (name.equals("大雪")) {
+            return WeatherType.OPPO_CHINA_WEATHER_HEAVY_SNOW;
+        } else if (name.equals("大雾")) {
+            return WeatherType.OPPO_CHINA_WEATHER_HEAVY_FOGGY;
+        } else if (name.equals("小雨")) {
+            return WeatherType.OPPO_CHINA_WEATHER_LIGHT_RAIN;
+        } else if (name.equals("小雪")) {
+            return WeatherType.OPPO_CHINA_WEATHER_LIGHT_SNOW;
+        } else if (name.equals("扬沙")) {
+            return WeatherType.OPPO_CHINA_WEATHER_SAND;
+        } else if (name.equals("暴雨")) {
+            return WeatherType.OPPO_CHINA_WEATHER_STORM;
+        } else if (name.equals("暴雪")) {
+            return WeatherType.OPPO_CHINA_WEATHER_SNOWSTORM;
+        } else if (name.equals("浮尘")) {
+            return WeatherType.OPPO_CHINA_WEATHER_DUST;
+        } else if (name.equals("浓雾")) {
+            return WeatherType.OPPO_CHINA_WEATHER_DENSE_FOGGY;
+        } else if (name.equals("阵雨")) {
+            return WeatherType.OPPO_CHINA_WEATHER_SHOWER;
+        } else if (name.equals("阵雪")) {
+            return WeatherType.OPPO_CHINA_WEATHER_SNOW_FLURRY;
+        } else if (name.equals("中度霾")) {
+            return WeatherType.OPPO_CHINA_WEATHER_MODERATE_HAZE;
+        } else if (name.equals("严重霾")) {
+            return WeatherType.OPPO_CHINA_WEATHER_SEVERE_HAZE;
+        } else if (name.equals("大暴雨")) {
+            return WeatherType.OPPO_CHINA_WEATHER_HEAVY_STORM;
+        } else if (name.equals("强浓雾")) {
+            return WeatherType.OPPO_CHINA_WEATHER_STRONG_DENSE_FOGGY;
+        } else if (name.equals("沙尘暴")) {
+            return WeatherType.OPPO_CHINA_WEATHER_DUSTSTORM;
+        } else if (name.equals("重度霾")) {
+            return WeatherType.OPPO_CHINA_WEATHER_HEAVY_HAZE;
+        } else if (name.equals("雨夹雪")) {
+            return WeatherType.OPPO_CHINA_WEATHER_SLEET;
+        } else if (name.equals("雷阵雨")) {
+            return WeatherType.OPPO_CHINA_WEATHER_THUNDERSHOWER;
+        } else if (name.equals("中到大雨")) {
+            return WeatherType.OPPO_CHINA_WEATHER_MODERATE_TO_HEAVY_RAIN;
+        } else if (name.equals("中到大雪")) {
+            return WeatherType.OPPO_CHINA_WEATHER_MODERATE_TO_HEAVY_SNOW;
+        } else if (name.equals("大到暴雨")) {
+            return WeatherType.OPPO_CHINA_WEATHER_HEAVY_RAIN_TO_STORM;
+        } else if (name.equals("大到暴雪")) {
+            return WeatherType.OPPO_CHINA_WEATHER_HEAVY_SNOW_TO_SNOWSTORM;
+        } else if (name.equals("小到中雨")) {
+            return WeatherType.OPPO_CHINA_WEATHER_LIGHT_TO_MODERATE_RAIN;
+        } else if (name.equals("小到中雪")) {
+            return WeatherType.OPPO_CHINA_WEATHER_LIGHT_TO_MODERATE_SNOW;
+        } else if (name.equals("强沙尘暴")) {
+            return WeatherType.OPPO_CHINA_WEATHER_SANDSTORM;
+        } else if (name.equals("特大暴雨")) {
+            return WeatherType.OPPO_CHINA_WEATHER_SEVERE_STORM;
+        } else if (name.equals("特强浓雾")) {
+            return WeatherType.OPPO_CHINA_WEATHER_SEVERE_FOGGY;
+        } else if (name.equals("大暴雨到特大暴雨")) {
+            return WeatherType.OPPO_CHINA_WEATHER_HEAVY_TO_SEVERE_STORM;
+        } else {
+            return WeatherType.WEATHER_UNKNOWN;
         }
-        switch (i) {
-            case RainSurfaceView.RAIN_LEVEL_DRIZZLE:
-                return WeatherType.OPPO_CHINA_WEATHER_SUNNY;
-            case RainSurfaceView.RAIN_LEVEL_NORMAL_RAIN:
-                return WeatherType.OPPO_CHINA_WEATHER_CLOUDY;
-            case RainSurfaceView.RAIN_LEVEL_SHOWER:
-                return WeatherType.OPPO_CHINA_WEATHER_OVERCAST;
-            case RainSurfaceView.RAIN_LEVEL_DOWNPOUR:
-                return WeatherType.OPPO_CHINA_WEATHER_SHOWER;
-            case RainSurfaceView.RAIN_LEVEL_RAINSTORM:
-                return WeatherType.OPPO_CHINA_WEATHER_THUNDERSHOWER;
-            case RainSurfaceView.RAIN_LEVEL_THUNDERSHOWER:
-                return WeatherType.OPPO_CHINA_WEATHER_THUNDERSHOWER_WITH_HAIL;
-            case 6:
-                return WeatherType.OPPO_CHINA_WEATHER_SLEET;
-            case DetectedActivity.WALKING:
-                return WeatherType.OPPO_CHINA_WEATHER_LIGHT_RAIN;
-            case DetectedActivity.RUNNING:
-                return WeatherType.OPPO_CHINA_WEATHER_MODERATE_RAIN;
-            case ConnectionResult.SERVICE_INVALID:
-                return WeatherType.OPPO_CHINA_WEATHER_HEAVY_RAIN;
-            case ConnectionResult.DEVELOPER_ERROR:
-                return WeatherType.OPPO_CHINA_WEATHER_STORM;
-            case ConnectionResult.LICENSE_CHECK_FAILED:
-                return WeatherType.OPPO_CHINA_WEATHER_HEAVY_STORM;
-            case WeatherCircleView.ARC_DIN:
-                return WeatherType.OPPO_CHINA_WEATHER_SEVERE_STORM;
-            case ConnectionResult.CANCELED:
-                return WeatherType.OPPO_CHINA_WEATHER_SNOW_FLURRY;
-            case ConnectionResult.TIMEOUT:
-                return WeatherType.OPPO_CHINA_WEATHER_LIGHT_SNOW;
-            case ConnectionResult.INTERRUPTED:
-                return WeatherType.OPPO_CHINA_WEATHER_MODERATE_SNOW;
-            case ConnectionResult.API_UNAVAILABLE:
-                return WeatherType.OPPO_CHINA_WEATHER_HEAVY_SNOW;
-            case ConnectionResult.SIGN_IN_FAILED:
-                return WeatherType.OPPO_CHINA_WEATHER_SNOWSTORM;
-            case ConnectionResult.SERVICE_UPDATING:
-                return WeatherType.OPPO_CHINA_WEATHER_FOGGY;
-            case ConnectionResult.SERVICE_MISSING_PERMISSION:
-                return WeatherType.OPPO_CHINA_WEATHER_ICE_RAIN;
-            case ConnectionResult.RESTRICTED_PROFILE:
-                return WeatherType.OPPO_CHINA_WEATHER_DUSTSTORM;
-            case net.oneplus.weather.R.styleable.Toolbar_titleMargin:
-                return WeatherType.OPPO_CHINA_WEATHER_LIGHT_TO_MODERATE_RAIN;
-            case net.oneplus.weather.R.styleable.Toolbar_titleMarginBottom:
-                return WeatherType.OPPO_CHINA_WEATHER_MODERATE_TO_HEAVY_RAIN;
-            case net.oneplus.weather.R.styleable.Toolbar_titleMarginEnd:
-                return WeatherType.OPPO_CHINA_WEATHER_HEAVY_RAIN_TO_STORM;
-            case net.oneplus.weather.R.styleable.Toolbar_titleMarginStart:
-                return WeatherType.OPPO_CHINA_WEATHER_STORM_TO_HEAVY_STORM;
-            case MessagingStyle.MAXIMUM_RETAINED_MESSAGES:
-                return WeatherType.OPPO_CHINA_WEATHER_HEAVY_TO_SEVERE_STORM;
-            case net.oneplus.weather.R.styleable.Toolbar_titleMargins:
-                return WeatherType.OPPO_CHINA_WEATHER_LIGHT_TO_MODERATE_SNOW;
-            case net.oneplus.weather.R.styleable.Toolbar_titleTextAppearance:
-                return WeatherType.OPPO_CHINA_WEATHER_MODERATE_TO_HEAVY_SNOW;
-            case net.oneplus.weather.R.styleable.Toolbar_titleTextColor:
-                return WeatherType.OPPO_CHINA_WEATHER_HEAVY_SNOW_TO_SNOWSTORM;
-            case net.oneplus.weather.R.styleable.OneplusTheme_onePlusTabTextSelectedAlpha:
-                return WeatherType.OPPO_CHINA_WEATHER_DUST;
-            case RainDownpour.Z_RANDOM_RANGE:
-                return WeatherType.OPPO_CHINA_WEATHER_SAND;
-            case net.oneplus.weather.R.styleable.OneplusTheme_onePlusTextColor:
-                return WeatherType.OPPO_CHINA_WEATHER_SANDSTORM;
-            case ItemTouchHelper.END:
-                return WeatherType.OPPO_CHINA_WEATHER_DENSE_FOGGY;
-            case net.oneplus.weather.R.styleable.OneplusTheme_op_borderWidth:
-                return WeatherType.OPPO_CHINA_WEATHER_SNOW;
-            case net.oneplus.weather.R.styleable.OneplusTheme_op_buttonPanelSideLayout:
-                return WeatherType.OPPO_CHINA_WEATHER_STRONG_DENSE_FOGGY;
-            case net.oneplus.weather.R.styleable.OneplusTheme_op_elevation:
-                return WeatherType.OPPO_CHINA_WEATHER_HAZE;
-            case net.oneplus.weather.R.styleable.OneplusTheme_op_listItemLayout:
-                return WeatherType.OPPO_CHINA_WEATHER_MODERATE_HAZE;
-            case net.oneplus.weather.R.styleable.OneplusTheme_op_listLayout:
-                return WeatherType.OPPO_CHINA_WEATHER_HEAVY_HAZE;
-            case net.oneplus.weather.R.styleable.OneplusTheme_op_multiChoiceItemLayout:
-                return WeatherType.OPPO_CHINA_WEATHER_SEVERE_HAZE;
-            case net.oneplus.weather.R.styleable.OneplusTheme_op_pressedTranslationZ:
-                return WeatherType.OPPO_CHINA_WEATHER_HEAVY_FOGGY;
-            case net.oneplus.weather.R.styleable.OneplusTheme_op_rippleColor:
-                return WeatherType.OPPO_CHINA_WEATHER_SEVERE_FOGGY;
-            default:
-                return 0;
-        }
-    }*/
+    }
 
-    /*public static int oppoForeignWeatherTextToWeatherId(String name) {
-        Object obj = -1;
-        switch (name.hashCode()) {
-            case -1236115480:
-                if (name.equals("\u96f7\u9635\u96e8\u4f34\u6709\u51b0\u96f9")) {
-                    obj = 6;
-                }
-                break;
-            case -1229291873:
-                if (name.equals("\u66b4\u96e8\u5230\u5927\u66b4\u96e8")) {
-                    obj = MessagingStyle.MAXIMUM_RETAINED_MESSAGES;
-                }
-                break;
-            case 26228:
-                if (name.equals("\u6674")) {
-                    int i = 0;
-                }
-                break;
-            case 38452:
-                if (name.equals("\u9634")) {
-                    obj = RainSurfaceView.RAIN_LEVEL_DOWNPOUR;
-                }
-                break;
-            case 38654:
-                if (name.equals("\u96fe")) {
-                    obj = ConnectionResult.SERVICE_MISSING_PERMISSION;
-                }
-                break;
-            case 38718:
-                if (name.equals("\u973e")) {
-                    obj = net.oneplus.weather.R.styleable.OneplusTheme_op_borderWidth;
-                }
-                break;
-            case 659035:
-                if (name.equals("\u4e2d\u96e8")) {
-                    obj = ConnectionResult.SERVICE_INVALID;
-                }
-                break;
-            case 659037:
-                if (name.equals("\u4e2d\u96ea")) {
-                    obj = ConnectionResult.INTERRUPTED;
-                }
-                break;
-            case 687245:
-                if (name.equals("\u51bb\u96e8")) {
-                    obj = ConnectionResult.RESTRICTED_PROFILE;
-                }
-                break;
-            case 727223:
-                if (name.equals("\u591a\u4e91")) {
-                    obj = RainSurfaceView.RAIN_LEVEL_SHOWER;
-                }
-                break;
-            case 746145:
-                if (name.equals("\u5927\u96e8")) {
-                    obj = ConnectionResult.DEVELOPER_ERROR;
-                }
-                break;
-            case 746147:
-                if (name.equals("\u5927\u96ea")) {
-                    obj = ConnectionResult.API_UNAVAILABLE;
-                }
-                break;
-            case 769209:
-                if (name.equals("\u5c0f\u96e8")) {
-                    obj = DetectedActivity.RUNNING;
-                }
-                break;
-            case 769211:
-                if (name.equals("\u5c0f\u96ea")) {
-                    obj = ConnectionResult.TIMEOUT;
-                }
-                break;
-            case 808877:
-                if (name.equals("\u626c\u6c99")) {
-                    obj = RainDownpour.Z_RANDOM_RANGE;
-                }
-                break;
-            case 835893:
-                if (name.equals("\u6674\u5929")) {
-                    obj = 1;
-                }
-                break;
-            case 853684:
-                if (name.equals("\u66b4\u96e8")) {
-                    obj = ConnectionResult.LICENSE_CHECK_FAILED;
-                }
-                break;
-            case 853686:
-                if (name.equals("\u66b4\u96ea")) {
-                    obj = ConnectionResult.SERVICE_UPDATING;
-                }
-                break;
-            case 892010:
-                if (name.equals("\u6d6e\u5c18")) {
-                    obj = net.oneplus.weather.R.styleable.OneplusTheme_onePlusTextColor;
-                }
-                break;
-            case 1230675:
-                if (name.equals("\u9635\u96e8")) {
-                    obj = RainSurfaceView.RAIN_LEVEL_RAINSTORM;
-                }
-                break;
-            case 1230677:
-                if (name.equals("\u9635\u96ea")) {
-                    obj = ConnectionResult.SIGN_IN_FAILED;
-                }
-                break;
-            case 22786587:
-                if (name.equals("\u5927\u66b4\u96e8")) {
-                    obj = WeatherCircleView.ARC_DIN;
-                }
-                break;
-            case 27473909:
-                if (name.equals("\u6c99\u5c18\u66b4")) {
-                    obj = net.oneplus.weather.R.styleable.Toolbar_titleMargin;
-                }
-                break;
-            case 37872057:
-                if (name.equals("\u96e8\u5939\u96ea")) {
-                    obj = DetectedActivity.WALKING;
-                }
-                break;
-            case 38370442:
-                if (name.equals("\u96f7\u9635\u96e8")) {
-                    obj = RainSurfaceView.RAIN_LEVEL_THUNDERSHOWER;
-                }
-                break;
-            case 617172868:
-                if (name.equals("\u4e2d\u5230\u5927\u96e8")) {
-                    obj = net.oneplus.weather.R.styleable.Toolbar_titleMarginEnd;
-                }
-                break;
-            case 617172870:
-                if (name.equals("\u4e2d\u5230\u5927\u96ea")) {
-                    obj = net.oneplus.weather.R.styleable.Toolbar_titleTextColor;
-                }
-                break;
-            case 700993117:
-                if (name.equals("\u5927\u5230\u66b4\u96e8")) {
-                    obj = net.oneplus.weather.R.styleable.Toolbar_titleMarginStart;
-                }
-                break;
-            case 700993119:
-                if (name.equals("\u5927\u5230\u66b4\u96ea")) {
-                    obj = net.oneplus.weather.R.styleable.OneplusTheme_onePlusTabTextSelectedAlpha;
-                }
-                break;
-            case 722962972:
-                if (name.equals("\u5c0f\u5230\u4e2d\u96e8")) {
-                    obj = net.oneplus.weather.R.styleable.Toolbar_titleMarginBottom;
-                }
-                break;
-            case 722962974:
-                if (name.equals("\u5c0f\u5230\u4e2d\u96ea")) {
-                    obj = net.oneplus.weather.R.styleable.Toolbar_titleTextAppearance;
-                }
-                break;
-            case 753718907:
-                if (name.equals("\u5f3a\u6c99\u5c18\u66b4")) {
-                    obj = ItemTouchHelper.END;
-                }
-                break;
-            case 895811842:
-                if (name.equals("\u7279\u5927\u66b4\u96e8")) {
-                    obj = ConnectionResult.CANCELED;
-                }
-                break;
-            case 1204232695:
-                if (name.equals("\u5927\u66b4\u96e8\u5230\u7279\u5927\u66b4\u96e8")) {
-                    obj = net.oneplus.weather.R.styleable.Toolbar_titleMargins;
-                }
-                break;
+    public static int oppoForeignWeatherTextToWeatherId(String name) {
+
+        if (name.equals("雷阵雨伴有冰雹")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_THUNDERSHOWER_WITH_HAIL;
+        } else if (name.equals("暴雨到大暴雨")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_STORM_TO_HEAVY_STORM;
+        } else if (name.equals("晴") || name.equals("晴天")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_SUNNY;
+        } else if (name.equals("阴")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_OVERCAST;
+        } else if (name.equals("雾")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_FOGGY;
+        } else if (name.equals("霾")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_HAZE;
+        } else if (name.equals("中雨")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_MODERATE_RAIN;
+        } else if (name.equals("中雪")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_MODERATE_SNOW;
+        } else if (name.equals("冻雨")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_ICE_RAIN;
+        } else if (name.equals("多云")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_CLOUDY;
+        } else if (name.equals("大雨")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_HEAVY_RAIN;
+        } else if (name.equals("大雪")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_HEAVY_SNOW;
+        } else if (name.equals("小雨")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_LIGHT_RAIN;
+        } else if (name.equals("小雪")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_LIGHT_SNOW;
+        } else if (name.equals("扬沙")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_SAND;
+        } else if (name.equals("暴雨")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_STORM;
+        } else if (name.equals("暴雪")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_SNOWSTORM;
+        } else if (name.equals("浮尘")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_DUST;
+        } else if (name.equals("阵雨")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_SHOWER;
+        } else if (name.equals("阵雪")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_SNOW_FLURRY;
+        } else if (name.equals("大暴雨")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_HEAVY_STORM;
+        } else if (name.equals("沙尘暴")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_DUSTSTORM;
+        } else if (name.equals("雨夹雪")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_SLEET;
+        } else if (name.equals("雷阵雨")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_THUNDERSHOWER;
+        } else if (name.equals("中到大雨")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_MODERATE_TO_HEAVY_RAIN;
+        } else if (name.equals("中到大雪")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_MODERATE_TO_HEAVY_SNOW;
+        } else if (name.equals("大到暴雨")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_HEAVY_RAIN_TO_STORM;
+        } else if (name.equals("大到暴雪")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_HEAVY_SNOW_TO_SNOWSTORM;
+        } else if (name.equals("小到中雨")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_LIGHT_TO_MODERATE_RAIN;
+        } else if (name.equals("小到中雪")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_LIGHT_TO_MODERATE_SNOW;
+        } else if (name.equals("强沙尘暴")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_SANDSTORM;
+        } else if (name.equals("特大暴雨")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_SEVERE_STORM;
+        } else if (name.equals("大暴雨到特大暴雨")) {
+            return WeatherType.OPPO_FOREIGN_WEATHER_HEAVY_TO_SEVERE_STORM;
+        } else {
+            return WeatherType.WEATHER_UNKNOWN;
         }
-        switch (i) {
-            case RainSurfaceView.RAIN_LEVEL_DRIZZLE:
-            case RainSurfaceView.RAIN_LEVEL_NORMAL_RAIN:
-                return WeatherType.OPPO_FOREIGN_WEATHER_SUNNY;
-            case RainSurfaceView.RAIN_LEVEL_SHOWER:
-                return WeatherType.OPPO_FOREIGN_WEATHER_CLOUDY;
-            case RainSurfaceView.RAIN_LEVEL_DOWNPOUR:
-                return WeatherType.OPPO_FOREIGN_WEATHER_OVERCAST;
-            case RainSurfaceView.RAIN_LEVEL_RAINSTORM:
-                return WeatherType.OPPO_FOREIGN_WEATHER_SHOWER;
-            case RainSurfaceView.RAIN_LEVEL_THUNDERSHOWER:
-                return WeatherType.OPPO_FOREIGN_WEATHER_THUNDERSHOWER;
-            case 6:
-                return WeatherType.OPPO_FOREIGN_WEATHER_THUNDERSHOWER_WITH_HAIL;
-            case DetectedActivity.WALKING:
-                return WeatherType.OPPO_FOREIGN_WEATHER_SLEET;
-            case DetectedActivity.RUNNING:
-                return WeatherType.OPPO_FOREIGN_WEATHER_LIGHT_RAIN;
-            case ConnectionResult.SERVICE_INVALID:
-                return WeatherType.OPPO_FOREIGN_WEATHER_MODERATE_RAIN;
-            case ConnectionResult.DEVELOPER_ERROR:
-                return WeatherType.OPPO_FOREIGN_WEATHER_HEAVY_RAIN;
-            case ConnectionResult.LICENSE_CHECK_FAILED:
-                return WeatherType.OPPO_FOREIGN_WEATHER_STORM;
-            case WeatherCircleView.ARC_DIN:
-                return WeatherType.OPPO_FOREIGN_WEATHER_HEAVY_STORM;
-            case ConnectionResult.CANCELED:
-                return WeatherType.OPPO_FOREIGN_WEATHER_SEVERE_STORM;
-            case ConnectionResult.TIMEOUT:
-                return WeatherType.OPPO_FOREIGN_WEATHER_LIGHT_SNOW;
-            case ConnectionResult.INTERRUPTED:
-                return WeatherType.OPPO_FOREIGN_WEATHER_MODERATE_SNOW;
-            case ConnectionResult.API_UNAVAILABLE:
-                return WeatherType.OPPO_FOREIGN_WEATHER_HEAVY_SNOW;
-            case ConnectionResult.SIGN_IN_FAILED:
-                return WeatherType.OPPO_FOREIGN_WEATHER_SNOW_FLURRY;
-            case ConnectionResult.SERVICE_UPDATING:
-                return WeatherType.OPPO_FOREIGN_WEATHER_SNOWSTORM;
-            case ConnectionResult.SERVICE_MISSING_PERMISSION:
-                return WeatherType.OPPO_FOREIGN_WEATHER_FOGGY;
-            case ConnectionResult.RESTRICTED_PROFILE:
-                return WeatherType.OPPO_FOREIGN_WEATHER_ICE_RAIN;
-            case net.oneplus.weather.R.styleable.Toolbar_titleMargin:
-                return WeatherType.OPPO_FOREIGN_WEATHER_DUSTSTORM;
-            case net.oneplus.weather.R.styleable.Toolbar_titleMarginBottom:
-                return WeatherType.OPPO_FOREIGN_WEATHER_LIGHT_TO_MODERATE_RAIN;
-            case net.oneplus.weather.R.styleable.Toolbar_titleMarginEnd:
-                return WeatherType.OPPO_FOREIGN_WEATHER_MODERATE_TO_HEAVY_RAIN;
-            case net.oneplus.weather.R.styleable.Toolbar_titleMarginStart:
-                return WeatherType.OPPO_FOREIGN_WEATHER_HEAVY_RAIN_TO_STORM;
-            case MessagingStyle.MAXIMUM_RETAINED_MESSAGES:
-                return WeatherType.OPPO_FOREIGN_WEATHER_STORM_TO_HEAVY_STORM;
-            case net.oneplus.weather.R.styleable.Toolbar_titleMargins:
-                return WeatherType.OPPO_FOREIGN_WEATHER_HEAVY_TO_SEVERE_STORM;
-            case net.oneplus.weather.R.styleable.Toolbar_titleTextAppearance:
-                return WeatherType.OPPO_FOREIGN_WEATHER_LIGHT_TO_MODERATE_SNOW;
-            case net.oneplus.weather.R.styleable.Toolbar_titleTextColor:
-                return WeatherType.OPPO_FOREIGN_WEATHER_MODERATE_TO_HEAVY_SNOW;
-            case net.oneplus.weather.R.styleable.OneplusTheme_onePlusTabTextSelectedAlpha:
-                return WeatherType.OPPO_FOREIGN_WEATHER_HEAVY_SNOW_TO_SNOWSTORM;
-            case RainDownpour.Z_RANDOM_RANGE:
-                return WeatherType.OPPO_FOREIGN_WEATHER_SAND;
-            case net.oneplus.weather.R.styleable.OneplusTheme_onePlusTextColor:
-                return WeatherType.OPPO_FOREIGN_WEATHER_DUST;
-            case ItemTouchHelper.END:
-                return WeatherType.OPPO_FOREIGN_WEATHER_SANDSTORM;
-            case net.oneplus.weather.R.styleable.OneplusTheme_op_borderWidth:
-                return WeatherType.OPPO_FOREIGN_WEATHER_HAZE;
-            default:
-                return 0;
-        }
-    }*/
+
+    }
 
     public static double centigradeToFahrenheit(double value) {
         return NumberUtils.isNaN(value) ? NumberUtils.NAN_DOUBLE : (1.8d * value) + 32.0d;
@@ -1388,7 +1007,7 @@ public final class WeatherUtils {
         if (alarms == null || alarms.size() < 1) {
             return null;
         }
-        List<Alarm> resAlarms = new ArrayList();
+        List<Alarm> resAlarms = new ArrayList<>();
         resAlarms.add(alarms.get(0));
         int countWeather = alarms.size();
         int i = 1;

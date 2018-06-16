@@ -1,13 +1,10 @@
 package com.opweather.api;
 
-import android.support.v7.widget.helper.ItemTouchHelper;
-
-import com.opweather.api.parser.ResponseParser;
-import com.opweather.api.nodes.RootWeather;
 import com.opweather.api.WeatherResponse.CacheListener;
 import com.opweather.api.WeatherResponse.NetworkListener;
+import com.opweather.api.nodes.RootWeather;
+import com.opweather.api.parser.ResponseParser;
 import com.opweather.util.Validate;
-import com.opweather.widget.openglbase.RainSurfaceView;
 
 import java.util.Locale;
 
@@ -28,15 +25,15 @@ public abstract class WeatherRequest {
         LOAD_CACHE_ONLY
     }
 
-    public static interface Type {
-        public static final int ALARM = 32;
-        public static final int ALL = 15;
-        public static final int AQI = 8;
-        public static final int CURRENT = 1;
-        public static final int DAILY_FORECASTS = 4;
-        public static final int HOUR_FORECASTS = 2;
-        public static final int LIFE_INDEX = 16;
-        public static final int SUCCESS = 64;
+    public interface Type {
+        int ALARM = 32;
+        int ALL = 15;
+        int AQI = 8;
+        int CURRENT = 1;
+        int DAILY_FORECASTS = 4;
+        int HOUR_FORECASTS = 2;
+        int LIFE_INDEX = 16;
+        int SUCCESS = 64;
     }
 
     public abstract String getDiskCacheKey(int i);
@@ -52,13 +49,13 @@ public abstract class WeatherRequest {
     }
 
     private static boolean validRequestType(int type) {
-        return contain(type, 1) || contain(type, RainSurfaceView.RAIN_LEVEL_SHOWER) || contain(type, RainSurfaceView
-                .RAIN_LEVEL_RAINSTORM) || contain(type, ItemTouchHelper.RIGHT) || contain(type, ItemTouchHelper
-                .START) || contain(type, ItemTouchHelper.END);
+        return contain(type, Type.CURRENT) || contain(type, Type.HOUR_FORECASTS) || contain(type, Type
+                .DAILY_FORECASTS) || contain(type, Type.AQI) || contain(type, Type.LIFE_INDEX) || contain(type,
+                Type.ALARM);
     }
 
     public WeatherRequest(String key) {
-        this(15, key, null, null);
+        this(Type.ALL, key, null, null);
     }
 
     public WeatherRequest(int type, String key) {
@@ -66,7 +63,7 @@ public abstract class WeatherRequest {
     }
 
     public WeatherRequest(String key, NetworkListener networkListener, CacheListener cacheListener) {
-        this(15, key, networkListener, cacheListener);
+        this(Type.ALL, key, networkListener, cacheListener);
     }
 
     public WeatherRequest(int type, String key, NetworkListener networkListener, CacheListener cacheListener) {

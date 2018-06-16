@@ -122,30 +122,31 @@ public class WeatherRequestExecuter extends AbstractExecuter {
         @Override
         protected Void doInBackground(String... key) {
             byte[] data = WeatherCache.getInstance(mContext).getFromDiskCache(key[0]);
-            Log.d(TAG, "doInBackground: data " + Arrays.toString(data));
-            try {
-                RootWeather rootWeather;
-                if (mRequestType == 8) {
-                    rootWeather = mRequest.getResponseParser().parseAqi(data);
-                } else if (mRequestType == 1) {
-                    rootWeather = mRequest.getResponseParser().parseCurrent(data);
-                } else if (mRequestType == 16) {
-                    rootWeather = mRequest.getResponseParser().parseLifeIndex(data);
-                } else if (mRequestType == 2) {
-                    rootWeather = mRequest.getResponseParser().parseHourForecasts(data);
-                } else if (mRequestType == 4) {
-                    rootWeather = mRequest.getResponseParser().parseDailyForecasts(data);
-                } else if (mRequestType == 32) {
-                    rootWeather = mRequest.getResponseParser().parseAlarm(data);
-                } else {
-                    throw new WeatherException("Unsupport request type!");
-                }
-                mCacheBox.addResponse(rootWeather, mRequestType);
-            } catch (WeatherException e) {
-                if (e instanceof ParseException) {
-                    mCacheBox.addResponse(null, mRequestType);
-                } else {
-                    mCacheBox.error = true;
+            if (data != null) {
+                try {
+                    RootWeather rootWeather;
+                    if (mRequestType == 8) {
+                        rootWeather = mRequest.getResponseParser().parseAqi(data);
+                    } else if (mRequestType == 1) {
+                        rootWeather = mRequest.getResponseParser().parseCurrent(data);
+                    } else if (mRequestType == 16) {
+                        rootWeather = mRequest.getResponseParser().parseLifeIndex(data);
+                    } else if (mRequestType == 2) {
+                        rootWeather = mRequest.getResponseParser().parseHourForecasts(data);
+                    } else if (mRequestType == 4) {
+                        rootWeather = mRequest.getResponseParser().parseDailyForecasts(data);
+                    } else if (mRequestType == 32) {
+                        rootWeather = mRequest.getResponseParser().parseAlarm(data);
+                    } else {
+                        throw new WeatherException("Unsupport request type!");
+                    }
+                    mCacheBox.addResponse(rootWeather, mRequestType);
+                } catch (WeatherException e) {
+                    if (e instanceof ParseException) {
+                        mCacheBox.addResponse(null, mRequestType);
+                    } else {
+                        mCacheBox.error = true;
+                    }
                 }
             }
             return null;
@@ -289,7 +290,7 @@ public class WeatherRequestExecuter extends AbstractExecuter {
         }
         request.deliverCacheResponse(weather);
         LogUtils.d(TAG, "命中内存缓存，区域id：" + (weather.getAreaCode() != null ? weather.getAreaCode() : "null") + "，区域名称："
-                + (weather.getAreaName() != null ? weather.getAreaName() : "null"), new Object[0]);
+                + (weather.getAreaName() != null ? weather.getAreaName() : "null"));
     }
 
     private void fetchDiskCache(WeatherRequest request) {
@@ -326,11 +327,11 @@ public class WeatherRequestExecuter extends AbstractExecuter {
                 RootWeather weather = WeatherCache.getInstance(mContext).getFromMemCache(request.getMemCacheKey());
                 if (weather == null || !WeatherResponse.containRequestedData(request.getRequestType(), weather)) {
                     String key = request.getDiskCacheKey(type);
-                    new CacheTask(type, request, response).execute(new String[]{key});
+                    new CacheTask(type, request, response).execute(key);
                     return;
                 }
                 RootWeather emptyWeather = new RootWeather(weather.getAreaCode(), weather.getDataSourceName());
-                WeatherRequestExecuter.this.setRootWeather(emptyWeather, weather, type);
+                setRootWeather(emptyWeather, weather, type);
                 emptyWeather.setRequestIsSuccess(true);
                 response.addResponse(emptyWeather, type);
                 requestOrDeliverNetwork(request, response);
@@ -404,12 +405,12 @@ public class WeatherRequestExecuter extends AbstractExecuter {
     }
 
     private void requestCacheData(int type, WeatherRequest request, CacheBox box) {
-        LogUtils.d(TAG, "Cache key: " + request.getDiskCacheKey(type));
-        LogUtils.d(TAG, "Cache key: " + request.getMemCacheKey());
-        LogUtils.d(TAG, "Cache key: " + request.getCacheMode());
-        LogUtils.d(TAG, "Cache key: " + request.getRequestUrl(type));
-        LogUtils.d(TAG, "Cache key: " + request.getRequestType());
-        LogUtils.d(TAG, "Cache key: " + request.getLocale());
+        LogUtils.d(TAG, "getDiskCacheKey : " + request.getDiskCacheKey(type));
+        LogUtils.d(TAG, "getMemCacheKey: " + request.getMemCacheKey());
+        LogUtils.d(TAG, "getCacheMode: " + request.getCacheMode());
+        LogUtils.d(TAG, "getRequestUrl: " + request.getRequestUrl(type));
+        LogUtils.d(TAG, "getRequestType: " + request.getRequestType());
+        LogUtils.d(TAG, "getLocale: " + request.getLocale());
         new CacheParserWorkerTask(type, request, box).execute(request.getDiskCacheKey(type));
     }
 }

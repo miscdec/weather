@@ -2,6 +2,7 @@ package com.opweather.api.impl;
 
 import com.opweather.api.CommonConfig;
 import com.opweather.api.WeatherRequest;
+import com.opweather.api.parser.OppoChinaResponseParserV3;
 import com.opweather.api.parser.ResponseParser;
 import com.opweather.api.WeatherResponse.CacheListener;
 import com.opweather.api.WeatherResponse.NetworkListener;
@@ -25,23 +26,22 @@ public class OppoChinaRequest extends WeatherRequest {
         super(type, key, networkListener, cacheListener);
     }
 
+    @Override
     public String getRequestUrl(int type) {
         return type == 16 ? null : CommonConfig.getOppoChinaUrl(getRequestKey());
     }
 
     @Override
     public ResponseParser getResponseParser() {
-        return null;
+        return new OppoChinaResponseParserV3(this);
     }
 
-   /* public ResponseParser getResponseParser() {
-        return new OppoChinaResponseParserV3(this);
-    }*/
-
+    @Override
     public String getMemCacheKey() {
         return "Oppo.China#" + getRequestKey();
     }
 
+    @Override
     public String getDiskCacheKey(int type) {
         return "Oppo.China#" + getRequestKey();
     }

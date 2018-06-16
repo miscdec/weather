@@ -2,9 +2,7 @@ package com.opweather.api.cache;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Build.VERSION;
 import android.os.Environment;
-import android.os.StatFs;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v4.util.LruCache;
 import android.util.Log;
@@ -22,7 +20,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class WeatherCache implements Cache {
-    private static final int DEFAULT_DISK_CACHE_SIZE = 1024 * 1024;
+    private static final int DEFAULT_DISK_CACHE_SIZE = 10 * 1024 * 1024;
     private static final int DEFAULT_MEM_CACHE_SIZE = 8;
     private static final int DISK_CACHE_INDEX = 0;
     private static final String TAG = "WeatherCache";
@@ -36,8 +34,6 @@ public class WeatherCache implements Cache {
     private LruCache<String, RootWeather> mMemoryCache;
 
     private class CacheAsyncTask extends AsyncTask<Void, Void, Void> {
-        private CacheAsyncTask() {
-        }
 
         protected Void doInBackground(Void... params) {
             try {
@@ -89,7 +85,6 @@ public class WeatherCache implements Cache {
                         LogUtils.d(TAG, "Disk cache initialized star");
                         mDiskLruCache = DiskLruCache.open(diskCacheDir, VERSION_CODE, VERSION_CODE,
                                 PlaybackStateCompat.ACTION_SET_CAPTIONING_ENABLED);
-                        LogUtils.d(TAG, "Disk cache initialized");
                     } catch (IOException e) {
                         LogUtils.e(TAG, "initDiskCache - " + e);
                     }
@@ -102,7 +97,7 @@ public class WeatherCache implements Cache {
     }
 
     public static long getUsableSpace(File path) {
-            return path.getUsableSpace();
+        return path.getUsableSpace();
     }
 
     public static File getDiskCacheDir(Context context, String uniqueName) {
@@ -151,13 +146,10 @@ public class WeatherCache implements Cache {
             return null;
         }
         RootWeather memValue = null;
-        if (this.mMemoryCache != null) {
-            memValue = this.mMemoryCache.get(key);
+        if (mMemoryCache != null) {
+            memValue = mMemoryCache.get(key);
         }
-        if (memValue == null) {
-            return memValue;
-        }
-        LogUtils.d(TAG, "Memory cache hit", new Object[0]);
+        LogUtils.d(TAG, "Memory cache hit");
         return memValue;
     }
 
@@ -169,21 +161,19 @@ public class WeatherCache implements Cache {
         byte[] bArr = null;
         synchronized (mDiskCacheLock) {
             InputStream inputStream;
-            while (this.mDiskCacheStarting) {
+            while (mDiskCacheStarting) {
                 try {
-                    try {
-                        mDiskCacheLock.wait();
-                    } catch (InterruptedException e) {
-                    }
+                    mDiskCacheLock.wait();
+                } catch (InterruptedException e) {
                 } catch (Throwable th) {
                 }
             }
-            if (this.mDiskLruCache != null) {
+            if (mDiskLruCache != null) {
                 inputStream = null;
                 try {
-                    DiskLruCache.Snapshot snapshot = this.mDiskLruCache.get(hashKey);
+                    DiskLruCache.Snapshot snapshot = mDiskLruCache.get(hashKey);
                     if (snapshot != null) {
-                        LogUtils.d(TAG, "Disk cache hit", new Object[0]);
+                        LogUtils.d(TAG, "Disk cache hit");
                         inputStream = snapshot.getInputStream(DISK_CACHE_INDEX);
                         if (inputStream != null) {
                             bArr = IOUtils.toByteArray(inputStream);
@@ -196,7 +186,7 @@ public class WeatherCache implements Cache {
                         }
                     }
                 } catch (IOException e3) {
-                    LogUtils.e(TAG, "getBitmapFromDiskCache - " + e3, new Object[0]);
+                    LogUtils.e(TAG, "getBitmapFromDiskCache - " + e3);
                     if (inputStream != null) {
                         try {
                             inputStream.close();
@@ -217,14 +207,14 @@ public class WeatherCache implements Cache {
 
     public void putToDisk(String key, byte[] value) {
         if (!StringUtils.isBlank(key) && value != null) {
-            LogUtils.d(TAG, "DiskKey: " + key, new Object[0]);
+            LogUtils.d(TAG, "DiskKey: " + key);
             synchronized (mDiskCacheLock) {
                 OutputStream out;
                 try {
-                    if (this.mDiskLruCache != null) {
+                    if (mDiskLruCache != null) {
                         out = null;
                         try {
-                            DiskLruCache.Editor editor = this.mDiskLruCache.edit(hashKeyForDisk(key));
+                            DiskLruCache.Editor editor = mDiskLruCache.edit(hashKeyForDisk(key));
                             if (editor != null) {
                                 out = editor.newOutputStream(DISK_CACHE_INDEX);
                                 IOUtils.write(value, out);
@@ -232,26 +222,12 @@ public class WeatherCache implements Cache {
                                 out.close();
                             }
                             if (out != null) {
-                                try {
-                                    out.close();
-                                } catch (IOException e) {
-                                }
+                                out.close();
                             }
                         } catch (IOException e2) {
-                            LogUtils.e(TAG, "putToDisk - " + e2, new Object[0]);
+                            LogUtils.e(TAG, "putToDisk - " + e2);
                             if (out != null) {
-                                try {
-                                    out.close();
-                                } catch (IOException e3) {
-                                }
-                            }
-                        } catch (Exception e4) {
-                            LogUtils.e(TAG, "putToDisk - " + e4, new Object[0]);
-                            if (out != null) {
-                                try {
-                                    out.close();
-                                } catch (IOException e5) {
-                                }
+                                out.close();
                             }
                         }
                     }
@@ -262,18 +238,18 @@ public class WeatherCache implements Cache {
     }
 
     public void clear() {
-        if (this.mMemoryCache != null) {
-            this.mMemoryCache.evictAll();
-            LogUtils.d(TAG, "Memory cache cleared", new Object[0]);
+        if (mMemoryCache != null) {
+            mMemoryCache.evictAll();
+            LogUtils.d(TAG, "Memory cache cleared");
         }
         synchronized (mDiskCacheLock) {
             this.mDiskCacheStarting = true;
             if (!(this.mDiskLruCache == null || this.mDiskLruCache.isClosed())) {
                 try {
                     this.mDiskLruCache.delete();
-                    LogUtils.d(TAG, "Disk cache cleared", new Object[0]);
+                    LogUtils.d(TAG, "Disk cache cleared");
                 } catch (IOException e) {
-                    LogUtils.e(TAG, "clear - " + e, new Object[0]);
+                    LogUtils.e(TAG, "clear - " + e);
                 }
                 this.mDiskLruCache = null;
                 initDiskCache();
@@ -286,9 +262,9 @@ public class WeatherCache implements Cache {
             if (this.mDiskLruCache != null) {
                 try {
                     this.mDiskLruCache.flush();
-                    LogUtils.d(TAG, "Disk cache flushed", new Object[0]);
+                    LogUtils.d(TAG, "Disk cache flushed");
                 } catch (IOException e) {
-                    LogUtils.e(TAG, "flush - " + e, new Object[0]);
+                    LogUtils.e(TAG, "flush - " + e);
                 }
             }
         }
@@ -301,10 +277,10 @@ public class WeatherCache implements Cache {
                     if (!this.mDiskLruCache.isClosed()) {
                         this.mDiskLruCache.close();
                         this.mDiskLruCache = null;
-                        LogUtils.d(TAG, "Disk cache closed", new Object[0]);
+                        LogUtils.d(TAG, "Disk cache closed");
                     }
                 } catch (IOException e) {
-                    LogUtils.e(TAG, "close - " + e, new Object[0]);
+                    LogUtils.e(TAG, "close - " + e);
                 }
             }
         }
