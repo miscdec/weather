@@ -2,29 +2,27 @@ package com.opweather.ui;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Toast;
 
 import com.opweather.R;
 import com.opweather.adapter.CityListAdapter;
+import com.opweather.adapter.CityListAdapter.OnDefaulatChangeListener;
+import com.opweather.adapter.CityListSearchAdapter;
 import com.opweather.bean.CityData;
 import com.opweather.constants.GlobalConfig;
 import com.opweather.db.CityWeatherDB;
-import com.opweather.db.CityWeatherDBHelper;
 import com.opweather.util.AlertUtils;
 import com.opweather.util.NumberUtils;
 import com.opweather.util.PermissionUtil;
@@ -33,24 +31,38 @@ import com.opweather.widget.swipelistview.BaseSwipeListViewListener;
 import com.opweather.widget.swipelistview.SwipeListView;
 import com.opweather.widget.widget.WidgetHelper;
 
-public class CityListActivity extends BaseBarActivity implements CityListAdapter.OnDefaulatChangeListener {
-    private final String TAG = getClass().getSimpleName();
+
+public class CityListActivity extends BaseBarActivity implements OnDefaulatChangeListener {
     public static final String DEFAULT_CITY = "default_city";
     public static final String INTENT_SEARCH_CITY = "search_city";
+    private static final String TAG = CityListSearchAdapter.class.getSimpleName();
     private SwipeListView cityListView;
-    private int mAppWidgetId;
+    private int mAppWidgetId = -1;
     private CityListAdapter mCityListAdapter;
     private CityListHandler mCityListHandler;
     private CityWeatherDB mCityWeatherDB;
     private Cursor mCursor;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.citylist_activity);
+        init();
+    }
+
+    private void init() {
         initData();
         initUIView();
         initWidgetData();
+    }
+
+    private void initWidgetData() {
+        Bundle extras = getIntent().getExtras();
+        if (extras != null && mCursor != null) {
+            mCityListAdapter.setWidgeMode(true);
+            cityListView.setSwipeMode(0);
+            mAppWidgetId = extras.getInt("appWidgetId", 0);
+        }
     }
 
     private void initData() {
@@ -80,8 +92,7 @@ public class CityListActivity extends BaseBarActivity implements CityListAdapter
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 if (!(mAppWidgetId == -1 || cursor == null || cursor.getCount() <= position)) {
                     if (cursor.moveToPosition(position)) {
-                        int locationId = cursor.getInt(cursor.getColumnIndex(CityWeatherDBHelper.WeatherEntry
-                                .COLUMN_1_LOCATION_ID));
+                        int locationId = cursor.getInt(cursor.getColumnIndex("locationId"));
                         PreferenceUtils.commitInt(CityListActivity.this, WidgetHelper.WIDGET_ID_PREFIX +
                                 mAppWidgetId, locationId);
                         PreferenceUtils.commitInt(CityListActivity.this, WidgetHelper.WIDGET_ID_PREFIX + String
@@ -125,9 +136,9 @@ public class CityListActivity extends BaseBarActivity implements CityListAdapter
                 }
             }
         });
-        cityListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        cityListView.setOnItemClickListener(new OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 Intent intent = new Intent();
                 intent.putExtra(GlobalConfig.INTENT_EXTRA_CITY_INDEX, position);
                 setResult(-1, intent);
@@ -135,15 +146,14 @@ public class CityListActivity extends BaseBarActivity implements CityListAdapter
                 overridePendingTransition(R.anim.alpha_in_listclick, R.anim.alpha_out_listclick);
             }
         });
-        findViewById(R.id.btn_add).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btn_add).setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View v) {
                 Intent intent = new Intent(CityListActivity.this, CitySearchActivity.class);
-                intent.putExtra(INTENT_SEARCH_CITY, CityListActivity.this.cityListView.getCount());
+                intent.putExtra(CityListActivity.INTENT_SEARCH_CITY, cityListView.getCount());
                 startActivityForResult(intent, 1);
             }
         });
-
     }
 
     @Override
@@ -160,7 +170,7 @@ public class CityListActivity extends BaseBarActivity implements CityListAdapter
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == -1 && data.getBooleanExtra(CitySearchActivity.INTENT_RESULT_SEARCH_CITY, false)) {
+        if (resultCode == -1 && data.getBooleanExtra(CitySearchActivity.INTENT_RESULT_SEARCH_CITY, false)) {
             findViewById(R.id.no_city_view).setVisibility(View.GONE);
             mCityListAdapter.setCanScroll(true);
             cityListView.smoothScrollToPosition(cityListView.getCount());
@@ -172,7 +182,8 @@ public class CityListActivity extends BaseBarActivity implements CityListAdapter
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[]
             grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 202 && !PermissionUtil.hasGrantedPermissions(this, permissions)) {
+        if (requestCode == PermissionUtil.ALL_PERMISSION_REQUEST && !PermissionUtil.hasGrantedPermissions(this,
+                permissions)) {
             AlertUtils.showNonePermissionDialog(this);
         }
     }
@@ -192,12 +203,12 @@ public class CityListActivity extends BaseBarActivity implements CityListAdapter
     }
 
     @Override
-    protected void onStop() {
+    public void onStop() {
         super.onStop();
     }
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         if (mCityListAdapter != null) {
             mCityListAdapter.onDestroy();
         }
@@ -208,8 +219,9 @@ public class CityListActivity extends BaseBarActivity implements CityListAdapter
         super.onDestroy();
     }
 
-    private void initWidgetData() {
-
+    private void startActivityByTransition(View view, Intent intent) {
+        startActivity(intent);
+        overridePendingTransition(R.anim.alpha_in_listclick, R.anim.alpha_out_listclick);
     }
 
     @Override
@@ -230,27 +242,5 @@ public class CityListActivity extends BaseBarActivity implements CityListAdapter
                 finish();
             }
         }.execute();
-    }
-
-    private void startActivityByTransition(View view, Intent intent) {
-        startActivity(intent);
-        overridePendingTransition(R.anim.alpha_in_listclick, R.anim.alpha_out_listclick);
-    }
-
-    public class CityListHandler extends Handler {
-        public static final int MESSAGE_DELETE_COMPLETE = -1;
-        private Context context;
-
-        public CityListHandler(Looper looper, Context context) {
-            super(looper);
-            this.context = context;
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            if (!hasMessages(msg.what)) {
-                CityWeatherDB.getInstance(context).deleteCity((Long) msg.obj);
-            }
-        }
     }
 }

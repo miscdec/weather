@@ -7,11 +7,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.opweather.bean.OpCity;
 import com.opweather.api.helper.LogUtils;
-import com.opweather.util.StringUtils;
+import com.opweather.bean.OpCity;
+import com.opweather.db.CityWeatherDBHelper.CityListEntry;
 import com.opweather.util.WeatherLog;
-import com.opweather.widget.openglbase.RainSurfaceView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,7 +44,7 @@ public class ChinaCityDB {
             copyAssetDbFile(context);
             if (mSelf == null) {
                 mSelf = new ChinaCityDB(context, path);
-                db.setVersion(CURRENT_VERSION);
+                db.setVersion(13);
             }
         }
         return createDbAndSetVersion(context, path);
@@ -62,7 +61,7 @@ public class ChinaCityDB {
                 mSelf = new ChinaCityDB(context, path);
                 if (13 != db.getVersion() && dbFile.exists()) {
                     copyAssetDbFile(context);
-                    db.setVersion(CURRENT_VERSION);
+                    db.setVersion(13);
                     updateDatabase(context);
                 }
             }
@@ -75,15 +74,15 @@ public class ChinaCityDB {
         int i;
         Cursor c = city_list_db.rawQuery("select * from city", null);
         Cursor cur = null;
-        List<Integer> ids = new ArrayList();
-        List<String> names = new ArrayList();
-        List<String> names_city_db = new ArrayList();
+        List<Integer> ids = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+        List<String> names_city_db = new ArrayList<>();
         if (c != null) {
             for (i = 0; i < c.getCount(); i++) {
                 c.moveToPosition(i);
-                int id = c.getInt(RainSurfaceView.RAIN_LEVEL_DOWNPOUR);
-                String name = c.getString(RainSurfaceView.RAIN_LEVEL_RAINSTORM);
-                ids.add(Integer.valueOf(id));
+                int id = c.getInt(3);
+                String name = c.getString(4);
+                ids.add(id);
                 names.add(name);
             }
             if (ids.size() > 0) {
@@ -105,11 +104,11 @@ public class ChinaCityDB {
                     cur.moveToPosition(j);
                     String cityname = cur.getString(cur.getColumnIndex("city_name"));
                     WeatherLog.d("city_name: " + cityname);
-                    String[] whereArgs = new String[]{ids.get(i) + StringUtils.EMPTY_STRING};
+                    String[] whereArgs = new String[]{ids.get(i) + ""};
                     ContentValues cv = new ContentValues();
-                    cv.put(CityWeatherDBHelper.CityListEntry.COLUMN_2_NAME, cityname);
-                    cv.put(CityWeatherDBHelper.CityListEntry.COLUMN_3_DISPLAY_NAME, cityname);
-                    city_list_db.update(CITY_TABLE_NAME, cv, "locationId=?", whereArgs);
+                    cv.put(CityListEntry.COLUMN_2_NAME, cityname);
+                    cv.put(CityListEntry.COLUMN_3_DISPLAY_NAME, cityname);
+                    city_list_db.update("city", cv, "locationId=?", whereArgs);
                 }
                 c.close();
                 cur.close();
@@ -152,7 +151,7 @@ public class ChinaCityDB {
     }
 
     public List<OpCity> getAllCity() {
-        List<OpCity> list = new ArrayList();
+        List<OpCity> list = new ArrayList<>();
         Cursor c = db.rawQuery("SELECT * from city", null);
         while (c != null && c.moveToNext()) {
             list.add(getOpCityFromCursor(c));
@@ -167,7 +166,11 @@ public class ChinaCityDB {
         if (TextUtils.isEmpty(cityName) && TextUtils.isEmpty(adCode)) {
             return null;
         }
-        adCode = adCode == null ? StringUtils.EMPTY_STRING : adCode.trim();
+        if (adCode == null) {
+            adCode = "";
+        } else {
+            adCode = adCode.trim();
+        }
         OpCity chinaCity = getCityByRegionCode(adCode);
         if (chinaCity != null) {
             return chinaCity;
@@ -177,7 +180,10 @@ public class ChinaCityDB {
             return chinaCity;
         }
         chinaCity = getCityInfo(parseName(context, cityName));
-        return chinaCity == null ? getCityInfo(cityName) : chinaCity;
+        if (chinaCity == null) {
+            return getCityInfo(cityName);
+        }
+        return chinaCity;
     }
 
     public OpCity getChinaCityByPinyin(Context context, String cityName) {
@@ -189,15 +195,15 @@ public class ChinaCityDB {
         String cityPinyin = names[1];
         Cursor city_c = db.rawQuery("SELECT * from area where city_province_english LIKE? and city_pinyin like?", new
                 String[]{regionName + "%", cityPinyin + "%"});
-        OpCity opCity = null;
+        OpCity item = null;
         if (city_c != null && city_c.moveToFirst()) {
-            opCity = getOpCityFromCursor(city_c);
+            item = getOpCityFromCursor(city_c);
         }
         if (city_c == null) {
-            return opCity;
+            return item;
         }
         city_c.close();
-        return opCity;
+        return item;
     }
 
     private OpCity getCityByRegionCode(String code) {
@@ -211,7 +217,7 @@ public class ChinaCityDB {
         OpCity item = null;
         if (c != null && c.getCount() > 1 && c.moveToFirst()) {
             while (c.moveToNext()) {
-                if (c.getString(RainSurfaceView.RAIN_LEVEL_DOWNPOUR).contains(c.getString(CURRENT_VERSION))) {
+                if (c.getString(3).contains(c.getString(13))) {
                     item = getOpCityFromCursor(c);
                     break;
                 }
@@ -228,8 +234,10 @@ public class ChinaCityDB {
     }
 
     private String getParentCode(String code) {
-        return (TextUtils.isEmpty(code) || code.length() != 6) ? code : code.substring(0, RainSurfaceView
-                .RAIN_LEVEL_RAINSTORM) + "00";
+        if (TextUtils.isEmpty(code) || code.length() != 6) {
+            return code;
+        }
+        return code.substring(0, 4) + "00";
     }
 
     public void close() {
@@ -241,10 +249,13 @@ public class ChinaCityDB {
     }
 
     private String parseName(Context context, String city) {
-        if (city.contains("\u5e02")) {
-            return city.split("\u5e02")[0];
+        if (city.contains("市")) {
+            return city.split("市")[0];
         }
-        return city.contains("\u53bf") ? city.split("\u53bf")[0] : city;
+        if (city.contains("县")) {
+            return city.split("县")[0];
+        }
+        return city;
     }
 
     private OpCity getCityInfo(String city) {
@@ -252,15 +263,15 @@ public class ChinaCityDB {
             return null;
         }
         Cursor c = db.rawQuery("SELECT * from area where city_name LIKE ?", new String[]{"%" + city + "%"});
-        OpCity opCity = null;
+        OpCity item = null;
         if (c != null && c.moveToFirst()) {
-            opCity = getOpCityFromCursor(c);
+            item = getOpCityFromCursor(c);
         }
         if (c == null) {
-            return opCity;
+            return item;
         }
         c.close();
-        return opCity;
+        return item;
     }
 
     public String getCityTimeZone(String locationId) {
@@ -278,7 +289,10 @@ public class ChinaCityDB {
     public List<OpCity> queryCityByName(Context context, String keyword) {
         keyword = sqliteEscape(keyword);
         List<OpCity> list = queryCountyArea(context, keyword);
-        return list.isEmpty() ? queryCityArea(context, keyword) : list;
+        if (list.isEmpty()) {
+            return queryCityArea(context, keyword);
+        }
+        return list;
     }
 
     private List<OpCity> queryCountyArea(Context context, String keyword) {
@@ -345,8 +359,8 @@ public class ChinaCityDB {
         String nameEn = cursor.getString(cursor.getColumnIndex("city_pinyin"));
         String allPY = cursor.getString(cursor.getColumnIndex("city_pinyin"));
         String allFirstPY = cursor.getString(cursor.getColumnIndex("city_short"));
-        String firstPY = (allFirstPY == null || allFirstPY.length() < 1) ? StringUtils.EMPTY_STRING : allFirstPY
-                .substring(0, 1).toUpperCase(Locale.getDefault());
+        String firstPY = (allFirstPY == null || allFirstPY.length() < 1) ? "" : allFirstPY.substring(0, 1)
+                .toUpperCase(Locale.getDefault());
         return new OpCity(provinceChs, provinceCht, provinceEn, nameChs, nameCht, nameEn, areaId, allPY, allFirstPY,
                 firstPY, cursor.getString(cursor.getColumnIndex("city_country")), cursor.getString(cursor
                 .getColumnIndex("city_country_zhtw")), cursor.getString(cursor.getColumnIndex("city_country_english")

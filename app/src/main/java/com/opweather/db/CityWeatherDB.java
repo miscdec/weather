@@ -16,27 +16,25 @@ import com.opweather.db.CityWeatherDBHelper.ForecastEntry;
 import com.opweather.db.CityWeatherDBHelper.WeatherEntry;
 import com.opweather.ui.CityListActivity;
 import com.opweather.util.PreferenceUtils;
-import com.opweather.util.StringUtils;
 import com.opweather.util.SystemSetting;
 import com.opweather.util.WeatherLog;
-import com.opweather.widget.openglbase.RainSurfaceView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CityWeatherDB {
-    private final String TAG = getClass().getSimpleName();
+    private static String TAG = CityWeatherDB.class.getSimpleName();
     private static CityWeatherDB mSelf;
     private Context mContext;
     private CityWeatherDBHelper mDBHelper;
     private SQLiteDatabase mDb;
-    private List<CityListDBListener> mListenerList;
+    private List<CityListDBListener> mListenerList = new ArrayList<>();
     private SQLiteDatabase mReadableDb;
-    public final int TYPE_CITY_ADDED = 1;
-    public final int TYPE_CITY_DELETED = 2;
-    public final int TYPE_CITY_UPDATED = 4;
 
     public interface CityListDBListener {
+        int TYPE_CITY_ADDED = 1;
+        int TYPE_CITY_DELETED = 2;
+        int TYPE_CITY_UPDATED = 4;
 
         void onCityAdded(long j);
 
@@ -60,7 +58,6 @@ public class CityWeatherDB {
         mContext = context;
         mDBHelper = new CityWeatherDBHelper(context);
         mDb = mDBHelper.getWritableDatabase();
-        mListenerList = new ArrayList<>();
     }
 
     public void close() {
@@ -94,9 +91,11 @@ public class CityWeatherDB {
     }
 
     public int getMaxIDValue() {
-        Cursor c = getSQLiteDatabase(mContext).query("city", null, null, null,
-                null, null, "_id DESC LIMIT 0,1");
-        return (c == null || !c.moveToFirst()) ? 0 : c.getInt(c.getColumnIndex("_id"));
+        Cursor c = getSQLiteDatabase(mContext).query("city", null, null, null, null, null, "_id DESC LIMIT 0,1");
+        if (c == null || !c.moveToFirst()) {
+            return 0;
+        }
+        return c.getInt(c.getColumnIndex("_id"));
     }
 
     public long addCity(int provider, String name, String displayName, String locationId, String refreshTime) {
@@ -107,7 +106,7 @@ public class CityWeatherDB {
         values.put(CityListEntry.COLUMN_1_PROVIDER, provider);
         values.put(CityListEntry.COLUMN_2_NAME, name);
         values.put(CityListEntry.COLUMN_3_DISPLAY_NAME, displayName);
-        values.put(WeatherEntry.COLUMN_1_LOCATION_ID, locationId);
+        values.put("locationId", locationId);
         values.put(CityListEntry.COLUMN_9_DISPLAY_ORDER, getMaxIDValue() + 1);
         values.put(CityListEntry.COLUMN_10_LAST_REFRESH_TIME, refreshTime);
         long recordId = getSQLiteDatabase(mContext).insert("city", null, values);
@@ -124,12 +123,12 @@ public class CityWeatherDB {
             if (cursor != null && cursor.getCount() > 0 && cursor.moveToFirst()) {
                 if (cursor.getCount() != 1) {
                     while (cursor.moveToNext()) {
-                        if (cursor.getString(RainSurfaceView.RAIN_LEVEL_DOWNPOUR).equals(name)) {
+                        if (cursor.getString(2).equals(name)) {
                             cursor.close();
                             return -1;
                         }
                     }
-                } else if (cursor.getString(RainSurfaceView.RAIN_LEVEL_RAINSTORM).equals(locationId)) {
+                } else if (cursor.getString(4).equals(locationId)) {
                     cursor.close();
                     return -1;
                 }
@@ -139,8 +138,8 @@ public class CityWeatherDB {
     }
 
     private Cursor getLocationId(String locationId) {
-        return getSQLiteDatabase(mContext).query("city", null, "locationId = " +
-                "?", new String[]{locationId}, null, null, "displayOrder ASC", null);
+        return getSQLiteDatabase(mContext).query("city", null, "locationId = ?", new String[]{locationId}, null,
+                null, "displayOrder ASC", null);
     }
 
     public long addCity(CityData city, boolean checkUnique) {
@@ -152,18 +151,18 @@ public class CityWeatherDB {
         System.out.println("locationId:" + String.valueOf(locationId));
         ContentValues values = new ContentValues();
         values.put(CityListEntry.COLUMN_10_LAST_REFRESH_TIME, refreshTime);
-        long recordId = (long) getSQLiteDatabase(mContext).update("city",
-                values, WeatherEntry.COLUMN_1_LOCATION_ID.concat(" = ?"), new String[]{locationId});
+        long recordId = (long) getSQLiteDatabase(mContext).update("city", values, "locationId" .concat(" = ?"), new
+                String[]{String.valueOf(locationId)});
         if (recordId >= 0) {
-            triggerDataChangeListener(0, RainSurfaceView.RAIN_LEVEL_RAINSTORM);
+            triggerDataChangeListener(0, 4);
         }
         return recordId;
     }
 
     public String getLastRefreshTime(String locationId) {
-        String refreshTime = StringUtils.EMPTY_STRING;
-        Cursor cursor = getReadableSQLiteDatabase(mContext).query("city", null,
-                "locationId = ?", new String[]{locationId}, null, null, null, null);
+        String refreshTime = "";
+        Cursor cursor = getReadableSQLiteDatabase(mContext).query("city", null, "locationId = ?", new
+                String[]{locationId}, null, null, null, null);
         if (cursor != null) {
             if (cursor.moveToFirst()) {
                 refreshTime = cursor.getString(cursor.getColumnIndex(CityListEntry.COLUMN_10_LAST_REFRESH_TIME));
@@ -181,7 +180,7 @@ public class CityWeatherDB {
         values.put(CityListEntry.COLUMN_1_PROVIDER, city.getProvider());
         values.put(CityListEntry.COLUMN_2_NAME, city.getName());
         values.put(CityListEntry.COLUMN_3_DISPLAY_NAME, city.getLocalName());
-        values.put(WeatherEntry.COLUMN_1_LOCATION_ID, city.getLocationId());
+        values.put("locationId", city.getLocationId());
         String str = CityListEntry.COLUMN_9_DISPLAY_ORDER;
         if (city.isDefault()) {
             i = -1;
@@ -191,11 +190,11 @@ public class CityWeatherDB {
         values.put(str, i);
         values.put(CityListEntry.COLUMN_10_LAST_REFRESH_TIME, city.getLastRefreshTime());
         if (getCity(0) != null) {
-            recordId = (long) getSQLiteDatabase(mContext).update("city",
-                    values, "_id" .concat(" = ?"), new String[]{"0"});
+            recordId = (long) getSQLiteDatabase(mContext).update("city", values, "_id" .concat(" = ?"), new
+                    String[]{"0"});
             if (recordId >= 0) {
                 recordId = 0;
-                triggerDataChangeListener(0, RainSurfaceView.RAIN_LEVEL_RAINSTORM);
+                triggerDataChangeListener(0, 4);
             }
             if (city.isDefault()) {
                 PreferenceUtils.commitString(mContext, CityListActivity.DEFAULT_CITY, city.getLocationId());
@@ -226,27 +225,27 @@ public class CityWeatherDB {
             values.put(CityListEntry.COLUMN_3_DISPLAY_NAME, city.getLocalName());
         }
         if (!TextUtils.isEmpty(city.getLocationId())) {
-            values.put(WeatherEntry.COLUMN_1_LOCATION_ID, city.getLocationId());
+            values.put("locationId", city.getLocationId());
         }
         if (!TextUtils.isEmpty(city.getLastRefreshTime())) {
             values.put(CityListEntry.COLUMN_10_LAST_REFRESH_TIME, city.getLastRefreshTime());
         }
-        long recordId = (long) getSQLiteDatabase(mContext).update("city",
-                values, CityListEntry.COLUMN_3_DISPLAY_NAME.concat(" = ?"), new String[]{String.valueOf(name)});
+        long recordId = (long) getSQLiteDatabase(mContext).update("city", values, CityListEntry.COLUMN_3_DISPLAY_NAME
+                .concat(" = ?"), new String[]{String.valueOf(name)});
         if (recordId < 0) {
             return recordId;
         }
-        triggerDataChangeListener(0, RainSurfaceView.RAIN_LEVEL_RAINSTORM);
+        triggerDataChangeListener(0, 4);
         return recordId;
     }
 
     public void updateDataToFirst(String locationId) {
         ContentValues values = new ContentValues();
         values.put(CityListEntry.COLUMN_9_DISPLAY_ORDER, -1);
-        long recordId = (long) getSQLiteDatabase(mContext).update("city",
-                values, WeatherEntry.COLUMN_1_LOCATION_ID.concat(" = ?"), new String[]{String.valueOf(locationId)});
+        long recordId = (long) getSQLiteDatabase(mContext).update("city", values, "locationId" .concat(" = ?"), new
+                String[]{String.valueOf(locationId)});
         if (recordId >= 0) {
-            triggerDataChangeListener(recordId, RainSurfaceView.RAIN_LEVEL_RAINSTORM);
+            triggerDataChangeListener(recordId, 4);
         }
     }
 
@@ -255,81 +254,81 @@ public class CityWeatherDB {
         int index_id = getIndexIdFromLocationId(locationId);
         ContentValues values = new ContentValues();
         values.put(CityListEntry.COLUMN_9_DISPLAY_ORDER, index_id);
-        getSQLiteDatabase(mContext).update("city", values, WeatherEntry
-                .COLUMN_1_LOCATION_ID.concat(" = ?"), new String[]{String.valueOf(locationId)});
+        getSQLiteDatabase(mContext).update("city", values, "locationId" .concat(" = ?"), new String[]{String.valueOf
+                (locationId)});
     }
 
     public long addWeather(WeatherData weatherData) {
         long recordId;
         WeatherData oldData = getWeather(weatherData.getLocationId());
         ContentValues values = new ContentValues();
-        values.put(WeatherEntry.COLUMN_1_LOCATION_ID, weatherData.getLocationId());
-        values.put(WeatherEntry.COLUMN_2_TIMESTAMP, weatherData.getTimestamp());
+        values.put("locationId", weatherData.getLocationId());
+        values.put("timestamp", weatherData.getTimestamp());
         values.put(WeatherEntry.COLUMN_3_TEMPERATURE, weatherData.getCurrentTemp());
         values.put(WeatherEntry.COLUMN_4_REALFEEL_TEMPERATURE, weatherData.getCurrentRealFeelTemp());
-        values.put(WeatherEntry.COLUMN_5_HIGH_TEMPERATURE, weatherData.getHighTemp());
-        values.put(WeatherEntry.COLUMN_6_LOW_TEMPERATURE, weatherData.getLowTemp());
+        values.put("highTemp", weatherData.getHighTemp());
+        values.put("lowTemp", weatherData.getLowTemp());
         values.put(WeatherEntry.COLUMN_7_HUMIDITY, weatherData.getHumidity());
         values.put(WeatherEntry.COLUMN_8_SUNRISE_TIME, weatherData.getSunriseTime());
         values.put(WeatherEntry.COLUMN_9_SUNSET_TIME, weatherData.getSunsetTime());
-        values.put(WeatherEntry.COLUMN_10_WEATHER_ID, weatherData.getWeatherDescriptionId());
+        values.put("weatherId", weatherData.getWeatherDescriptionId());
         if (oldData == null) {
             recordId = getSQLiteDatabase(mContext).insert(WeatherEntry.TABLE_NAME, null, values);
             if (recordId >= 0) {
                 return recordId;
             }
         }
-        recordId = (long) getSQLiteDatabase(mContext).update(WeatherEntry.TABLE_NAME, values, WeatherEntry
-                .COLUMN_1_LOCATION_ID.concat(" = ?"), new String[]{weatherData.getLocationId()});
+        recordId = (long) getSQLiteDatabase(mContext).update(WeatherEntry.TABLE_NAME, values, "locationId" .concat(" " +
+                "= ?"), new String[]{String.valueOf(weatherData.getLocationId())});
         if (recordId >= 0) {
+            return recordId;
         }
         return recordId;
     }
 
     public long addForecast(String locationId, List<WeatherData> forecastList) {
-        long j = -1;
+        long resultId = -1;
         try {
             getSQLiteDatabase(mContext).beginTransaction();
-            getSQLiteDatabase(mContext).delete(ForecastEntry.TABLE_NAME, "locationId = ?", new
-                    String[]{locationId});
+            getSQLiteDatabase(mContext).delete(ForecastEntry.TABLE_NAME, "locationId = ?", new String[]{locationId});
             for (WeatherData data : forecastList) {
                 ContentValues values = new ContentValues();
-                values.put(WeatherEntry.COLUMN_1_LOCATION_ID, locationId);
-                values.put(WeatherEntry.COLUMN_2_TIMESTAMP, data.getTimestamp());
-                values.put(WeatherEntry.COLUMN_5_HIGH_TEMPERATURE, data.getHighTemp());
-                values.put(WeatherEntry.COLUMN_6_LOW_TEMPERATURE, data.getLowTemp());
-                values.put(WeatherEntry.COLUMN_10_WEATHER_ID, data.getWeatherDescriptionId());
-                j = mDb.insert(ForecastEntry.TABLE_NAME, null, values);
-                if (j < 0) {
+                values.put("locationId", locationId);
+                values.put("timestamp", data.getTimestamp());
+                values.put("highTemp", data.getHighTemp());
+                values.put("lowTemp", data.getLowTemp());
+                values.put("weatherId", data.getWeatherDescriptionId());
+                resultId = mDb.insert(ForecastEntry.TABLE_NAME, null, values);
+                if (resultId < 0) {
                     throw new SQLiteException();
                 }
             }
             mDb.setTransactionSuccessful();
-            mDb.endTransaction();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
             mDb.endTransaction();
         }
-        return j >= 0 ? j : j;
+        return resultId >= 0 ? resultId : resultId;
     }
 
     public Cursor getCity(String cityName) {
-        return getSQLiteDatabase(mContext).query("city", null, "name = ?", new
-                String[]{cityName}, null, null, "displayOrder ASC", null);
+        return getSQLiteDatabase(mContext).query("city", null, "name = ?", new String[]{cityName}, null, null,
+                "displayOrder ASC", null);
     }
 
     public ContentValues getCity(long id) {
-        Cursor cursor = getSQLiteDatabase(mContext).query("city", null, "_id = " +
-                "?", new String[]{String.valueOf(id)}, null, null, "displayOrder ASC", null);
+        Cursor cursor = getSQLiteDatabase(mContext).query("city", null, "_id = ?", new String[]{String.valueOf(id)},
+                null, null, "displayOrder ASC", null);
         ContentValues city = null;
         if (cursor != null) {
             if (cursor.moveToFirst()) {
                 city = new ContentValues();
                 city.put("_id", cursor.getLong(0));
                 city.put(CityListEntry.COLUMN_1_PROVIDER, cursor.getInt(1));
-                city.put(CityListEntry.COLUMN_2_NAME, cursor.getString(RainSurfaceView.RAIN_LEVEL_SHOWER));
-                city.put(CityListEntry.COLUMN_3_DISPLAY_NAME, cursor.getString(RainSurfaceView.RAIN_LEVEL_DOWNPOUR));
-                city.put(WeatherEntry.COLUMN_1_LOCATION_ID, cursor.getString(RainSurfaceView.RAIN_LEVEL_RAINSTORM));
+                city.put(CityListEntry.COLUMN_2_NAME, cursor.getString(2));
+                city.put(CityListEntry.COLUMN_3_DISPLAY_NAME, cursor.getString(3));
+                city.put("locationId", cursor.getString(4));
                 city.put(CityListEntry.COLUMN_9_DISPLAY_ORDER, cursor.getInt(9));
                 city.put(CityListEntry.COLUMN_10_LAST_REFRESH_TIME, cursor.getInt(10));
             } else {
@@ -348,10 +347,10 @@ public class CityWeatherDB {
             if (cursor.moveToFirst()) {
                 weather = new WeatherData();
                 weather.setLocationId(cursor.getString(1));
-                weather.setTimestamp(cursor.getLong(RainSurfaceView.RAIN_LEVEL_SHOWER));
-                weather.setCurrentTemp(cursor.getInt(RainSurfaceView.RAIN_LEVEL_DOWNPOUR));
-                weather.setCurrentRealFeelTemp(cursor.getInt(RainSurfaceView.RAIN_LEVEL_RAINSTORM));
-                weather.setHighTemp(cursor.getInt(RainSurfaceView.RAIN_LEVEL_THUNDERSHOWER));
+                weather.setTimestamp(cursor.getLong(2));
+                weather.setCurrentTemp(cursor.getInt(3));
+                weather.setCurrentRealFeelTemp(cursor.getInt(4));
+                weather.setHighTemp(cursor.getInt(5));
                 weather.setLowTemp(cursor.getInt(6));
                 weather.setHumidity(cursor.getInt(7));
                 weather.setSunriseTime((long) cursor.getInt(8));
@@ -368,16 +367,16 @@ public class CityWeatherDB {
     public List<WeatherData> getForecast(String locationId) {
         Cursor cursor = getSQLiteDatabase(mContext).query(ForecastEntry.TABLE_NAME, null, "locationId = ?", new
                 String[]{locationId}, null, null, "_id ASC", null);
-        List<WeatherData> forecastList = new ArrayList();
+        List<WeatherData> forecastList = new ArrayList<>();
         if (cursor != null) {
             if (cursor.moveToFirst()) {
                 do {
                     WeatherData data = new WeatherData();
                     data.setLocationId(cursor.getString(1));
-                    data.setTimestamp((long) cursor.getInt(RainSurfaceView.RAIN_LEVEL_SHOWER));
-                    data.setHighTemp(cursor.getInt(RainSurfaceView.RAIN_LEVEL_DOWNPOUR));
-                    data.setLowTemp(cursor.getInt(RainSurfaceView.RAIN_LEVEL_RAINSTORM));
-                    data.setWeatherDescriptionId(cursor.getInt(RainSurfaceView.RAIN_LEVEL_THUNDERSHOWER));
+                    data.setTimestamp((long) cursor.getInt(2));
+                    data.setHighTemp(cursor.getInt(3));
+                    data.setLowTemp(cursor.getInt(4));
+                    data.setWeatherDescriptionId(cursor.getInt(5));
                     forecastList.add(data);
                 } while (cursor.moveToNext());
             } else {
@@ -393,30 +392,8 @@ public class CityWeatherDB {
     }
 
     public Cursor getAllCities() {
-        return getSQLiteDatabase(mContext).rawQuery("SELECT * FROM city where locationid != 0 ORDER BY " +
-                "displayOrder ASC LIMIT 0,8", null);
-    }
-
-    public CityData getLocationCity() {
-        Cursor cursor = getSQLiteDatabase(mContext).rawQuery("SELECT * FROM city where _id = 0 ORDER BY " +
-                "displayOrder ASC LIMIT 0,8", null);
-        if (cursor == null || cursor.getCount() <= 0 || !cursor.moveToFirst()) {
-            return null;
-        }
-        int provider = cursor.getInt(cursor.getColumnIndex(CityListEntry.COLUMN_1_PROVIDER));
-        String cityName = cursor.getString(cursor.getColumnIndex(CityListEntry.COLUMN_2_NAME));
-        String cityDisplayName = cursor.getString(cursor.getColumnIndex(CityListEntry.COLUMN_3_DISPLAY_NAME));
-        String cityLocationId = cursor.getString(cursor.getColumnIndex(WeatherEntry.COLUMN_1_LOCATION_ID));
-        String index = cursor.getString(cursor.getColumnIndex("_id"));
-        cursor.close();
-        CityData city = new CityData();
-        city.setProvider(provider);
-        city.setName(cityName);
-        city.setLocalName(cityDisplayName);
-        city.setLocationId(cityLocationId);
-        city.setDefault(true);
-        city.setLocatedCity("0" .equals(index));
-        return city;
+        return getSQLiteDatabase(mContext).rawQuery("SELECT * FROM city where locationid != 0 ORDER BY displayOrder " +
+                "ASC LIMIT 0,8", null);
     }
 
     public CityData getCityFromCursor(Cursor cursor) {
@@ -426,7 +403,7 @@ public class CityWeatherDB {
         int provider = cursor.getInt(cursor.getColumnIndex(CityListEntry.COLUMN_1_PROVIDER));
         String cityName = cursor.getString(cursor.getColumnIndex(CityListEntry.COLUMN_2_NAME));
         String cityDisplayName = cursor.getString(cursor.getColumnIndex(CityListEntry.COLUMN_3_DISPLAY_NAME));
-        String cityLocationId = cursor.getString(cursor.getColumnIndex(WeatherEntry.COLUMN_1_LOCATION_ID));
+        String cityLocationId = cursor.getString(cursor.getColumnIndex("locationId"));
         String index = cursor.getString(cursor.getColumnIndex("_id"));
         cursor.close();
         CityData city = new CityData();
@@ -440,15 +417,15 @@ public class CityWeatherDB {
     }
 
     public CityData getCityFromLocationId(int locationid) {
-        Cursor cursor = getSQLiteDatabase(mContext).rawQuery("SELECT * FROM city where locationid =" +
-                locationid, null);
+        Cursor cursor = getSQLiteDatabase(mContext).rawQuery("SELECT * FROM city where locationid =" + locationid,
+                null);
         if (cursor == null || !cursor.moveToFirst()) {
             return null;
         }
         int provider = cursor.getInt(cursor.getColumnIndex(CityListEntry.COLUMN_1_PROVIDER));
         String cityName = cursor.getString(cursor.getColumnIndex(CityListEntry.COLUMN_2_NAME));
         String cityDisplayName = cursor.getString(cursor.getColumnIndex(CityListEntry.COLUMN_3_DISPLAY_NAME));
-        String cityLocationId = cursor.getString(cursor.getColumnIndex(WeatherEntry.COLUMN_1_LOCATION_ID));
+        String cityLocationId = cursor.getString(cursor.getColumnIndex("locationId"));
         cursor.close();
         CityData city = new CityData();
         city.setProvider(provider);
@@ -462,14 +439,14 @@ public class CityWeatherDB {
         if (TextUtils.isEmpty(locationid)) {
             return -1;
         }
-        Cursor cursor = getSQLiteDatabase(mContext).rawQuery("SELECT * FROM city where locationid =" +
-                locationid, null);
+        Cursor cursor = getSQLiteDatabase(mContext).rawQuery("SELECT * FROM city where locationid =" + locationid,
+                null);
         if (cursor.getCount() <= 0 || !cursor.moveToFirst()) {
             return -1;
         }
-        int i = cursor.getInt(cursor.getColumnIndex("_id"));
+        int index_id = cursor.getInt(cursor.getColumnIndex("_id"));
         cursor.close();
-        return i;
+        return index_id;
     }
 
     public List<ContentValues> getAllCityList() {
@@ -481,11 +458,9 @@ public class CityWeatherDB {
                     ContentValues value = new ContentValues();
                     value.put("_id", cursor.getLong(0));
                     value.put(CityListEntry.COLUMN_1_PROVIDER, cursor.getInt(1));
-                    value.put(CityListEntry.COLUMN_2_NAME, cursor.getString(RainSurfaceView.RAIN_LEVEL_SHOWER));
-                    value.put(CityListEntry.COLUMN_3_DISPLAY_NAME, cursor.getString(RainSurfaceView
-                            .RAIN_LEVEL_DOWNPOUR));
-                    value.put(WeatherEntry.COLUMN_1_LOCATION_ID, cursor.getString(RainSurfaceView
-                            .RAIN_LEVEL_RAINSTORM));
+                    value.put(CityListEntry.COLUMN_2_NAME, cursor.getString(2));
+                    value.put(CityListEntry.COLUMN_3_DISPLAY_NAME, cursor.getString(3));
+                    value.put("locationId", cursor.getString(4));
                     value.put(CityListEntry.COLUMN_9_DISPLAY_ORDER, cursor.getInt(9));
                     value.put(CityListEntry.COLUMN_10_LAST_REFRESH_TIME, cursor.getInt(10));
                     cityList.add(value);
@@ -497,16 +472,15 @@ public class CityWeatherDB {
     }
 
     public int deleteCity(long id) {
-        int rowAffected = getSQLiteDatabase(mContext).delete("city", "_id = ?",
-                new String[]{String.valueOf(id)});
+        int rowAffected = getSQLiteDatabase(mContext).delete("city", "_id = ?", new String[]{String.valueOf(id)});
         if (rowAffected > 0) {
-            triggerDataChangeListener(id, RainSurfaceView.RAIN_LEVEL_SHOWER);
+            triggerDataChangeListener(id, 2);
         }
         return rowAffected;
     }
 
     public long reOrderAllCities(List<ContentValues> orderedCityList) {
-        long j = -1;
+        long resultId = -1;
         SQLiteDatabase db = getSQLiteDatabase(mContext);
         try {
             db.beginTransaction();
@@ -514,22 +488,21 @@ public class CityWeatherDB {
                 ContentValues values = (ContentValues) orderedCityList.get(i);
                 values.remove(CityListEntry.COLUMN_9_DISPLAY_ORDER);
                 values.put(CityListEntry.COLUMN_9_DISPLAY_ORDER, i);
-                j = (long) db.update("city", values, "_id = ?", new String[]{values
-                        .getAsString("_id")});
-                if (j <= 0) {
+                resultId = (long) db.update("city", values, "_id = ?", new String[]{values.getAsString("_id")});
+                if (resultId <= 0) {
                     throw new SQLiteException();
                 }
             }
             db.setTransactionSuccessful();
-            db.endTransaction();
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
             db.endTransaction();
         }
-        if (j > 0) {
-            triggerDataChangeListener(-1, RainSurfaceView.RAIN_LEVEL_RAINSTORM);
+        if (resultId > 0) {
+            triggerDataChangeListener(-1, 4);
         }
-        return j;
+        return resultId;
     }
 
     public void addDataChangeListener(CityListDBListener listener) {
@@ -542,32 +515,35 @@ public class CityWeatherDB {
 
     private void triggerDataChangeListener(long id, int changeType) {
         switch (changeType) {
-            case TYPE_CITY_ADDED:
+            case 1:
                 for (CityListDBListener listener : mListenerList) {
                     listener.onCityAdded(id);
                 }
-            case TYPE_CITY_DELETED:
+                return;
+            case 2:
                 for (CityListDBListener listener2 : mListenerList) {
                     listener2.onCityDeleted(id);
                 }
-            case TYPE_CITY_UPDATED:
+                return;
+            case 4:
                 for (CityListDBListener listener22 : mListenerList) {
                     listener22.onCityUpdated(id);
                 }
+                return;
             default:
-                break;
+                return;
         }
     }
 
     public void changeDefaultCity(int position) {
         Cursor cursor = getAllCities();
-        String cityLocationId = StringUtils.EMPTY_STRING;
+        String cityLocationId = "";
         if (cursor.getCount() > position) {
             cursor.moveToPosition(position);
-            cityLocationId = cursor.getString(RainSurfaceView.RAIN_LEVEL_RAINSTORM);
+            cityLocationId = cursor.getString(4);
             SystemSetting.setLocationOrDefaultCity(mContext, getCityFromCursor(cursor));
         }
-        resetOrder(PreferenceUtils.getString(mContext, CityListActivity.DEFAULT_CITY, StringUtils.EMPTY_STRING));
+        resetOrder(PreferenceUtils.getString(mContext, CityListActivity.DEFAULT_CITY, ""));
         updateDataToFirst(cityLocationId);
         PreferenceUtils.commitString(mContext, CityListActivity.DEFAULT_CITY, cityLocationId);
     }
