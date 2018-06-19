@@ -59,12 +59,12 @@ public class WeatherScrollView extends ScrollView {
             return super.dispatchTouchEvent(ev);
         }
         switch (ev.getAction()) {
-            case 0:
+            case MotionEvent.ACTION_DOWN:
                 canPullDown = isCanPullDown();
                 canPullUp = isCanPullUp();
                 startY = ev.getY();
                 break;
-            case 1:
+            case MotionEvent.ACTION_UP:
                 if (isMoved) {
                     TranslateAnimation anim = new TranslateAnimation(0.0f, 0.0f, (float) contentView.getTop(),
                             (float) originalRect.top);
@@ -77,7 +77,7 @@ public class WeatherScrollView extends ScrollView {
                     break;
                 }
                 break;
-            case 2:
+            case MotionEvent.ACTION_MOVE:
                 if (!canPullDown && !canPullUp) {
                     startY = ev.getY();
                     canPullDown = isCanPullDown();

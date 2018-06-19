@@ -38,8 +38,23 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CityListAdapter extends IgnorCursorAdapter implements AnimationListener {
     private static final int NO_TEMP_DATA_FLAG = -2000;
     private boolean isWidgeMode;
-    private boolean mCanScroll;
-    private CityWeatherDB.CityListDBListener mCityListDBListener;
+    private boolean mCanScroll = false;
+    private CityWeatherDB.CityListDBListener mCityListDBListener = new CityWeatherDB.CityListDBListener() {
+        @Override
+        public void onCityAdded(long j) {
+            requery();
+        }
+
+        @Override
+        public void onCityDeleted(long j) {
+            requery();
+        }
+
+        @Override
+        public void onCityUpdated(long j) {
+            requery();
+        }
+    };
     private CityWeatherDB mCityWeatherDB;
     private Context mContext;
     private Map<String, Boolean> mLoadItems;
@@ -82,14 +97,17 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
         public void loadWeather() {
             new WeatherClientProxy(mContext).setCacheMode(WeatherClientProxy.CacheMode.LOAD_CACHE_ELSE_NETWORK)
                     .requestWeatherInfo(mCityData, new WeatherClientProxy.OnResponseListener() {
+                        @Override
                         public void onNetworkResponse(RootWeather response) {
                             onResponse(response);
                         }
 
+                        @Override
                         public void onErrorResponse(WeatherException error) {
                             onResponse(null);
                         }
 
+                        @Override
                         public void onCacheResponse(RootWeather response) {
                             onResponse(response);
                         }
@@ -113,18 +131,6 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
 
     public CityListAdapter(Context context, Cursor cursor, boolean autoRequery) {
         super(context, cursor, autoRequery);
-        mCityListDBListener = new CityWeatherDB.CityListDBListener() {
-            public void onCityAdded(long newId) {
-                requery();
-            }
-
-            public void onCityDeleted(long deletedId) {
-            }
-
-            public void onCityUpdated(long recordId) {
-            }
-        };
-        mCanScroll = false;
         mContext = context;
         mLoadItems = new ConcurrentHashMap<>();
         mWeatherMap = new WeakHashMap<>();
@@ -285,7 +291,7 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
             }
             int curTemp = (int) f;
             String str = "--";
-            if (curTemp < -2000) {
+            if (curTemp < NO_TEMP_DATA_FLAG) {
                 str = "--" + tempUnit;
             } else {
                 str = curTemp + tempUnit;
@@ -350,7 +356,7 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
             cursor.moveToPosition(position);
             orderId = cursor.getString(9);
         }
-        return "-1" .equals(orderId);
+        return "-1".equals(orderId);
     }
 
     public boolean isLocationCity(int position) {
@@ -360,6 +366,6 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
             cursor.moveToPosition(position);
             orderId = cursor.getString(0);
         }
-        return "0" .equals(orderId);
+        return "0".equals(orderId);
     }
 }

@@ -1,10 +1,14 @@
 package com.opweather.util;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.media.MediaScannerConnection;
 import android.media.MediaScannerConnection.MediaScannerConnectionClient;
 import android.net.Uri;
+import android.provider.MediaStore.Images.Media;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,10 +17,9 @@ public class MediaUtil {
 
     public class SannerClient implements MediaScannerConnectionClient {
         private MediaScannerConnection mMediaScanConn;
-        private List<ScanFile> mScanFiles;
+        private List<ScanFile> mScanFiles = null;
 
         public SannerClient(Context context, List<ScanFile> scanFiles) {
-            mScanFiles = null;
             mScanFiles = scanFiles;
             mMediaScanConn = new MediaScannerConnection(context, this);
         }
@@ -32,16 +35,14 @@ public class MediaUtil {
                 mMediaScanConn.disconnect();
                 return;
             }
-            ScanFile sf = (ScanFile) mScanFiles.remove(mScanFiles.size() - 1);
+            ScanFile sf = mScanFiles.remove(mScanFiles.size() - 1);
             mMediaScanConn.scanFile(sf.filePaths, sf.mineType);
         }
 
-        @Override
         public void onMediaScannerConnected() {
             scanNext();
         }
 
-        @Override
         public void onScanCompleted(String path, Uri uri) {
             scanNext();
         }
@@ -52,8 +53,8 @@ public class MediaUtil {
         public String mineType;
 
         public ScanFile(String filePaths, String mineType) {
-            filePaths = filePaths;
-            mineType = mineType;
+            this.filePaths = filePaths;
+            this.mineType = mineType;
         }
 
         public boolean equals(Object obj) {
@@ -71,7 +72,16 @@ public class MediaUtil {
             } else if (!filePaths.equals(file.filePaths)) {
                 return false;
             }
-            return mineType == null ? file.mineType == null : mineType.equals(file.mineType);
+            if (mineType == null) {
+                if (file.mineType != null) {
+                    return false;
+                }
+                return true;
+            } else if (mineType.equals(file.mineType)) {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
@@ -85,76 +95,35 @@ public class MediaUtil {
         return instance;
     }
 
-    /* JADX WARNING: inconsistent code. */
-    /* Code decompiled incorrectly, please refer to instructions dump. */
-    public Uri getImageContentUri(Context r13_context, java.io.File r14_imageFile) {
-        throw new UnsupportedOperationException("Method not decompiled: MediaUtil.getImageContentUri(android.content" +
-                ".Context, java.io.File):android.net.Uri");
-        /*
-        this = this;
-        r5 = 0;
-        r4 = 1;
-        r11 = 0;
-        r8 = r14.getAbsolutePath();
-        r0 = r13.getContentResolver();
-        r1 = android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        r2 = new java.lang.String[r4];
-        r3 = "_id";
-        r2[r11] = r3;
-        r3 = "_data=? ";
-        r4 = new java.lang.String[r4];
-        r4[r11] = r8;
-        r7 = r0.query(r1, r2, r3, r4, r5);
-        if (r7 == 0) goto L_0x0052;
-    L_0x001f:
-        r0 = r7.moveToFirst();	 Catch:{ all -> 0x0078 }
-        if (r0 == 0) goto L_0x0052;
-    L_0x0025:
-        r0 = "_id";
-        r0 = r7.getColumnIndex(r0);	 Catch:{ all -> 0x0078 }
-        r9 = r7.getInt(r0);	 Catch:{ all -> 0x0078 }
-        r0 = "content://media/external/images/media";
-        r6 = android.net.Uri.parse(r0);	 Catch:{ all -> 0x0078 }
-        r0 = new java.lang.StringBuilder;	 Catch:{ all -> 0x0078 }
-        r0.<init>();	 Catch:{ all -> 0x0078 }
-        r1 = "";
-        r0 = r0.append(r1);	 Catch:{ all -> 0x0078 }
-        r0 = r0.append(r9);	 Catch:{ all -> 0x0078 }
-        r0 = r0.toString();	 Catch:{ all -> 0x0078 }
-        r5 = android.net.Uri.withAppendedPath(r6, r0);	 Catch:{ all -> 0x0078 }
-        if (r7 == 0) goto L_0x0051;
-    L_0x004e:
-        r7.close();
-    L_0x0051:
-        return r5;
-    L_0x0052:
-        r0 = r14.exists();	 Catch:{ all -> 0x0078 }
-        if (r0 == 0) goto L_0x0072;
-    L_0x0058:
-        r10 = new android.content.ContentValues;	 Catch:{ all -> 0x0078 }
-        r10.<init>();	 Catch:{ all -> 0x0078 }
-        r0 = "_data";
-        r10.put(r0, r8);	 Catch:{ all -> 0x0078 }
-        r0 = r13.getContentResolver();	 Catch:{ all -> 0x0078 }
-        r1 = android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;	 Catch:{ all -> 0x0078 }
-        r5 = r0.insert(r1, r10);	 Catch:{ all -> 0x0078 }
-        if (r7 == 0) goto L_0x0051;
-    L_0x006e:
-        r7.close();
-        goto L_0x0051;
-    L_0x0072:
-        if (r7 == 0) goto L_0x0051;
-    L_0x0074:
-        r7.close();
-        goto L_0x0051;
-    L_0x0078:
-        r0 = move-exception;
-        if (r7 == 0) goto L_0x007e;
-    L_0x007b:
-        r7.close();
-    L_0x007e:
-        throw r0;
-        */
+    public Uri getImageContentUri(Context context, File imageFile) {
+        Uri uri = null;
+        String filePath = imageFile.getAbsolutePath();
+        Cursor cursor = context.getContentResolver().query(Media.EXTERNAL_CONTENT_URI, new String[]{"_id"}, "_data=? " +
+                "", new String[]{filePath}, null);
+        if (cursor != null) {
+            try {
+                if (cursor.moveToFirst()) {
+                    uri = Uri.withAppendedPath(Uri.parse("content://media/external/images/media"), "" + cursor.getInt
+                            (cursor.getColumnIndex("_id")));
+                    return uri;
+                }
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+        if (imageFile.exists()) {
+            ContentValues values = new ContentValues();
+            values.put("_data", filePath);
+            uri = context.getContentResolver().insert(Media.EXTERNAL_CONTENT_URI, values);
+            if (cursor != null) {
+                cursor.close();
+            }
+        } else if (cursor != null) {
+            cursor.close();
+        }
+        return uri;
     }
 
     public void scanFile(Context context, String filePaths, String mineType) {

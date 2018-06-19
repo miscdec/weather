@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.opweather.api.WeatherRequest;
 import com.opweather.api.WeatherRequest.CacheMode;
+import com.opweather.api.WeatherRequest.Type;
 import com.opweather.api.helper.NetworkHelper;
 import com.opweather.api.parser.ParseException;
 import com.opweather.api.cache.WeatherCache;
@@ -108,7 +109,7 @@ public class WeatherRequestExecuter extends AbstractExecuter {
         }
     }
 
-    private class CacheParserWorkerTask extends AsyncTask<String, Void, Void> {
+    private class CacheParserWorkerTask extends AsyncTask<String, Void, Boolean> {
         private final CacheBox mCacheBox;
         private final WeatherRequest mRequest;
         private final int mRequestType;
@@ -120,7 +121,7 @@ public class WeatherRequestExecuter extends AbstractExecuter {
         }
 
         @Override
-        protected Void doInBackground(String... key) {
+        protected Boolean doInBackground(String... key) {
             byte[] data = WeatherCache.getInstance(mContext).getFromDiskCache(key[0]);
             if (data != null) {
                 try {
@@ -141,6 +142,7 @@ public class WeatherRequestExecuter extends AbstractExecuter {
                         throw new WeatherException("Unsupport request type!");
                     }
                     mCacheBox.addResponse(rootWeather, mRequestType);
+                    return true;
                 } catch (WeatherException e) {
                     if (e instanceof ParseException) {
                         mCacheBox.addResponse(null, mRequestType);
@@ -149,12 +151,16 @@ public class WeatherRequestExecuter extends AbstractExecuter {
                     }
                 }
             }
-            return null;
+            return false;
         }
 
         @Override
-        protected void onPostExecute(Void result) {
-            requestOrDeliverCache(mRequest, mCacheBox);
+        protected void onPostExecute(Boolean result) {
+            if (result) {
+                requestOrDeliverCache(mRequest, mCacheBox);
+            } else {
+                fetchNetwork(mRequest);
+            }
         }
     }
 
@@ -376,17 +382,17 @@ public class WeatherRequestExecuter extends AbstractExecuter {
     private void requestOrDeliverCache(WeatherRequest request, CacheBox box) {
         if (box.error) {
             request.deliverCacheResponse(null);
-        } else if (request.containRequest(1) && !box.isRequested(1)) {
-            requestCacheData(1, request, box);
-        } else if (request.containRequest(8) && !box.isRequested(8)) {
-            requestCacheData(8, request, box);
-        } else if (request.containRequest(16) && !box.isRequested(16)) {
-            requestCacheData(16, request, box);
-        } else if (request.containRequest(2) && !box.isRequested(2)) {
-            requestCacheData(2, request, box);
-        } else if (request.containRequest(4) && !box.isRequested(4)) {
-            requestCacheData(4, request, box);
-        } else if (!request.containRequest(32) || box.isRequested(32)) {
+        } else if (request.containRequest(Type.CURRENT) && !box.isRequested(Type.CURRENT)) {
+            requestCacheData(Type.CURRENT, request, box);
+        } else if (request.containRequest(Type.AQI) && !box.isRequested(Type.AQI)) {
+            requestCacheData(Type.AQI, request, box);
+        } else if (request.containRequest(Type.LIFE_INDEX) && !box.isRequested(Type.LIFE_INDEX)) {
+            requestCacheData(Type.LIFE_INDEX, request, box);
+        } else if (request.containRequest(Type.HOUR_FORECASTS) && !box.isRequested(Type.HOUR_FORECASTS)) {
+            requestCacheData(Type.HOUR_FORECASTS, request, box);
+        } else if (request.containRequest(Type.DAILY_FORECASTS) && !box.isRequested(Type.DAILY_FORECASTS)) {
+            requestCacheData(Type.DAILY_FORECASTS, request, box);
+        } else if (!request.containRequest(Type.ALARM) || box.isRequested(Type.ALARM)) {
             RootWeather result = box.getResult();
             if (result != null) {
                 result.writeMemoryCache(request, WeatherCache.getInstance(mContext));
@@ -400,7 +406,7 @@ public class WeatherRequestExecuter extends AbstractExecuter {
             }
             request.deliverCacheResponse(result);
         } else {
-            requestCacheData(ItemTouchHelper.END, request, box);
+            requestCacheData(Type.ALARM, request, box);
         }
     }
 

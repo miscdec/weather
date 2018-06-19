@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
+            if (intent.getAction() != null && intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
                 NetworkInfo info = ((ConnectivityManager) getApplicationContext().getSystemService
                         (Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
                 if (info != null && info.isAvailable()) {

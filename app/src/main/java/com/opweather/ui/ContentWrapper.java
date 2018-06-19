@@ -248,8 +248,8 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                 updateCurrentWeatherUI();
                 CityWeatherDB.getInstance(mContext).updateLastRefreshTime(mCityData.getLocationId(), DateTimeUtils
                         .longTimeToRefreshTime(mContext, System.currentTimeMillis()));
-                System.out.println("LastRefreshTime:" + CityWeatherDB.getInstance(mContext).getLastRefreshTime
-                        (mCityData.getLocationId()));
+                Log.d(TAG, "LastRefreshTime:" + CityWeatherDB.getInstance(mContext).getLastRefreshTime(mCityData
+                        .getLocationId()));
                 if (mSwipeRefreshLayout != null && mSwipeRefreshLayout.isRefreshing()) {
                     mSwipeRefreshLayout.setRefreshing(false);
                 }
@@ -328,7 +328,8 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                             mHasLocation = false;
                             requestWeather(mCityData, mode);
                             if (mOnResponseListener != null) {
-                                mOnResponseListener.onErrorResponse(new WeatherException("location error"));
+                                mOnResponseListener.onErrorResponse(new WeatherException
+                                        ("location error"));
                             }
                             if (mUIListener != null) {
                                 mUIListener.onError();
@@ -337,6 +338,7 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                         }
                     });
                     mLocationProvider.initLocation();
+                    mLocationProvider.startLocation();
                     return;
                 }
             }
@@ -387,7 +389,8 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
     }
 
     private void setIndex(int resId, String title, String value, int iconId) {
-        ((WeatherSingleInfoView) getChild(resId)).setInfoType(title).setInfoLevel(value).setInfoIcon(iconId);
+        ((WeatherSingleInfoView) getChild(resId)).setInfoType(title).setInfoLevel(value)
+                .setInfoIcon(iconId);
     }
 
     private void setIndexValue(int resId, String value) {
@@ -427,14 +430,14 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
             Log.e(TAG, "updateCurrentWeatherUI: " + mCityData.getLocalName());
             changeTopViewTextColor(10);
             updateRefreshLayout();
-            System.out.println("mWeatherInfoView.getHeight():" + UIUtil.px2dip(mContext, (float) getChild(R.id
-                    .opweather_info).getHeight()));
+            Log.d("TAG", "mWeatherInfoView.getHeight():" + UIUtil.px2dip(mContext, (float) getChild
+                    (R.id.opweather_info).getHeight()));
             RootWeather data = mCityData.getWeathers();
             if (data != null) {
                 if (data.isFromAccu()) {
-                    setVisibility(R.id.accu_logo, 0);
+                    setVisibility(R.id.accu_logo, View.VISIBLE);
                 } else {
-                    setVisibility(R.id.accu_logo, 4);
+                    setVisibility(R.id.accu_logo, View.INVISIBLE);
                 }
                 CurrentWeather current = data.getCurrentWeather();
                 if (current != null) {
@@ -517,7 +520,8 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
             Iterator<DailyForecastsWeather> iterator = data.iterator();
             while (iterator.hasNext()) {
                 DailyForecastsWeather d = iterator.next();
-                if (DateTimeUtils.timeToDay(mContext, d.getDate().getTime(), timeZone) < realCurrentdate) {
+                if (DateTimeUtils.timeToDay(mContext, d.getDate().getTime(), timeZone) <
+                        realCurrentdate) {
                     iterator.remove();
                 }
             }
@@ -530,7 +534,8 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                     boolean isMove = false;
                     switch (event.getAction()) {
                         case 0:
-                            ((ViewGroup) getChild(R.id.weather_scrollview)).requestDisallowInterceptTouchEvent(true);
+                            ((ViewGroup) getChild(R.id.weather_scrollview))
+                                    .requestDisallowInterceptTouchEvent(true);
                             break;
                         case 1:
                             break;
@@ -539,11 +544,13 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                             break;
                     }
                     if (isMove) {
-                        ((ViewGroup) getChild(R.id.weather_scrollview)).requestDisallowInterceptTouchEvent(false);
+                        ((ViewGroup) getChild(R.id.weather_scrollview))
+                                .requestDisallowInterceptTouchEvent(false);
                         return false;
                     }
-                    int position = (int) Math.ceil((double) (((int) event.getRawX()) / (UIUtil.getScreenWidth(v
-                            .getContext()) / 6)));
+                    int position = (int) Math.ceil((double) (((int) event.getRawX()) / (UIUtil
+                            .getScreenWidth(v
+                                    .getContext()) / 6)));
                     if (position > list.size() - 1) {
                         Log.e(ContentWrapper.TAG, "position > data.size()");
                     } else {
@@ -583,14 +590,14 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                     if (w.getMaxTemperature() == null || w.getMaxTemperature().getCentigradeValue() < -2000.0d) {
                         arrayList.add(averageHighTemp);
                     } else {
-                        arrayList.add(Math.max((int) w.getMaxTemperature().getCentigradeValue(),
-                                (int) w.getMinTemperature().getCentigradeValue()));
+                        arrayList.add(Math.max((int) w.getMaxTemperature().getCentigradeValue(), (int) w
+                                .getMinTemperature().getCentigradeValue()));
                     }
                     if (w.getMinTemperature() == null || w.getMinTemperature().getCentigradeValue() < -2000.0d) {
                         mLowTemp.add(averageLowTemp);
                     } else {
-                        mLowTemp.add(Math.min((int) w.getMaxTemperature().getCentigradeValue(), (int)
-                                w.getMinTemperature().getCentigradeValue()));
+                        mLowTemp.add(Math.min((int) w.getMaxTemperature().getCentigradeValue(), (int) w
+                                .getMinTemperature().getCentigradeValue()));
                     }
                 } else {
                     ((TextView) dailyWeatherView.findViewById(R.id.day_date)).setText(R.string.na);
@@ -721,6 +728,7 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                 public void onRefresh() {
                     mLoading = true;
                     new Handler().post(new Runnable() {
+                        @Override
                         public void run() {
                             if (NetUtil.isNetworkAvailable(mContext)) {
                                 if (mWeatherData != null) {
@@ -744,7 +752,7 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
 
     private int getTitleColor() {
         if (mCityData == null || mCityData.getWeathers() == null || !needGrayColor(WeatherResHelper.weatherToResID
-                (mContext, mCityData.getWeathers().getCurrentWeatherId()))) {
+                        (mContext, mCityData.getWeathers().getCurrentWeatherId()))) {
             return R.color.oneplus_contorl_text_color_disable_dark;
         }
         return R.color.oneplus_contorl_text_color_disable_light;
@@ -781,7 +789,7 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
         FrameLayout mBackground = (FrameLayout) mWeatherScrollView.findViewById(R.id.current_opweather_overlay);
         RelativeLayout.LayoutParams bgParams = (RelativeLayout.LayoutParams) mBackground.getLayoutParams();
         bgParams.height = UIUtil.getWindowHeight(mContext) - ((int) mContext.getResources().getDimension(R.dimen
-                .dimen_top_info_view));
+                        .dimen_top_info_view));
         mBackground.setLayoutParams(bgParams);
         mWeatherScrollView.setOverScrollMode(2);
         mWeatherScrollView.setOnTouchListener(new OnTouchListener() {
@@ -792,13 +800,13 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
             public boolean onTouch(View v, MotionEvent event) {
                 mGestureDetector.onTouchEvent(event);
                 switch (event.getAction()) {
-                    case 0:
+                    case MotionEvent.ACTION_DOWN:
                         mUp = false;
                         mIsFling = false;
                         downY = event.getY();
                         break;
-                    case 1:
-                    case 3:
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL:
                         upY = event.getY();
                         mUp = true;
                         float moveInstance = upY - downY;
