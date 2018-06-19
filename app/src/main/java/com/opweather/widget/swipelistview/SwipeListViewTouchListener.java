@@ -731,8 +731,7 @@ public class SwipeListViewTouchListener implements OnTouchListener {
                             } else {
                                 swipeCurrentAction = 2;
                             }
-                            swipeListView.onStartOpen(downPosition, swipeCurrentAction, this
-                                    .swipingRight);
+                            swipeListView.onStartOpen(downPosition, swipeCurrentAction, this.swipingRight);
                         }
                         swipeListView.requestDisallowInterceptTouchEvent(true);
                         MotionEvent cancelEvent = MotionEvent.obtain(motionEvent);

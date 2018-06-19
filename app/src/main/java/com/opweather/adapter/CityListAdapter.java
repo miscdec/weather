@@ -47,12 +47,10 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
 
         @Override
         public void onCityDeleted(long j) {
-            requery();
         }
 
         @Override
         public void onCityUpdated(long j) {
-            requery();
         }
     };
     private CityWeatherDB mCityWeatherDB;
@@ -183,7 +181,7 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
+    public void bindView(final View view, Context context, Cursor cursor) {
         if (view != null && cursor != null) {
             view.setTag(cursor.getPosition());
             final ItemHolder itemHolder = new ItemHolder();
@@ -228,7 +226,7 @@ public class CityListAdapter extends IgnorCursorAdapter implements AnimationList
             }
             itemHolder.homeBtnView.setOnClickListener(new OnClickListener() {
                 @Override
-                public void onClick(View view) {
+                public void onClick(View v) {
                     int position = -1;
                     if (view.getTag() != null) {
                         position = (int) view.getTag();

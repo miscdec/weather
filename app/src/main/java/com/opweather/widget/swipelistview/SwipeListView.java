@@ -5,7 +5,6 @@ import android.content.res.TypedArray;
 import android.database.DataSetObserver;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewConfigurationCompat;
-import android.support.v4.widget.AutoScrollHelper;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,7 +18,6 @@ import com.opweather.R;
 import java.util.List;
 
 public class SwipeListView extends ListView {
-
     public static final boolean DEBUG = false;
     public static final int SWIPE_ACTION_CHOICE = 2;
     public static final int SWIPE_ACTION_DISMISS = 1;
@@ -38,35 +36,41 @@ public class SwipeListView extends ListView {
     private static final int TOUCH_STATE_SCROLLING_Y = 2;
     private float lastMotionX;
     private float lastMotionY;
-    int swipeBackView;
-    int swipeFrontView;
+    int swipeBackView = 0;
+    int swipeFrontView = 0;
     private SwipeListViewListener swipeListViewListener;
     private SwipeListViewTouchListener touchListener;
     private int touchSlop;
-    private int touchState;
+    private int touchState = 0;
 
     public SwipeListView(Context context, int swipeBackView, int swipeFrontView) {
-        this(context, null);
+        super(context);
         this.swipeFrontView = swipeFrontView;
         this.swipeBackView = swipeBackView;
+        init(null);
     }
 
     public SwipeListView(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
+        super(context, attrs);
+        init(attrs);
     }
 
-    public SwipeListView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        int swipeMode = TOUCH_STATE_SCROLLING_X;
+    public SwipeListView(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+        init(attrs);
+    }
+
+    private void init(AttributeSet attrs) {
+        int swipeMode = 1;
         boolean swipeOpenOnLongPress = true;
         boolean swipeCloseAllItemsWhenMoveList = true;
         long swipeAnimationTime = 0;
-        float swipeOffsetLeft = AutoScrollHelper.RELATIVE_UNSPECIFIED;
-        float swipeOffsetRight = AutoScrollHelper.RELATIVE_UNSPECIFIED;
-        int swipeDrawableChecked = TOUCH_STATE_REST;
-        int swipeDrawableUnchecked = TOUCH_STATE_REST;
-        int swipeActionLeft = TOUCH_STATE_REST;
-        int swipeActionRight = TOUCH_STATE_REST;
+        float swipeOffsetLeft = 0.0f;
+        float swipeOffsetRight = 0.0f;
+        int swipeDrawableChecked = 0;
+        int swipeDrawableUnchecked = 0;
+        int swipeActionLeft = 0;
+        int swipeActionRight = 0;
         if (attrs != null) {
             TypedArray styled = getContext().obtainStyledAttributes(attrs, R.styleable.SwipeListView);
             swipeMode = styled.getInt(R.styleable.SwipeListView_swipeMode, 1);
@@ -90,11 +94,9 @@ public class SwipeListView extends ListView {
             swipeBackView = getContext().getResources().getIdentifier(SWIPE_DEFAULT_BACK_VIEW, "id", getContext
                     ().getPackageName());
             if (swipeFrontView == 0 || swipeBackView == 0) {
-                Object[] objArr = new Object[2];
-                objArr[0] = SWIPE_DEFAULT_FRONT_VIEW;
-                objArr[1] = SWIPE_DEFAULT_BACK_VIEW;
                 throw new RuntimeException(String.format("You forgot the attributes swipeFrontView or swipeBackView. " +
-                        "You can add this attributes or use '%s' and '%s' identifiers", objArr));
+                        "You can add this attributes or use '%s' and '%s' identifiers", SWIPE_DEFAULT_FRONT_VIEW,
+                        SWIPE_DEFAULT_BACK_VIEW));
             }
         }
         touchSlop = ViewConfigurationCompat.getScaledPagingTouchSlop(ViewConfiguration.get(getContext()));
@@ -118,74 +120,75 @@ public class SwipeListView extends ListView {
     public void recycle(View convertView, int position) {
         touchListener.reloadChoiceStateInView(convertView.findViewById(swipeFrontView), position);
         touchListener.reloadSwipeStateInView(convertView.findViewById(swipeFrontView), position);
-        for (int j = TOUCH_STATE_REST; j < ((ViewGroup) convertView).getChildCount(); j++) {
-            ((ViewGroup) convertView).getChildAt(j).setPressed(DEBUG);
+        for (int j = 0; j < ((ViewGroup) convertView).getChildCount(); j++) {
+            ((ViewGroup) convertView).getChildAt(j).setPressed(false);
         }
     }
 
     public boolean isChecked(int position) {
-        return this.touchListener.isChecked(position);
+        return touchListener.isChecked(position);
     }
 
     public List<Integer> getPositionsSelected() {
-        return this.touchListener.getPositionsSelected();
+        return touchListener.getPositionsSelected();
     }
 
     public int getCountSelected() {
-        return this.touchListener.getCountSelected();
+        return touchListener.getCountSelected();
     }
 
     public void unselectedChoiceStates() {
-        this.touchListener.unselectedChoiceStates();
+        touchListener.unselectedChoiceStates();
     }
 
+    @Override
     public void setAdapter(ListAdapter adapter) {
         super.setAdapter(adapter);
-        this.touchListener.resetItems();
+        touchListener.resetItems();
         if (adapter != null) {
             adapter.registerDataSetObserver(new DataSetObserver() {
                 public void onChanged() {
                     super.onChanged();
-                    SwipeListView.this.onListChanged();
-                    SwipeListView.this.touchListener.resetItems();
+                    onListChanged();
+                    touchListener.resetItems();
                 }
             });
         }
     }
 
     public void dismiss(int position) {
-        int height = this.touchListener.dismiss(position);
+        int height = touchListener.dismiss(position);
         if (height > 0) {
-            this.touchListener.handlerPendingDismisses(height);
+            touchListener.handlerPendingDismisses(height);
             return;
         }
         onDismiss(new int[]{position});
-        this.touchListener.resetPendingDismisses();
+        touchListener.resetPendingDismisses();
     }
 
     public void dismissSelected() {
-        List<Integer> list = this.touchListener.getPositionsSelected();
+        List<Integer> list = touchListener.getPositionsSelected();
         int[] dismissPositions = new int[list.size()];
-        int height = TOUCH_STATE_REST;
-        for (int i = TOUCH_STATE_REST; i < list.size(); i++) {
-            int position = ((Integer) list.get(i)).intValue();
+        int height = 0;
+        for (int i = 0; i < list.size(); i++) {
+            int position =  list.get(i);
             dismissPositions[i] = position;
-            int auxHeight = this.touchListener.dismiss(position);
+            int auxHeight = touchListener.dismiss(position);
             if (auxHeight > 0) {
                 height = auxHeight;
             }
         }
         if (height > 0) {
-            this.touchListener.handlerPendingDismisses(height);
+            touchListener.handlerPendingDismisses(height);
         } else {
             onDismiss(dismissPositions);
-            this.touchListener.resetPendingDismisses();
+            touchListener.resetPendingDismisses();
         }
-        this.touchListener.returnOldActions();
+        touchListener.returnOldActions();
     }
 
     public void openAnimate(int position) {
-        this.touchListener.openAnimate(position);
+        touchListener.openAnimate(position);
     }
 
     public void closeAnimate(int position) {
@@ -277,8 +280,10 @@ public class SwipeListView extends ListView {
     }
 
     protected int changeSwipeMode(int position) {
-        return (swipeListViewListener == null || position == -1) ? SWIPE_MODE_DEFAULT : swipeListViewListener
-                .onChangeSwipeMode(position);
+        if (swipeListViewListener == null || position == -1) {
+            return -1;
+        }
+        return swipeListViewListener.onChangeSwipeMode(position);
     }
 
     public void setSwipeListViewListener(SwipeListViewListener swipeListViewListener) {
@@ -329,6 +334,7 @@ public class SwipeListView extends ListView {
         touchListener.setAnimationTime(animationTime);
     }
 
+    @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         int action = MotionEventCompat.getActionMasked(ev);
         float x = ev.getX();
@@ -337,34 +343,40 @@ public class SwipeListView extends ListView {
             touchListener.onTouch(this, ev);
         }
         if (isEnabled() && touchListener.isSwipeEnabled()) {
-            if (touchState == 1) {
-                return touchListener.onTouch(this, ev);
+            if (touchState != 1) {
+                switch (action) {
+                    case 0:
+                        super.onInterceptTouchEvent(ev);
+                        touchListener.onTouch(this, ev);
+                        touchState = 0;
+                        lastMotionX = x;
+                        lastMotionY = y;
+                        return false;
+                    case 1:
+                        touchListener.onTouch(this, ev);
+                        if (touchState != 2) {
+                            return false;
+                        }
+                        return true;
+                    case 2:
+                        checkInMoving(x, y);
+                        if (touchState != 2) {
+                            return false;
+                        }
+                        return true;
+                    case 3:
+                        touchState = 0;
+                        break;
+                }
             }
-            switch (action) {
-                case TOUCH_STATE_REST:
-                    super.onInterceptTouchEvent(ev);
-                    touchListener.onTouch(this, ev);
-                    touchState = 0;
-                    lastMotionX = x;
-                    lastMotionY = y;
-                    return false;
-                case TOUCH_STATE_SCROLLING_X:
-                    touchListener.onTouch(this, ev);
-                    return touchState == 2;
-                case TOUCH_STATE_SCROLLING_Y:
-                    checkInMoving(x, y);
-                    return touchState == 2;
-                case SWIPE_MODE_LEFT:
-                    touchState = 0;
-                    break;
-            }
+            return touchListener.onTouch(this, ev);
         }
         return super.onInterceptTouchEvent(ev);
     }
 
     private void checkInMoving(float x, float y) {
         boolean xMoved;
-        boolean yMoved = DEBUG;
+        boolean yMoved = false;
         int xDiff = (int) Math.abs(x - lastMotionX);
         int yDiff = (int) Math.abs(y - lastMotionY);
         int touchSlop = this.touchSlop;
