@@ -113,7 +113,7 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            return false;
+            return true;
         }
 
         @Override
@@ -533,24 +533,21 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
                 public boolean onTouch(View v, MotionEvent event) {
                     boolean isMove = false;
                     switch (event.getAction()) {
-                        case 0:
-                            ((ViewGroup) getChild(R.id.weather_scrollview))
-                                    .requestDisallowInterceptTouchEvent(true);
+                        case MotionEvent.ACTION_DOWN:
+                            ((ViewGroup) getChild(R.id.weather_scrollview)).requestDisallowInterceptTouchEvent(true);
                             break;
-                        case 1:
+                        case MotionEvent.ACTION_UP:
                             break;
-                        case 2:
+                        case MotionEvent.ACTION_MOVE:
                             isMove = true;
                             break;
                     }
                     if (isMove) {
-                        ((ViewGroup) getChild(R.id.weather_scrollview))
-                                .requestDisallowInterceptTouchEvent(false);
+                        ((ViewGroup) getChild(R.id.weather_scrollview)).requestDisallowInterceptTouchEvent(false);
                         return false;
                     }
-                    int position = (int) Math.ceil((double) (((int) event.getRawX()) / (UIUtil
-                            .getScreenWidth(v
-                                    .getContext()) / 6)));
+                    int position = (int) Math.ceil((double) (((int) event.getRawX()) / (UIUtil.getScreenWidth(v
+                            .getContext()) / 6)));
                     if (position > list.size() - 1) {
                         Log.e(ContentWrapper.TAG, "position > data.size()");
                     } else {
@@ -567,7 +564,7 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
             for (int i = 0; i < 6; i++) {
                 View dailyWeatherView = inflater.inflate(R.layout.forecast_daily_weather, null);
                 if (i < data.size()) {
-                    DailyForecastsWeather w = (DailyForecastsWeather) data.get(i);
+                    DailyForecastsWeather w = data.get(i);
                     Calendar c = Calendar.getInstance();
                     c.setTimeZone(TimeZone.getTimeZone("GMT" + timeZone));
                     long time = w.getDate().getTime();
@@ -752,7 +749,7 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
 
     private int getTitleColor() {
         if (mCityData == null || mCityData.getWeathers() == null || !needGrayColor(WeatherResHelper.weatherToResID
-                        (mContext, mCityData.getWeathers().getCurrentWeatherId()))) {
+                (mContext, mCityData.getWeathers().getCurrentWeatherId()))) {
             return R.color.oneplus_contorl_text_color_disable_dark;
         }
         return R.color.oneplus_contorl_text_color_disable_light;
@@ -789,7 +786,7 @@ public class ContentWrapper implements OnViewPagerScrollListener, OnRefreshUnitL
         FrameLayout mBackground = (FrameLayout) mWeatherScrollView.findViewById(R.id.current_opweather_overlay);
         RelativeLayout.LayoutParams bgParams = (RelativeLayout.LayoutParams) mBackground.getLayoutParams();
         bgParams.height = UIUtil.getWindowHeight(mContext) - ((int) mContext.getResources().getDimension(R.dimen
-                        .dimen_top_info_view));
+                .dimen_top_info_view));
         mBackground.setLayoutParams(bgParams);
         mWeatherScrollView.setOverScrollMode(2);
         mWeatherScrollView.setOnTouchListener(new OnTouchListener() {
